@@ -19,6 +19,7 @@
 package com.redhat.exhort.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -38,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -49,7 +51,6 @@ import org.junit.jupiter.api.AfterEach;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
-import com.google.common.base.Charsets;
 import com.redhat.exhort.extensions.InjectWireMock;
 import com.redhat.exhort.extensions.WiremockExtension;
 import com.redhat.exhort.integration.providers.snyk.SnykRequestBuilder;
@@ -158,7 +159,7 @@ public abstract class AbstractAnalysisTest {
   protected String loadFileAsString(String file) {
     try {
       return Files.readString(
-          Path.of(getClass().getClassLoader().getResource(file).toURI()), Charsets.UTF_8);
+          Path.of(getClass().getClassLoader().getResource(file).toURI()), StandardCharsets.UTF_8);
     } catch (IOException | URISyntaxException e) {
       fail("Unable to read expected file: " + file, e);
       return null;
@@ -217,6 +218,7 @@ public abstract class AbstractAnalysisTest {
     stubOssToken();
     stubTrustedContentRequests();
     stubOsvRequests();
+    stubTpaRequests();
   }
 
   protected void verifyProviders(Collection<String> providers, Map<String, String> credentials) {
@@ -230,6 +232,7 @@ public abstract class AbstractAnalysisTest {
                     credentials.get(Constants.OSS_INDEX_USER_HEADER),
                     credentials.get(Constants.OSS_INDEX_TOKEN_HEADER));
                 case Constants.OSV_PROVIDER -> verifyOsvNvdRequest();
+                case Constants.TPA_PROVIDER -> verifyTpaRequest();
               }
             });
     verifyTrustedContentRequest();
@@ -346,6 +349,38 @@ public abstract class AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("onguard/maven_report.json")));
+  }
+
+  protected void stubTpaRequests() {
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("tpa/empty_report.json")));
+
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .withRequestBody(
+                equalToJson(loadFileAsString("__files/tpa/maven_request.json"), true, false))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("tpa/maven_report.json")));
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .withRequestBody(
+                equalToJson(loadFileAsString("__files/tpa/batch_request.json"), true, false))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("tpa/maven_report.json")));
   }
 
   protected void verifyTrustedContentRequest() {
@@ -577,10 +612,19 @@ public abstract class AbstractAnalysisTest {
     server.verify(count, postRequestedFor(urlEqualTo(Constants.OSV_NVD_PURLS_PATH)));
   }
 
+  protected void verifyTpaRequest() {
+    verifyTpadRequest(1);
+  }
+
+  protected void verifyTpadRequest(int count) {
+    server.verify(count, postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH)));
+  }
+
   protected void verifyNoInteractions() {
     verifyNoInteractionsWithSnyk();
     verifyNoInteractionsWithOSS();
     verifyNoInteractionsWithOsvNvd();
+    verifyNoInteractionsWithTpa();
   }
 
   protected void verifyNoInteractionsWithSnyk() {
@@ -598,5 +642,9 @@ public abstract class AbstractAnalysisTest {
 
   protected void verifyNoInteractionsWithOsvNvd() {
     server.verify(0, postRequestedFor(urlPathEqualTo(Constants.OSV_NVD_PURLS_PATH)));
+  }
+
+  protected void verifyNoInteractionsWithTpa() {
+    server.verify(0, postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH)));
   }
 }

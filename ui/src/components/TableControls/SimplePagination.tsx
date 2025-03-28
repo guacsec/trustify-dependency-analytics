@@ -19,7 +19,6 @@ export const SimplePagination: React.FC<ISimplePaginationProps> = ({
   count,
   params,
   isTop,
-  isCompact,
   perPageOptions,
   onChange,
 }) => {

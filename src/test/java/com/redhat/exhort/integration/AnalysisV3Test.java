@@ -264,7 +264,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getSummary().getProviderStatuses().size());
+    assertEquals(5, report.getSummary().getProviderStatuses().size());
     var status =
         report.getSummary().getProviderStatuses().stream()
             .filter(ps -> ps.getProvider().equals(Constants.SNYK_PROVIDER))
@@ -312,7 +312,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getSummary().getProviderStatuses().size());
+    assertEquals(5, report.getSummary().getProviderStatuses().size());
     var status =
         report.getSummary().getProviderStatuses().stream()
             .filter(ps -> ps.getProvider().equals(Constants.SNYK_PROVIDER))

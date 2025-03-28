@@ -32,21 +32,20 @@ import org.cyclonedx.CycloneDxMediaType;
 import org.hamcrest.text.MatchesPattern;
 import org.junit.jupiter.api.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading2;
-import com.gargoylesoftware.htmlunit.html.HtmlHeading4;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTable;
-import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
-import com.gargoylesoftware.htmlunit.html.HtmlTableDataCell;
-import com.gargoylesoftware.htmlunit.html.HtmlTableHeaderCell;
-import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlHeading2;
+import org.htmlunit.html.HtmlHeading4;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTable;
+import org.htmlunit.html.HtmlTableBody;
+import org.htmlunit.html.HtmlTableDataCell;
+import org.htmlunit.html.HtmlTableRow;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -86,28 +85,27 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    HtmlPage page = extractPage(body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    page = snykSourceBtn.click();
+    
+    page = click(webClient, snykSourceBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    System.out.println("tableSize: " + tables.size());
-    assertEquals(2, tables.size());
-    DomElement snykTable = tables.get(1);
+    assertEquals(4, tables.size());
+    DomElement snykTable = tables.get(3);
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", snykTable);
     assertNotNull(tbody);
-    page = expandTransitiveTableDataCell(tbody);
-    tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size());
-    snykTable = tables.get(1);
+    page = expandTransitiveTableDataCell(webClient, tbody);
+    snykTable = page.getFirstByXPath("//table[contains(@aria-label, 'snyk transitive vulnerabilities')]");
     List<HtmlTableBody> tbodies = snykTable.getByXPath(".//tbody");
     HtmlTableBody privateIssueTbody =
         tbodies.stream()
             .filter(
                 issuesTbody -> {
-                  List<HtmlTableDataCell> tds = issuesTbody.getByXPath("./tr/td");
+                  List<HtmlAnchor> tds = issuesTbody.getByXPath("./tr/td");
                   return tds.size() == 4;
                 })
             .findFirst()
@@ -121,7 +119,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Select the Oss-Index Source
     HtmlButton ossIndexSourceBtn = page.getFirstByXPath("//button[@aria-label='oss-index source']");
     assertNotNull(ossIndexSourceBtn);
-    page = ossIndexSourceBtn.click();
+    page = click(webClient, ossIndexSourceBtn);
 
     List<HtmlHeading2> headings = page.getByXPath("//div[@class='pf-v5-c-empty-state__title']/h2");
     assertEquals("Set up oss-index", headings.get(0).getTextContent());
@@ -161,19 +159,20 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    HtmlPage page = extractPage(body);
+            var webClient = initWebClient();
+            HtmlPage page = extractPage(webClient, body);
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    page = snykSourceBtn.click();
+    page = click(webClient, snykSourceBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size());
+    assertEquals(5, tables.size());
 
     HtmlTableBody tbody =
         getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", tables.get(2));
     assertNotNull(tbody);
-    page = expandTransitiveTableDataCell(tbody);
+    page = expandTransitiveTableDataCell(webClient, tbody);
     tables = page.getElementsByTagName("table");
     tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", tables.get(1));
 
@@ -215,7 +214,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    HtmlPage page = extractPage(body);
+            var webClient = initWebClient();
+            HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
         "Warning alert:Snyk: Unauthorized: Verify the provided credentials are valid.",
@@ -224,7 +224,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    page = snykSourceBtn.click();
+    page = click(webClient, snykSourceBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
@@ -254,8 +254,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asString();
-
-    HtmlPage page = extractPage(body);
+            var webClient = initWebClient();
+            HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
         "Warning alert:Snyk: Forbidden: The provided credentials don't have the required"
@@ -265,7 +265,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    page = snykSourceBtn.click();
+    page = click(webClient, snykSourceBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
@@ -296,7 +296,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    HtmlPage page = extractPage(body);
+            var webClient = initWebClient();
+            HtmlPage page = extractPage(webClient, body);
     List<HtmlHeading4> headings = page.getByXPath("//div[@class='pf-v5-c-alert pf-m-danger']/h4");
     boolean foundHeading = false;
     for (HtmlHeading4 heading : headings) {
@@ -311,7 +312,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    page = snykSourceBtn.click();
+    page = click(webClient, snykSourceBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
@@ -344,7 +345,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    HtmlPage page = extractPage(body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     // Find the root div element with id "root"
     HtmlElement rootElement = page.getFirstByXPath("//div[@id='root']");
 
@@ -365,34 +367,29 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     return tbodies.stream()
         .filter(
             tbody -> {
-              HtmlTableHeaderCell th = tbody.getFirstByXPath("./tr/th");
-              return th.asNormalizedText().equals(depRef);
+              HtmlAnchor a = tbody.getFirstByXPath("./tr/th/a");
+              return a.getTextContent().equals(depRef);
             })
         .findFirst()
         .orElse(null);
   }
 
-  private HtmlPage expandTransitiveTableDataCell(HtmlTableBody tbody) {
-    return expandTableDataCell(tbody, "Transitive Vulnerabilities");
+  private HtmlPage expandTransitiveTableDataCell(WebClient webClient, HtmlTableBody tbody) {
+    return expandTableDataCell(webClient, tbody, "Transitive Vulnerabilities");
   }
 
-  private HtmlPage expandDirectTableDataCell(HtmlTableBody tbody) {
-    return expandTableDataCell(tbody, "Direct Vulnerabilities");
+  private HtmlPage expandDirectTableDataCell(WebClient webClient, HtmlTableBody tbody) {
+    return expandTableDataCell(webClient, tbody, "Direct Vulnerabilities");
   }
 
-  private HtmlPage expandTableDataCell(HtmlTableBody tbody, String dataLabel) {
+  private HtmlPage expandTableDataCell(WebClient webClient, HtmlTableBody tbody, String dataLabel) {
     HtmlTableDataCell td =
         tbody.getFirstByXPath(String.format("./tr/td[@data-label='%s']", dataLabel));
     if (td.getAttribute("class").contains("pf-m-expanded")) {
       return tbody.getHtmlPageOrNull();
     }
-    try {
-      HtmlButton button = td.getFirstByXPath("./button");
-      return button.click();
-    } catch (IOException e) {
-      fail("Unable to click on td for data-label: " + dataLabel, e);
-      return null;
-    }
+    HtmlButton button = td.getFirstByXPath("./button");
+    return click(webClient, button);
   }
 
   private HtmlTable getIssuesTable(HtmlTableBody dependencyTable) {
@@ -406,20 +403,40 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     return rows.get(1).getFirstByXPath("//table");
   }
 
-  private HtmlPage extractPage(String html) {
-    try (WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED)) {
-      HtmlPage page = webClient.loadHtmlCodeIntoCurrentWindow(html);
-      webClient.waitForBackgroundJavaScript(50000);
-      assertTrue(page.isHtmlPage(), "The string is valid HTML.");
-      assertEquals("Dependency Analysis", page.getTitleText());
-      assertNotNull(page.getElementsById("root"));
-      assertNotNull(
-          page.getFirstByXPath(
-              "//section[contains(@class, 'pf-v5-c-page__main-section pf-m-light')]"));
-      return page;
+  private WebClient initWebClient() {
+    WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
+    webClient.getOptions().setJavaScriptEnabled(true);
+    webClient.getOptions().setThrowExceptionOnScriptError(true);
+
+    return webClient;
+  }
+
+  private HtmlPage extractPage(WebClient webClient, String html) {
+    HtmlPage page = null;
+    try {
+      page = webClient.loadHtmlCodeIntoCurrentWindow(html);
     } catch (IOException e) {
       fail("The string is not valid HTML.", e);
-      return null;
     }
+    webClient.waitForBackgroundJavaScript(50000);
+    assertTrue(page.isHtmlPage(), "The string is valid HTML.");
+    assertEquals("Dependency Analysis", page.getTitleText());
+    assertNotNull(page.getElementsById("root"));
+    assertNotNull(
+        page.getFirstByXPath(
+            "//section[contains(@class, 'pf-v5-c-page__main-section pf-m-light')]"));
+    return page;
   }
+
+  private HtmlPage click(WebClient webClient, HtmlButton button) {
+        
+    try {
+      button.click();
+    } catch (IOException e) {
+      fail("Unexpected error clicking button");
+    }
+    webClient.waitForBackgroundJavaScript(1000); // Adjust timeout as needed
+    return (HtmlPage) button.getPage();
+  }
+
 }

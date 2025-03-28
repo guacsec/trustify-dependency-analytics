@@ -112,13 +112,19 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                 ) : (
                   <List isPlain>
                     {getSources(report).map((source, index) => {
+                      let remediationsSrc =
+                      source && source.source && source.provider
+                        ? source.source === source.provider
+                          ? source.provider
+                          : `${source.provider}/${source.source}`
+                        : "default_value"; // Provide a fallback value
                       if (Object.keys(source.report).length > 0) {
                         return (
                           <ListItem>
                             <Icon isInline status="success">
                               <img src={SecurityCheckIcon} alt="Security Check Icon"/>
                             </Icon>&nbsp;{source.report.summary.remediations} remediations are available from Red Hat
-                            for {source.provider}
+                            for {remediationsSrc}
                           </ListItem>
                         )
                       }

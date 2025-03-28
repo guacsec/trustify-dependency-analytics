@@ -1,4 +1,9 @@
 module.exports = {
+  babel: {
+    plugins: [
+      "@babel/plugin-transform-destructuring" // Add destructuring transform
+    ]
+  },
   webpack: {
     configure: (webpackConfig) => {
       webpackConfig.output = {

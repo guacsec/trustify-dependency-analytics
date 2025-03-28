@@ -143,7 +143,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     var snykProvider = report.getProviders().get(Constants.SNYK_PROVIDER);
@@ -182,7 +182,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     var status = report.getProviders().get(Constants.SNYK_PROVIDER).getStatus();
@@ -245,6 +245,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
         Arguments.of(Map.of(Constants.SNYK_PROVIDER, 200), Collections.emptyMap()),
         Arguments.of(Map.of(Constants.OSS_INDEX_PROVIDER, 401), Collections.emptyMap()),
         Arguments.of(Map.of(Constants.OSV_PROVIDER, 200), Collections.emptyMap()),
+        Arguments.of(Map.of(Constants.TPA_PROVIDER, 200), Collections.emptyMap()),
         Arguments.of(
             Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Collections.emptyMap()),
@@ -308,7 +309,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-
     assertJson("reports/report_all_token.json", body);
     verifySnykRequest(OK_TOKEN);
     verifyOssRequest(OK_USER, OK_TOKEN);
@@ -365,7 +365,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     assertTrue(report.getProviders().get(Constants.SNYK_PROVIDER).getSources().isEmpty());
@@ -402,7 +402,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     assertTrue(report.getProviders().get(Constants.SNYK_PROVIDER).getSources().isEmpty());

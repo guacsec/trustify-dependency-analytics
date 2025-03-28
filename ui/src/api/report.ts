@@ -111,13 +111,13 @@ export function getSources(report: Report): SourceItem[] {
 }
 
 export function getSourceName(item: SourceItem): string {
-  if (item === undefined) {
+  if (!item || !item.provider) {
     return 'unknown';
   }
-  if (item.provider !== item.source) {
-    return `$item.provider/$item.source`;
-  }
-  return item.provider;
+  const provider = item.provider ?? "unknown";
+  const source = item.source ?? "unknown";
+
+  return provider === source ? provider : `${item.provider}/${item.source}`;
 }
 
 export function isReportMap(obj: any): boolean {

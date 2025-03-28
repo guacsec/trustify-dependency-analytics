@@ -61,6 +61,7 @@ public final class Constants {
   public static final String OSS_INDEX_PROVIDER = "oss-index";
   public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
   public static final String OSV_PROVIDER = "osv";
+  public static final String TPA_PROVIDER = "tpa";
   public static final String UNKNOWN_PROVIDER = "unknown";
 
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
@@ -102,6 +103,9 @@ public final class Constants {
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
   public static final String TRUSTED_CONTENT_PATH = "/recommend";
+  public static final String TPA_ANALYZE_PATH = "/vulnerability/analyze";
+  public static final String TPA_HEALTH_PATH = "/health/live";
+
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
   public static final boolean DEFAULT_VERBOSE_MODE = false;
 
@@ -118,6 +122,7 @@ public final class Constants {
               add(SNYK_PROVIDER);
               add(OSS_INDEX_PROVIDER);
               add(OSV_PROVIDER);
+              add(TPA_PROVIDER);
             }
           });
 

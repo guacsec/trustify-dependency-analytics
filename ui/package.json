@@ -47,7 +47,8 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not op_mini all",
+      "ie 11"
     ],
     "development": [
       "last 1 chrome version",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-transform-destructuring": "^7.25.9",
     "@craco/craco": "^7.1.0",
     "prettier": "^3.0.1"
   }

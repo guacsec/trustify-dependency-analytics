@@ -11,7 +11,7 @@ export const VulnerabilitiesTable = ({ providerName, dependency, vulnerabilities
         backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
       }}
     >
-      <Table variant={TableVariant.compact}>
+      <Table variant={TableVariant.compact} aria-label={(providerName ?? "Default") + " direct vulnerabilities"}>
         <Thead>
           <Tr>
             <Th width={15}>Vulnerability ID</Th>

@@ -142,6 +142,7 @@ export const DepCompoundTable = ({name, dependencies}: { name: string; dependenc
                   <ToolbarToggleGroup toggleIcon={<FilterIcon/>} breakpoint="xl">
                     <ToolbarItem variant="search-filter">
                       <SearchInput
+                        id={name + '-dependency-filter'}
                         style={{width: '250px'}}
                         placeholder="Filter by Dependency name"
                         value={filterText}
@@ -163,7 +164,7 @@ export const DepCompoundTable = ({name, dependencies}: { name: string; dependenc
                   </ToolbarItem>
                 </ToolbarContent>
               </Toolbar>
-              <Table aria-label="Compound expandable table" variant={TableVariant.compact}>
+              <Table aria-label={(name ?? "Default") + " dependencies"} variant={TableVariant.compact}>
                 <Thead>
                   <Tr>
                     <Th width={25}

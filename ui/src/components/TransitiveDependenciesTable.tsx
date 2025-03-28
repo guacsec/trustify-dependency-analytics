@@ -14,7 +14,7 @@ export const TransitiveDependenciesTable = ({
         backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
       }}
     >
-      <Table variant={TableVariant.compact}>
+      <Table variant={TableVariant.compact} aria-label={(providerName ?? "Default") + " transitive vulnerabilities"}>
         <Thead>
           <Tr>
             <Th width={15}>Vulnerability ID</Th>

@@ -34,7 +34,7 @@
     <!-- Plugins -->
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.9.5</quarkus.platform.version>
+    <quarkus.platform.version>3.19.4</quarkus.platform.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -52,7 +52,7 @@
     <sentry.version>7.8.0</sentry.version>
     <cyclonedx.version>9.0.4</cyclonedx.version>
     <spdx.version>1.1.9.1</spdx.version>
-    <htmlunit.version>2.70.0</htmlunit.version>
+    <htmlunit.version>4.11.1</htmlunit.version>
     <wiremock.version>3.4.2</wiremock.version>
     <cvss-calculator.version>1.4.2</cvss-calculator.version>
 
@@ -100,7 +100,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -124,6 +124,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-microprofile-health</artifactId>
     </dependency>
     <dependency>
@@ -140,7 +144,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -229,7 +233,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>net.sourceforge.htmlunit</groupId>
+      <groupId>org.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
       <version>${htmlunit.version}</version>
       <scope>test</scope>
