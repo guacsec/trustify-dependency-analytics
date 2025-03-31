@@ -17,7 +17,7 @@
         </repository>
         <repository>
           <id>github</id>
-          <url>https://maven.pkg.github.com/RHEcosystemAppEng/exhort-api-spec</url>
+          <url>https://maven.pkg.github.com/trustification/exhort-api-spec</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>

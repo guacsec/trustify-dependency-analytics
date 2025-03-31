@@ -13,14 +13,14 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:RHEcosystemAppEng/exhort.git</connection>
-    <developerConnection>scm:git:git@github.com:RHEcosystemAppEng/exhort.git</developerConnection>
+    <connection>scm:git:git@github.com:trustification/exhort.git</connection>
+    <developerConnection>scm:git:git@github.com:trustification/exhort.git</developerConnection>
     <tag>v1.5.2</tag>
-    <url>https://github.com/RHEcosystemAppEng/exhort</url>
+    <url>https://github.com/trustification/exhort</url>
   </scm>
   <issueManagement>
     <system>GitHub Issues</system>
-    <url>https://github.com/RHEcosystemAppEng/exhort/issues</url>
+    <url>https://github.com/trustification/exhort/issues</url>
   </issueManagement>
   <properties>
     <!-- Build properties -->
@@ -64,7 +64,7 @@
   <repositories>
     <repository>
       <id>github</id>
-      <url>https://maven.pkg.github.com/RHEcosystemAppEng/exhort-api-spec</url>
+      <url>https://maven.pkg.github.com/trustification/exhort-api-spec</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>

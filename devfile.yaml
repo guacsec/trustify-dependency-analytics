@@ -3,9 +3,9 @@ metadata:
   name: exhort
   version: 1.0.2
   provider: Red Hat
-  supportUrl: https://github.com/RHEcosystemAppEng/exhort/issues
+  supportUrl: https://github.com/trustification/exhort/issues
   icon: https://github.com/fabric8-analytics/fabric8-analytics-vscode-extension/blob/master/icon/trusted_content_icon.png?raw=true
-  website: https://github.com/RHEcosystemAppEng/exhort
+  website: https://github.com/trustification/exhort
   displayName: Exhort
   description: Exhort
   tags:

@@ -3,17 +3,17 @@ kind: Component
 metadata:
   annotations:
     backstage.io/kubernetes-id: exhort
-    github.com/project-slug: RHEcosystemAppEng/exhort
+    github.com/project-slug: trustification/exhort
     github.com/project-readme-path: README.md
-    backstage.io/view-url: https://github.com/RHEcosystemAppEng/exhort/blob/main/catalog-info.yaml
-    backstage.io/edit-url: https://github.com/RHEcosystemAppEng/exhort/blob/main/catalog-info.yaml
-    backstage.io/source-location: url:https://github.com/RHEcosystemAppEng/exhort
+    backstage.io/view-url: https://github.com/trustification/exhort/blob/main/catalog-info.yaml
+    backstage.io/edit-url: https://github.com/trustification/exhort/blob/main/catalog-info.yaml
+    backstage.io/source-location: url:https://github.com/trustification/exhort
     rhda/manifest-file-path: pom.xml
-    backstage.io/techdocs-ref: url:https://github.com/RHEcosystemAppEng/exhort
+    backstage.io/techdocs-ref: url:https://github.com/trustification/exhort
   name: exhort
   tags:
     - rhda
 spec:
   lifecycle: production
-  owner: ecosystem-appeng
+  owner: trustification
   type: service

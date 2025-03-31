@@ -1,7 +1,7 @@
 # Exhort
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI](https://github.com/RHEcosystemAppEng/exhort/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/RHEcosystemAppEng/exhort/actions/workflows/ci.yaml)
+[![CI](https://github.com/trustification/exhort/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/trustification/exhort/actions/workflows/ci.yaml)
 
 ## Dependencies
 
@@ -11,19 +11,19 @@
 
 ## Required parameters
 
-- `api.onguard.host` The host where the [ONGuard](https://github.com/RHEcosystemAppEng/onguard) service is deployed
+- `api.onguard.host` The host where the [ONGuard](https://github.com/trustification/onguard) service is deployed
 - `api.snyk.token` Snyk API token for default authentication when the Snyk integration is enabled
 
 ## OpenAPI and SwaggerUI
 
-- OpenAPI Spec: There is an [openapi.yaml](https://github.com/RHEcosystemAppEng/exhort-api-spec/blob/main/api/v4/openapi.yaml)
+- OpenAPI Spec: There is an [openapi.yaml](https://github.com/trustification/exhort-api-spec/blob/main/api/v4/openapi.yaml)
 - Swagger UI: Available at http://localhost:8080/q/swagger-ui for development or when enabled with the property `quarkus.swagger-ui.always-include=true`
 
 ## Providers
 
 Currently there are 3 available providers that will provide a vulnerability report for your components or full dependency graph.
 
-- OSV ([ONGuard](https://github.com/RHEcosystemAppEng/onguard))
+- OSV ([ONGuard](https://github.com/trustification/onguard))
 - Snyk (`snyk`)
 - OSS Index (`oss-index`)
 
@@ -50,7 +50,7 @@ The supported Package URL types depends on each external provider.
 
 ## Exhort API
 
-Here you can find the [Exhort API Specification](https://github.com/RHEcosystemAppEng/exhort-api-spec) together with
+Here you can find the [Exhort API Specification](https://github.com/trustification/exhort-api-spec) together with
 the Java and Javascript generated data model.
 
 ## Dependency Analysis `/api/v4/analysis`
