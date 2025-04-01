@@ -39,30 +39,39 @@ public class TpaIntegration extends EndpointRouteBuilder {
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject TpaResponseHandler responseHandler;
+  @Inject TpaRequestBuilder requestBuilder;
 
   @Override
   public void configure() throws Exception {
     // fmt:off
     from(direct("tpaScan"))
       .routeId("tpaScan")
+      .choice()
+      .when(method(TpaRequestBuilder.class, "isEmpty"))
+        .setBody(method(responseHandler, "emptyResponse"))
+        .transform().method(responseHandler, "buildReport")
+      .endChoice()
+      .otherwise()
+        .to(direct("tpaRequest"))
+        .transform().method(responseHandler, "buildReport")
+      .endChoice();
+
+    from(direct("tpaRequest"))
+      .routeId("tpaRequest")
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
           .timeoutDuration(timeout)
         .end()
-        .transform(method(TpaRequestBuilder.class, "buildRequest"))
-        .to(direct("tpaRequest"))
+        .transform(method(requestBuilder, "buildRequest"))
+        .process(this::processRequest)
+        .process(requestBuilder::addAuthentication)
+        .to(http("{{api.tpa.host}}"))
+        .transform().method(responseHandler, "responseToIssues")
+      .endCircuitBreaker()
       .onFallback()
         .process(responseHandler::processResponseError)
-      .end()
-      .transform().method(responseHandler, "buildReport");
-
-    from(direct("tpaRequest"))
-      .routeId("tpaRequest")
-      .process(this::processRequest)
-      .log("Headers: ${headers}")
-      .to(http("{{api.tpa.host}}"))
-      .transform().method(responseHandler, "responseToIssues");
+      .end();
 
     from(direct("tpaHealthCheck"))
       .routeId("tpaHealthCheck")
@@ -81,6 +90,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
             .timeoutEnabled(true)
             .timeoutDuration(timeout)
          .end()
+         .process(requestBuilder::addAuthentication)
          .to(http("{{api.tpa.management.host}}"))
          .setHeader(Exchange.HTTP_RESPONSE_TEXT,constant("Service is up and running"))
          .setBody(constant("Service is up and running"))
@@ -88,6 +98,20 @@ public class TpaIntegration extends EndpointRouteBuilder {
          .setBody(constant(Constants.TPA_PROVIDER + "Service is down"))
          .setHeader(Exchange.HTTP_RESPONSE_CODE,constant(Response.Status.SERVICE_UNAVAILABLE))
       .end();
+
+    from(direct("tpaValidateCredentials"))
+      .routeId("tpaValidateCredentials")
+      .circuitBreaker()
+        .faultToleranceConfiguration()
+          .timeoutEnabled(true)
+          .timeoutDuration(timeout)
+        .end()
+        .process(this::processTokenRequest)
+        .process(requestBuilder::addAuthentication)
+        .to(http("{{api.tpa.host}}"))
+        .setBody(constant("Token validated successfully"))
+      .onFallback()
+        .process(responseHandler::processTokenFallBack);
     // fmt:on
   }
 
@@ -112,5 +136,16 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.CONTENT_TYPE);
     message.setHeader(Exchange.HTTP_PATH, Constants.TPA_HEALTH_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
+  }
+
+  private void processTokenRequest(Exchange exchange) {
+    var message = exchange.getMessage();
+    message.removeHeader(Exchange.HTTP_URI);
+    message.removeHeader(Exchange.HTTP_HOST);
+    message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+    message.removeHeader(Exchange.CONTENT_TYPE);
+    message.setHeader(Exchange.HTTP_PATH, Constants.TPA_TOKEN_PATH);
+    message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
+    message.setHeader(Exchange.HTTP_QUERY, "limit=0");
   }
 }

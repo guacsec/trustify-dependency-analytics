@@ -30,6 +30,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
+import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -198,6 +199,7 @@ public abstract class AbstractAnalysisTest {
       case Constants.OSS_INDEX_PROVIDER -> verifyOssRequest(
           headers.get(Constants.OSS_INDEX_USER_HEADER),
           headers.get(Constants.OSS_INDEX_TOKEN_HEADER));
+      case Constants.TPA_PROVIDER -> verifyTpaTokenRequest(headers.get(Constants.TPA_TOKEN_HEADER));
     }
   }
 
@@ -210,6 +212,36 @@ public abstract class AbstractAnalysisTest {
           getRequestedFor(urlEqualTo(Constants.SNYK_TOKEN_API_PATH))
               .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + token))
               .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN)));
+    }
+  }
+
+  protected void verifyTpaTokenRequest(String token) {
+    if (token == null) {
+      server.verify(
+          1,
+          getRequestedFor(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+              .withQueryParam("limit", equalTo("0")));
+    } else {
+      server.verify(
+          1,
+          getRequestedFor(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+              .withQueryParam("limit", equalTo("0"))
+              .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + token)));
+    }
+  }
+
+  protected void verifyTpaRequest(String token) {
+    verifyTpaRequest(token, 1);
+  }
+
+  protected void verifyTpaRequest(String token, int count) {
+    if (token == null) {
+      server.verify(count, postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH)));
+    } else {
+      server.verify(
+          count,
+          postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH))
+              .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + token)));
     }
   }
 
@@ -232,7 +264,8 @@ public abstract class AbstractAnalysisTest {
                     credentials.get(Constants.OSS_INDEX_USER_HEADER),
                     credentials.get(Constants.OSS_INDEX_TOKEN_HEADER));
                 case Constants.OSV_PROVIDER -> verifyOsvNvdRequest();
-                case Constants.TPA_PROVIDER -> verifyTpaRequest();
+                case Constants.TPA_PROVIDER -> verifyTpaRequest(
+                    credentials.get(Constants.TPA_TOKEN_HEADER));
               }
             });
     verifyTrustedContentRequest();
@@ -352,8 +385,25 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubTpaRequests() {
+    // Missing token
+    server.stubFor(post(Constants.TPA_ANALYZE_PATH).willReturn(aResponse().withStatus(401)));
+
+    // Invalid token
     server.stubFor(
         post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + INVALID_TOKEN))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(401)
+                    .withBody(
+                        "{\"error\": \"Unauthorized\", \"message\": \"Authentication failed\"}")));
+
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TPA_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .willReturn(
                 aResponse()
@@ -363,6 +413,9 @@ public abstract class AbstractAnalysisTest {
 
     server.stubFor(
         post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TPA_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .withRequestBody(
                 equalToJson(loadFileAsString("__files/tpa/maven_request.json"), true, false))
@@ -373,6 +426,9 @@ public abstract class AbstractAnalysisTest {
                     .withBodyFile("tpa/maven_report.json")));
     server.stubFor(
         post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TPA_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .withRequestBody(
                 equalToJson(loadFileAsString("__files/tpa/batch_request.json"), true, false))
@@ -381,6 +437,42 @@ public abstract class AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("tpa/maven_report.json")));
+  }
+
+  protected void stubTpaTokenRequests() {
+    // Missing token
+    server.stubFor(
+        get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+            .withQueryParam("limit", equalTo("0"))
+            .willReturn(aResponse().withStatus(401)));
+    // Default request
+    server.stubFor(
+        get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TPA_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
+            .withQueryParam("limit", equalTo("0"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("tpa/empty_report.json")));
+    // Internal Error
+    server.stubFor(
+        get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
+            .withQueryParam("limit", equalTo("0"))
+            .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
+    // Invalid token
+    server.stubFor(
+        get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + INVALID_TOKEN))
+            .withQueryParam("limit", equalTo("0"))
+            .willReturn(
+                aResponse()
+                    .withStatus(401)
+                    .withBody(
+                        "{\"error\": \"Unauthorized\", \"message\": \"Authentication failed\"}")));
   }
 
   protected void verifyTrustedContentRequest() {
@@ -610,14 +702,6 @@ public abstract class AbstractAnalysisTest {
 
   protected void verifyOsvNvdRequest(int count) {
     server.verify(count, postRequestedFor(urlEqualTo(Constants.OSV_NVD_PURLS_PATH)));
-  }
-
-  protected void verifyTpaRequest() {
-    verifyTpadRequest(1);
-  }
-
-  protected void verifyTpadRequest(int count) {
-    server.verify(count, postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH)));
   }
 
   protected void verifyNoInteractions() {

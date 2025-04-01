@@ -30,8 +30,6 @@ import java.util.List;
 
 import org.cyclonedx.CycloneDxMediaType;
 import org.hamcrest.text.MatchesPattern;
-import org.junit.jupiter.api.Test;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.DomElement;
@@ -46,6 +44,7 @@ import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableDataCell;
 import org.htmlunit.html.HtmlTableRow;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -90,7 +89,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
-    
+
     page = click(webClient, snykSourceBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
@@ -99,7 +98,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", snykTable);
     assertNotNull(tbody);
     page = expandTransitiveTableDataCell(webClient, tbody);
-    snykTable = page.getFirstByXPath("//table[contains(@aria-label, 'snyk transitive vulnerabilities')]");
+    snykTable =
+        page.getFirstByXPath("//table[contains(@aria-label, 'snyk transitive vulnerabilities')]");
     List<HtmlTableBody> tbodies = snykTable.getByXPath(".//tbody");
     HtmlTableBody privateIssueTbody =
         tbodies.stream()
@@ -146,6 +146,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
             .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
             .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -159,8 +160,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-            var webClient = initWebClient();
-            HtmlPage page = extractPage(webClient, body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     // Select the Snyk Source
     HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
     assertNotNull(snykSourceBtn);
@@ -189,6 +190,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     verifySnykRequest(OK_TOKEN);
     verifyOssRequest(OK_USER, OK_TOKEN);
+    verifyTpaRequest(OK_TOKEN);
   }
 
   @Test
@@ -214,8 +216,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-            var webClient = initWebClient();
-            HtmlPage page = extractPage(webClient, body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
         "Warning alert:Snyk: Unauthorized: Verify the provided credentials are valid.",
@@ -254,8 +256,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asString();
-            var webClient = initWebClient();
-            HtmlPage page = extractPage(webClient, body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
         "Warning alert:Snyk: Forbidden: The provided credentials don't have the required"
@@ -296,8 +298,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-            var webClient = initWebClient();
-            HtmlPage page = extractPage(webClient, body);
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
     List<HtmlHeading4> headings = page.getByXPath("//div[@class='pf-v5-c-alert pf-m-danger']/h4");
     boolean foundHeading = false;
     for (HtmlHeading4 heading : headings) {
@@ -429,7 +431,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
   }
 
   private HtmlPage click(WebClient webClient, HtmlButton button) {
-        
+
     try {
       button.click();
     } catch (IOException e) {
@@ -438,5 +440,4 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     webClient.waitForBackgroundJavaScript(1000); // Adjust timeout as needed
     return (HtmlPage) button.getPage();
   }
-
 }

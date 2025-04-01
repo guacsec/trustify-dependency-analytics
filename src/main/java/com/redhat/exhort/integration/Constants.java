@@ -46,6 +46,8 @@ public final class Constants {
   public static final String SNYK_USER_AGENT_HEADER_FORMAT = "redhat-snyk-%s-%s";
   public static final String OSS_INDEX_USER_HEADER = "ex-oss-index-user";
   public static final String OSS_INDEX_TOKEN_HEADER = "ex-oss-index-token";
+  public static final String TPA_TOKEN_HEADER = "ex-tpa-token";
+
   public static final String VERBOSE_MODE_HEADER = "verbose";
 
   public static final String RHDA_TOKEN_HEADER = "rhda-token";
@@ -96,15 +98,16 @@ public final class Constants {
 
   public static final String SNYK_DEP_GRAPH_API_PATH = "/test/dep-graph";
   public static final String SNYK_TOKEN_API_PATH = "/user/me";
+
   public static final String OSS_INDEX_AUTH_COMPONENT_API_PATH = "/authorized/component-report";
   public static final String OSS_INDEX_VERSION_PATH = "/version";
   public static final String OSV_NVD_PURLS_PATH = "/purls";
-
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
   public static final String TRUSTED_CONTENT_PATH = "/recommend";
   public static final String TPA_ANALYZE_PATH = "/vulnerability/analyze";
   public static final String TPA_HEALTH_PATH = "/health/live";
+  public static final String TPA_TOKEN_PATH = "/vulnerability";
 
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
   public static final boolean DEFAULT_VERBOSE_MODE = false;

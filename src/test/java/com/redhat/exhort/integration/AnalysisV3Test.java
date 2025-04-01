@@ -18,6 +18,8 @@
 
 package com.redhat.exhort.integration;
 
+import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
+import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -202,6 +204,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
             .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
             .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .body(loadSBOMFile(CYCLONEDX))
             .when()
             .post("/api/v3/analysis")
@@ -216,6 +219,32 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
     assertJson("reports/v3/report_all_token.json", body);
     verifySnykRequest(OK_TOKEN);
     verifyOssRequest(OK_USER, OK_TOKEN);
+    verifyTpaRequest(OK_TOKEN);
+    verifyTrustedContentRequest();
+  }
+
+  @Test
+  public void testDefaultTokens() {
+    stubAllProviders();
+
+    var body =
+        given()
+            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v3/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asPrettyString();
+
+    assertJson("reports/v3/report_default_token.json", body);
+    verifySnykRequest(SNYK_TOKEN);
+    verifyTpaRequest(TPA_TOKEN);
     verifyTrustedContentRequest();
   }
 

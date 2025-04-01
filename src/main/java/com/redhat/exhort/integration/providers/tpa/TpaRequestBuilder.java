@@ -18,15 +18,27 @@
 
 package com.redhat.exhort.integration.providers.tpa;
 
+import java.util.Optional;
+
+import org.apache.camel.Exchange;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.config.ObjectMapperProducer;
+import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.model.DependencyTree;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 @RegisterForReflection
 public class TpaRequestBuilder {
+
+  @ConfigProperty(name = "api.tpa.token")
+  Optional<String> defaultToken;
 
   private ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
@@ -36,5 +48,23 @@ public class TpaRequestBuilder {
     tree.getAll().forEach(dep -> purls.add(dep.ref()));
     request.set("purls", purls);
     return mapper.writeValueAsString(request);
+  }
+
+  public void addAuthentication(Exchange exchange) {
+    var message = exchange.getMessage();
+    var userToken = message.getHeader(Constants.TPA_TOKEN_HEADER, String.class);
+    String token = null;
+    if (userToken != null) {
+      token = userToken;
+    } else if (defaultToken.isPresent()) {
+      token = defaultToken.get();
+    }
+    if (token != null) {
+      message.setHeader("Authorization", "Bearer " + token);
+    }
+  }
+
+  public boolean isEmpty(DependencyTree tree) {
+    return tree.dependencies().isEmpty();
   }
 }

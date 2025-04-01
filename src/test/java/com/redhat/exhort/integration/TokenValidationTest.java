@@ -64,6 +64,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
   public void testServerError(String provider, Map<String, String> headers) {
     stubOssToken();
     stubSnykTokenRequests();
+    stubTpaTokenRequests();
 
     var msg =
         given()
@@ -87,6 +88,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> tokenErrorArguments() {
     return Stream.of(
+        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, ERROR_TOKEN)),
         Arguments.of(
             Constants.OSS_INDEX_PROVIDER,
             Map.of(
@@ -102,6 +104,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
   public void testSuccess(String provider, Map<String, String> headers) {
     stubOssToken();
     stubSnykTokenRequests();
+    stubTpaTokenRequests();
 
     var msg =
         given()
@@ -125,6 +128,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> tokenSuccessArguments() {
     return Stream.of(
+        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, OK_TOKEN)),
         Arguments.of(
             Constants.OSS_INDEX_PROVIDER,
             Map.of(
@@ -140,6 +144,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
   public void testUnauthorized(String provider, Map<String, String> headers) {
     stubOssToken();
     stubSnykTokenRequests();
+    stubTpaTokenRequests();
 
     var msg =
         given()
@@ -170,7 +175,8 @@ public class TokenValidationTest extends AbstractAnalysisTest {
                 OK_USER,
                 Constants.OSS_INDEX_TOKEN_HEADER,
                 INVALID_TOKEN)),
-        Arguments.of(Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)));
+        Arguments.of(Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)),
+        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)));
   }
 
   @ParameterizedTest
