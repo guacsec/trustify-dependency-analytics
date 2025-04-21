@@ -15,13 +15,18 @@ spec:
   params:
   - name: JDK_IMAGE
     description: Reference of the image buildah will produce.
-    default: registry.redhat.io/ubi9/openjdk-21:1.18
+    default: registry.redhat.io/ubi9/openjdk-21:1.22
   - name: REDIS_IMAGE
     description: The location of the buildah builder image.
     default: docker.io/redis/redis-stack:7.2.0-v7
   - name: SCRIPT
     description: The script to execute in the jdk image
     default: |
+      echo "Java version:"
+      java -version
+      echo "Maven version:"
+      mvn --version
+      echo "Running mvn verify..."
       mvn -B verify
   workspaces:
   - name: source
