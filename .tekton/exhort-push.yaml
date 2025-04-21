@@ -5,9 +5,10 @@ metadata:
     build.appstudio.openshift.io/repo: https://github.com/trustification/exhort?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-event: '[push]'
-    pipelinesascode.tekton.dev/on-target-branch: '[main]'
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "main"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: exhort
@@ -22,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/trusted-content-tenant/exhort/exhort:{{revision}}
+    value: quay.io/redhat-user-workloads/trusted-content-tenant/exhort:{{revision}}
   - name: dockerfile
     value: src/main/docker/Dockerfile.jvm.staged
   - name: path-context
