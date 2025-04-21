@@ -191,10 +191,10 @@ export const dockerReport: AppData = {
             "message": "OK"
           }
         },
-        "osv": {
+        "tpa": {
           "status": {
             "ok": true,
-            "name": "osv",
+            "name": "tpa",
             "code": 200,
             "message": "OK"
           },
@@ -202,11 +202,11 @@ export const dockerReport: AppData = {
             "osv": {
               "summary": {
                 "direct": 0,
-                "transitive": 5,
-                "total": 5,
+                "transitive": 8,
+                "total": 8,
                 "dependencies": 3,
-                "critical": 0,
-                "high": 3,
+                "critical": 1,
+                "high": 5,
                 "medium": 2,
                 "low": 0,
                 "remediations": 2,
@@ -221,77 +221,109 @@ export const dockerReport: AppData = {
                       "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
                       "issues": [
                         {
-                          "id": "CVE-2023-2974",
-                          "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc SQL Injection via line comment generation",
                           "source": "osv",
                           "cvss": {
                             "attackVector": "Network",
                             "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Changed",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+                          },
+                          "cvssScore": 10.0,
+                          "severity": "CRITICAL",
+                          "cves": [
+                            "CVE-2024-1597"
+                          ],
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2022-41946",
+                          "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
+                          "source": "osv",
+                          "cvss": {
+                            "attackVector": "Local",
+                            "attackComplexity": "High",
                             "privilegesRequired": "Low",
                             "userInteraction": "None",
                             "scope": "Unchanged",
                             "confidentialityImpact": "High",
-                            "integrityImpact": "High",
-                            "availabilityImpact": "None",
-                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "Low",
+                            "cvss": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:L/A:L"
                           },
-                          "cvssScore": 8.1,
-                          "severity": "HIGH",
+                          "cvssScore": 5.8,
+                          "severity": "MEDIUM",
                           "cves": [
-                            "CVE-2023-2974"
+                            "CVE-2022-41946"
                           ],
-                          "unique": false,
-                          "remediation": {
-                            "fixedIn": [
-                              "2.16.8.Final"
-                            ],
-                            "trustedContent": {
-                              "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                              "status": "NotAffected",
-                              "justification": "VulnerableCodeNotPresent"
-                            }
-                          }
+                          "unique": false
                         }
                       ],
                       "highestVulnerability": {
-                        "id": "CVE-2023-2974",
-                        "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                        "id": "CVE-2024-1597",
+                        "title": "pgjdbc SQL Injection via line comment generation",
                         "source": "osv",
                         "cvss": {
                           "attackVector": "Network",
                           "attackComplexity": "Low",
-                          "privilegesRequired": "Low",
+                          "privilegesRequired": "None",
                           "userInteraction": "None",
-                          "scope": "Unchanged",
+                          "scope": "Changed",
                           "confidentialityImpact": "High",
                           "integrityImpact": "High",
-                          "availabilityImpact": "None",
-                          "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                          "availabilityImpact": "High",
+                          "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
                         },
-                        "cvssScore": 8.1,
-                        "severity": "HIGH",
+                        "cvssScore": 10.0,
+                        "severity": "CRITICAL",
                         "cves": [
-                          "CVE-2023-2974"
+                          "CVE-2024-1597"
                         ],
-                        "unique": false,
-                        "remediation": {
-                          "fixedIn": [
-                            "2.16.8.Final"
-                          ],
-                          "trustedContent": {
-                            "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                            "status": "NotAffected",
-                            "justification": "VulnerableCodeNotPresent"
-                          }
-                        }
+                        "unique": false
                       }
+                    }
+                  ],
+                  "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                  "highestVulnerability": {
+                    "id": "CVE-2024-1597",
+                    "title": "pgjdbc SQL Injection via line comment generation",
+                    "source": "osv",
+                    "cvss": {
+                      "attackVector": "Network",
+                      "attackComplexity": "Low",
+                      "privilegesRequired": "None",
+                      "userInteraction": "None",
+                      "scope": "Changed",
+                      "confidentialityImpact": "High",
+                      "integrityImpact": "High",
+                      "availabilityImpact": "High",
+                      "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
                     },
+                    "cvssScore": 10.0,
+                    "severity": "CRITICAL",
+                    "cves": [
+                      "CVE-2024-1597"
+                    ],
+                    "unique": false
+                  }
+                },
+                {
+                  "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+                  "issues": [
+                  ],
+                  "transitive": [
                     {
                       "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
                       "issues": [
                         {
-                          "id": "CVE-2022-42003",
-                          "title": "In FasterXML jackson-databind 2.4.0-rc1 until 2.12.7.1 and in 2.13.x before 2.13.4.2 resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled. This was patched in 2.12.7.1, 2.13.4.2, and 2.14.0.",
+                          "id": "CVE-2020-36518",
+                          "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
                           "source": "osv",
                           "cvss": {
                             "attackVector": "Network",
@@ -300,21 +332,22 @@ export const dockerReport: AppData = {
                             "userInteraction": "None",
                             "scope": "Unchanged",
                             "confidentialityImpact": "None",
-                            "integrityImpact": "None",
+                            "integrityImpact": "Low",
                             "availabilityImpact": "High",
-                            "cvss": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
                           },
-                          "cvssScore": 7.5,
+                          "cvssScore": 8.2,
                           "severity": "HIGH",
                           "cves": [
-                            "CVE-2022-42003"
+                            "CVE-2020-36518"
                           ],
                           "unique": false,
                           "remediation": {
-                            "fixedIn": [
-                              "2.12.7.1",
-                              "2.13.4.2"
-                            ]
+                            "trustedContent": {
+                              "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                              "status": "NotAffected",
+                              "justification": "VulnerableCodeNotPresent"
+                            }
                           }
                         },
                         {
@@ -328,58 +361,65 @@ export const dockerReport: AppData = {
                             "userInteraction": "None",
                             "scope": "Unchanged",
                             "confidentialityImpact": "None",
-                            "integrityImpact": "None",
+                            "integrityImpact": "Low",
                             "availabilityImpact": "High",
-                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
                           },
-                          "cvssScore": 7.5,
+                          "cvssScore": 8.2,
                           "severity": "HIGH",
                           "cves": [
                             "CVE-2022-42004"
                           ],
-                          "unique": false,
-                          "remediation": {
-                            "fixedIn": [
-                              "2.12.7.1",
-                              "2.13.4"
-                            ]
-                          }
+                          "unique": false
                         },
                         {
-                          "id": "CVE-2020-36518",
-                          "title": "Deeply nested json in jackson-databind",
+                          "id": "CVE-2022-42003",
+                          "title": "Uncontrolled Resource Consumption in Jackson-databind",
                           "source": "osv",
                           "cvss": {
                             "attackVector": "Network",
                             "attackComplexity": "Low",
                             "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
                             "confidentialityImpact": "None",
-                            "integrityImpact": "None",
-                            "availabilityImpact": "Low",
-                            "cvss": "AV:N/AC:L/Au:N/C:N/I:N/A:P"
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
                           },
-                          "cvssScore": 5.0,
-                          "severity": "MEDIUM",
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
                           "cves": [
-                            "CVE-2020-36518"
+                            "CVE-2022-42003"
                           ],
-                          "unique": false,
-                          "remediation": {
-                            "fixedIn": [
-                              "2.13.2.1",
-                              "2.12.6.1"
-                            ],
-                            "trustedContent": {
-                              "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                              "status": "NotAffected",
-                              "justification": "VulnerableCodeNotPresent"
-                            }
-                          }
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2021-46877",
+                          "title": "jackson-databind possible Denial of Service if using JDK serialization to serialize JsonNode",
+                          "source": "osv",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "None",
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                          },
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2021-46877"
+                          ],
+                          "unique": false
                         }
                       ],
                       "highestVulnerability": {
-                        "id": "CVE-2022-42003",
-                        "title": "In FasterXML jackson-databind 2.4.0-rc1 until 2.12.7.1 and in 2.13.x before 2.13.4.2 resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled. This was patched in 2.12.7.1, 2.13.4.2, and 2.14.0.",
+                        "id": "CVE-2020-36518",
+                        "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
                         "source": "osv",
                         "cvss": {
                           "attackVector": "Network",
@@ -388,69 +428,187 @@ export const dockerReport: AppData = {
                           "userInteraction": "None",
                           "scope": "Unchanged",
                           "confidentialityImpact": "None",
-                          "integrityImpact": "None",
+                          "integrityImpact": "Low",
                           "availabilityImpact": "High",
-                          "cvss": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                          "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
                         },
-                        "cvssScore": 7.5,
+                        "cvssScore": 8.2,
                         "severity": "HIGH",
                         "cves": [
-                          "CVE-2022-42003"
+                          "CVE-2020-36518"
                         ],
                         "unique": false,
                         "remediation": {
-                          "fixedIn": [
-                            "2.12.7.1",
-                            "2.13.4.2"
-                          ]
+                          "trustedContent": {
+                            "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                            "status": "NotAffected",
+                            "justification": "VulnerableCodeNotPresent"
+                          }
                         }
+                      }
+                    },
+                    {
+                      "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+                      "issues": [
+                        {
+                          "id": "CVE-2024-2700",
+                          "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
+                          "source": "osv",
+                          "cvss": {
+                            "attackVector": "Local",
+                            "attackComplexity": "High",
+                            "privilegesRequired": "Low",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                          },
+                          "cvssScore": 7.0,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2024-2700"
+                          ],
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2023-2974",
+                          "title": "quarkus-core vulnerable to client driven TLS cipher downgrading",
+                          "source": "osv",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "High",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "Low",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:L"
+                          },
+                          "cvssScore": 6.7,
+                          "severity": "MEDIUM",
+                          "cves": [
+                            "CVE-2023-2974"
+                          ],
+                          "unique": false,
+                          "remediation": {
+                            "trustedContent": {
+                              "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                              "status": "NotAffected",
+                              "justification": "VulnerableCodeNotPresent"
+                            }
+                          }
+                        }
+                      ],
+                      "highestVulnerability": {
+                        "id": "CVE-2024-2700",
+                        "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
+                        "source": "osv",
+                        "cvss": {
+                          "attackVector": "Local",
+                          "attackComplexity": "High",
+                          "privilegesRequired": "Low",
+                          "userInteraction": "None",
+                          "scope": "Unchanged",
+                          "confidentialityImpact": "High",
+                          "integrityImpact": "High",
+                          "availabilityImpact": "High",
+                          "cvss": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                        },
+                        "cvssScore": 7.0,
+                        "severity": "HIGH",
+                        "cves": [
+                          "CVE-2024-2700"
+                        ],
+                        "unique": false
                       }
                     }
                   ],
                   "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                   "highestVulnerability": {
-                    "id": "CVE-2023-2974",
-                    "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                    "id": "CVE-2020-36518",
+                    "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
                     "source": "osv",
                     "cvss": {
                       "attackVector": "Network",
                       "attackComplexity": "Low",
-                      "privilegesRequired": "Low",
+                      "privilegesRequired": "None",
                       "userInteraction": "None",
                       "scope": "Unchanged",
-                      "confidentialityImpact": "High",
-                      "integrityImpact": "High",
-                      "availabilityImpact": "None",
-                      "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                      "confidentialityImpact": "None",
+                      "integrityImpact": "Low",
+                      "availabilityImpact": "High",
+                      "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
                     },
-                    "cvssScore": 8.1,
+                    "cvssScore": 8.2,
                     "severity": "HIGH",
                     "cves": [
-                      "CVE-2023-2974"
+                      "CVE-2020-36518"
                     ],
                     "unique": false,
                     "remediation": {
-                      "fixedIn": [
-                        "2.16.8.Final"
-                      ],
                       "trustedContent": {
-                        "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                        "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                         "status": "NotAffected",
                         "justification": "VulnerableCodeNotPresent"
                       }
                     }
                   }
-                },
+                }
+              ]
+            },
+            "csaf": {
+              "summary": {
+                "direct": 0,
+                "transitive": 134,
+                "total": 134,
+                "dependencies": 3,
+                "critical": 12,
+                "high": 109,
+                "medium": 13,
+                "low": 0,
+                "remediations": 26,
+                "recommendations": 2,
+                "unscanned": 0
+              },
+              "dependencies": [
                 {
                   "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+                  "issues": [
+
+                  ],
                   "transitive": [
                     {
                       "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
                       "issues": [
                         {
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc SQL Injection via line comment generation",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                          },
+                          "cvssScore": 9.8,
+                          "severity": "CRITICAL",
+                          "cves": [
+                            "CVE-2024-1597"
+                          ],
+                          "unique": false
+                        },
+                        {
                           "id": "CVE-2022-41946",
-                          "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                          "source": "osv",
+                          "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
+                          "source": "csaf",
                           "cvss": {
                             "attackVector": "Local",
                             "attackComplexity": "Low",
@@ -458,87 +616,306 @@ export const dockerReport: AppData = {
                             "userInteraction": "None",
                             "scope": "Unchanged",
                             "confidentialityImpact": "High",
-                            "integrityImpact": "None",
-                            "availabilityImpact": "None",
-                            "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "Low",
+                            "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:L/A:L"
                           },
-                          "cvssScore": 5.5,
+                          "cvssScore": 6.6,
                           "severity": "MEDIUM",
                           "cves": [
                             "CVE-2022-41946"
                           ],
-                          "unique": false,
-                          "remediation": {
-                            "fixedIn": [
-                              "42.2.27",
-                              "42.3.8",
-                              "42.4.3",
-                              "42.5.1"
-                            ]
-                          }
+                          "unique": false
                         }
                       ],
                       "highestVulnerability": {
-                        "id": "CVE-2022-41946",
-                        "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                        "source": "osv",
+                        "id": "CVE-2024-1597",
+                        "source": "csaf",
                         "cvss": {
-                          "attackVector": "Local",
+                          "attackVector": "Network",
                           "attackComplexity": "Low",
-                          "privilegesRequired": "Low",
+                          "privilegesRequired": "None",
                           "userInteraction": "None",
                           "scope": "Unchanged",
                           "confidentialityImpact": "High",
-                          "integrityImpact": "None",
-                          "availabilityImpact": "None",
-                          "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                          "integrityImpact": "High",
+                          "availabilityImpact": "High",
+                          "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
                         },
-                        "cvssScore": 5.5,
-                        "severity": "MEDIUM",
+                        "cvssScore": 9.8,
+                        "severity": "CRITICAL",
                         "cves": [
-                          "CVE-2022-41946"
+                          "CVE-2024-1597"
                         ],
-                        "unique": false,
-                        "remediation": {
-                          "fixedIn": [
-                            "42.2.27",
-                            "42.3.8",
-                            "42.4.3",
-                            "42.5.1"
-                          ]
-                        }
+                        "unique": false
                       }
                     }
                   ],
                   "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                   "highestVulnerability": {
-                    "id": "CVE-2022-41946",
-                    "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                    "source": "osv",
+                    "id": "CVE-2024-1597",
+                    "source": "csaf",
                     "cvss": {
-                      "attackVector": "Local",
+                      "attackVector": "Network",
                       "attackComplexity": "Low",
-                      "privilegesRequired": "Low",
+                      "privilegesRequired": "None",
                       "userInteraction": "None",
                       "scope": "Unchanged",
                       "confidentialityImpact": "High",
-                      "integrityImpact": "None",
-                      "availabilityImpact": "None",
-                      "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                      "integrityImpact": "High",
+                      "availabilityImpact": "High",
+                      "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
                     },
-                    "cvssScore": 5.5,
-                    "severity": "MEDIUM",
+                    "cvssScore": 9.8,
+                    "severity": "CRITICAL",
                     "cves": [
-                      "CVE-2022-41946"
+                      "CVE-2024-1597"
+                    ],
+                    "unique": false
+                  }
+                },
+                {
+                  "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+                  "issues": [
+
+                  ],
+                  "transitive": [
+                    {
+                      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+                      "issues": [
+                        {
+                          "id": "CVE-2020-36518",
+                          "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "None",
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                          },
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2020-36518"
+                          ],
+                          "unique": false,
+                          "remediation": {
+                            "trustedContent": {
+                              "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                              "status": "NotAffected",
+                              "justification": "VulnerableCodeNotPresent"
+                            }
+                          }
+                        },
+                        {
+                          "id": "CVE-2022-42004",
+                          "title": "Uncontrolled Resource Consumption in FasterXML jackson-databind",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "None",
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                          },
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2022-42004"
+                          ],
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2022-42003",
+                          "title": "Uncontrolled Resource Consumption in Jackson-databind",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "None",
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                          },
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2022-42003"
+                          ],
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2021-46877",
+                          "title": "jackson-databind possible Denial of Service if using JDK serialization to serialize JsonNode",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "None",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "None",
+                            "integrityImpact": "Low",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                          },
+                          "cvssScore": 8.2,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2021-46877"
+                          ],
+                          "unique": false
+                        }
+                      ],
+                      "highestVulnerability": {
+                        "id": "CVE-2020-36518",
+                        "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
+                        "source": "csaf",
+                        "cvss": {
+                          "attackVector": "Network",
+                          "attackComplexity": "Low",
+                          "privilegesRequired": "None",
+                          "userInteraction": "None",
+                          "scope": "Unchanged",
+                          "confidentialityImpact": "None",
+                          "integrityImpact": "Low",
+                          "availabilityImpact": "High",
+                          "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                        },
+                        "cvssScore": 8.2,
+                        "severity": "HIGH",
+                        "cves": [
+                          "CVE-2020-36518"
+                        ],
+                        "unique": false,
+                        "remediation": {
+                          "trustedContent": {
+                            "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                            "status": "NotAffected",
+                            "justification": "VulnerableCodeNotPresent"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+                      "issues": [
+                        {
+                          "id": "CVE-2024-2700",
+                          "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Local",
+                            "attackComplexity": "High",
+                            "privilegesRequired": "Low",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "High",
+                            "cvss": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                          },
+                          "cvssScore": 7.0,
+                          "severity": "HIGH",
+                          "cves": [
+                            "CVE-2024-2700"
+                          ],
+                          "unique": false
+                        },
+                        {
+                          "id": "CVE-2023-2974",
+                          "title": "quarkus-core vulnerable to client driven TLS cipher downgrading",
+                          "source": "csaf",
+                          "cvss": {
+                            "attackVector": "Network",
+                            "attackComplexity": "Low",
+                            "privilegesRequired": "High",
+                            "userInteraction": "None",
+                            "scope": "Unchanged",
+                            "confidentialityImpact": "High",
+                            "integrityImpact": "High",
+                            "availabilityImpact": "Low",
+                            "cvss": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:L"
+                          },
+                          "cvssScore": 6.7,
+                          "severity": "MEDIUM",
+                          "cves": [
+                            "CVE-2023-2974"
+                          ],
+                          "unique": false,
+                          "remediation": {
+                            "trustedContent": {
+                              "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                              "status": "NotAffected",
+                              "justification": "VulnerableCodeNotPresent"
+                            }
+                          }
+                        }
+                      ],
+                      "highestVulnerability": {
+                        "id": "CVE-2024-2700",
+                        "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
+                        "source": "csaf",
+                        "cvss": {
+                          "attackVector": "Local",
+                          "attackComplexity": "High",
+                          "privilegesRequired": "Low",
+                          "userInteraction": "None",
+                          "scope": "Unchanged",
+                          "confidentialityImpact": "High",
+                          "integrityImpact": "High",
+                          "availabilityImpact": "High",
+                          "cvss": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                        },
+                        "cvssScore": 7.0,
+                        "severity": "HIGH",
+                        "cves": [
+                          "CVE-2024-2700"
+                        ],
+                        "unique": false
+                      }
+                    }
+                  ],
+                  "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                  "highestVulnerability": {
+                    "id": "CVE-2020-36518",
+                    "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
+                    "source": "csaf",
+                    "cvss": {
+                      "attackVector": "Network",
+                      "attackComplexity": "Low",
+                      "privilegesRequired": "None",
+                      "userInteraction": "None",
+                      "scope": "Unchanged",
+                      "confidentialityImpact": "None",
+                      "integrityImpact": "Low",
+                      "availabilityImpact": "High",
+                      "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+                    },
+                    "cvssScore": 8.2,
+                    "severity": "HIGH",
+                    "cves": [
+                      "CVE-2020-36518"
                     ],
                     "unique": false,
                     "remediation": {
-                      "fixedIn": [
-                        "42.2.27",
-                        "42.3.8",
-                        "42.4.3",
-                        "42.5.1"
-                      ]
+                      "trustedContent": {
+                        "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                        "status": "NotAffected",
+                        "justification": "VulnerableCodeNotPresent"
+                      }
                     }
                   }
                 }
@@ -571,6 +948,9 @@ export const dockerReport: AppData = {
               "dependencies": [
                 {
                   "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+                  "issues": [
+
+                  ],
                   "transitive": [
                     {
                       "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
@@ -627,6 +1007,9 @@ export const dockerReport: AppData = {
                           },
                           "cvssScore": 5.9,
                           "severity": "MEDIUM",
+                          "cves": [
+
+                          ],
                           "unique": true,
                           "remediation": {
                             "fixedIn": [
@@ -738,6 +1121,9 @@ export const dockerReport: AppData = {
                 },
                 {
                   "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+                  "issues": [
+
+                  ],
                   "transitive": [
                     {
                       "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
@@ -866,15 +1252,15 @@ export const dockerReport: AppData = {
             "message": "OK"
           }
         },
-        "osv": {
+        "tpa": {
           "status": {
             "ok": true,
-            "name": "osv",
+            "name": "tpa",
             "code": 200,
             "message": "OK"
           },
           "sources": {
-            "osv": {
+            "tpa": {
               "summary": {
                 "direct": 0,
                 "transitive": 0,
@@ -927,7 +1313,7 @@ export const dockerReport: AppData = {
               ],
               "unscanned": [
                 {
-                  "ref": "pkg:oci/quay.io/default-app@0.0.1",
+                  "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
                   "reason": "unsupported-pkg-type"
                 }
               ]

@@ -249,7 +249,6 @@ public abstract class AbstractAnalysisTest {
     stubSnykRequests();
     stubOssToken();
     stubTrustedContentRequests();
-    stubOsvRequests();
     stubTpaRequests();
   }
 
@@ -263,7 +262,6 @@ public abstract class AbstractAnalysisTest {
                 case Constants.OSS_INDEX_PROVIDER -> verifyOssRequest(
                     credentials.get(Constants.OSS_INDEX_USER_HEADER),
                     credentials.get(Constants.OSS_INDEX_TOKEN_HEADER));
-                case Constants.OSV_PROVIDER -> verifyOsvNvdRequest();
                 case Constants.TPA_PROVIDER -> verifyTpaRequest(
                     credentials.get(Constants.TPA_TOKEN_HEADER));
               }
@@ -350,38 +348,6 @@ public abstract class AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("trustedcontent/maven_report.json")));
-  }
-
-  protected void stubOsvRequests() {
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/empty_report.json")));
-
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/onguard/maven_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/maven_report.json")));
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/onguard/batch_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/maven_report.json")));
   }
 
   protected void stubTpaRequests() {
@@ -696,18 +662,9 @@ public abstract class AbstractAnalysisTest {
     }
   }
 
-  protected void verifyOsvNvdRequest() {
-    verifyOsvNvdRequest(1);
-  }
-
-  protected void verifyOsvNvdRequest(int count) {
-    server.verify(count, postRequestedFor(urlEqualTo(Constants.OSV_NVD_PURLS_PATH)));
-  }
-
   protected void verifyNoInteractions() {
     verifyNoInteractionsWithSnyk();
     verifyNoInteractionsWithOSS();
-    verifyNoInteractionsWithOsvNvd();
     verifyNoInteractionsWithTpa();
   }
 
@@ -722,10 +679,6 @@ public abstract class AbstractAnalysisTest {
 
   protected void verifyNoInteractionsWithTrustedContent() {
     server.verify(0, postRequestedFor(urlEqualTo(Constants.TRUSTED_CONTENT_PATH)));
-  }
-
-  protected void verifyNoInteractionsWithOsvNvd() {
-    server.verify(0, postRequestedFor(urlPathEqualTo(Constants.OSV_NVD_PURLS_PATH)));
   }
 
   protected void verifyNoInteractionsWithTpa() {

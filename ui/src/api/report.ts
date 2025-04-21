@@ -158,7 +158,7 @@ export interface VulnerabilityItem {
 
 export interface Vulnerability {
   id: string;
-  title: string;
+  title?: string | undefined;
   source: string;
   cvss?: Cvss | null;
   cvssScore: number;

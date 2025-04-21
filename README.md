@@ -12,7 +12,7 @@
 ## Required parameters
 
 - `api.tpa.host` The host of the Trusted Profile Analyzer service. Used as a Vulnerability Provider.
-- `api.onguard.host` The host where the [ONGuard](https://github.com/trustification/onguard) service is deployed
+- `api.tpa.token` The TPA token for default authentication to use when the `ex-tpa-token` header is not provided
 - `api.snyk.token` Snyk API token for default authentication when the Snyk integration is enabled
 
 ## OpenAPI and SwaggerUI
@@ -25,7 +25,6 @@
 Currently these are the available providers that will provide a vulnerability report for your components or full dependency graph.
 
 - TPA ([`Trusted Profile Analyzer`](https://www.trustification.io/))
-- OSV ([ONGuard](https://github.com/trustification/onguard))
 - Snyk (`snyk`)
 - OSS Index (`oss-index`)
 
@@ -37,7 +36,7 @@ Providers should be defined as a multi-valued list in the `providers` Query Para
 
 The supported Package URL types depends on each external provider.
 
-- TPA, OSV and OSS Index don't have any limitation on the type used.
+- TPA and OSS Index don't have any limitation on the type used.
 - Snyk: Given the limitations of the API endpoint currently being used only supports the following PackageURL types:
   - Maven (`maven`)
   - Gradle (`gradle`)

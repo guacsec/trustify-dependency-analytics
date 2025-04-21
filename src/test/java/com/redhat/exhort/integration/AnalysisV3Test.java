@@ -24,7 +24,6 @@ import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -91,11 +90,6 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
 
     verifyNoInteractionsWithSnyk();
     verifyNoInteractionsWithOSS();
-    if (providers.containsKey(Constants.OSV_PROVIDER)) {
-      verifyOsvNvdRequest();
-    } else {
-      verifyNoInteractionsWithOsvNvd();
-    }
     verifyTrustedContentRequest();
   }
 
@@ -110,25 +104,11 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             Collections.emptyMap(),
             Constants.MAVEN_PURL_TYPE),
         Arguments.of(
-            Map.of(Constants.OSV_PROVIDER, 200), Collections.emptyMap(), Constants.MAVEN_PURL_TYPE),
-        Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Map.of(Constants.SNYK_TOKEN_HEADER, OK_TOKEN),
             Constants.MAVEN_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                200,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 200),
             Map.of(
                 Constants.OSS_INDEX_USER_HEADER,
                 OK_USER,
@@ -136,13 +116,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
                 OK_TOKEN),
             Constants.MAVEN_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                200,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 200),
             Map.of(
                 Constants.SNYK_TOKEN_HEADER,
                 OK_TOKEN,
@@ -152,43 +126,19 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
                 OK_TOKEN),
             Constants.MAVEN_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Collections.emptyMap(),
             Constants.MAVEN_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Collections.emptyMap(),
             Constants.NPM_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Collections.emptyMap(),
             Constants.GOLANG_PURL_TYPE),
         Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.OSV_PROVIDER,
-                200),
+            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
             Collections.emptyMap(),
             Constants.PYPI_PURL_TYPE));
   }
@@ -293,7 +243,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(5, report.getSummary().getProviderStatuses().size());
+    assertEquals(4, report.getSummary().getProviderStatuses().size());
     var status =
         report.getSummary().getProviderStatuses().stream()
             .filter(ps -> ps.getProvider().equals(Constants.SNYK_PROVIDER))
@@ -309,14 +259,6 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .get();
     assertFalse(status.getOk());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), status.getStatus());
-
-    status =
-        report.getSummary().getProviderStatuses().stream()
-            .filter(ps -> ps.getProvider().equals(Constants.OSV_PROVIDER))
-            .findFirst()
-            .get();
-    assertTrue(status.getOk());
-    assertEquals(Response.Status.OK.getStatusCode(), status.getStatus());
 
     verifySnykRequest(INVALID_TOKEN);
   }
@@ -341,7 +283,7 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(5, report.getSummary().getProviderStatuses().size());
+    assertEquals(4, report.getSummary().getProviderStatuses().size());
     var status =
         report.getSummary().getProviderStatuses().stream()
             .filter(ps -> ps.getProvider().equals(Constants.SNYK_PROVIDER))
@@ -358,13 +300,6 @@ public class AnalysisV3Test extends AbstractAnalysisTest {
     assertFalse(status.getOk());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), status.getStatus());
 
-    status =
-        report.getSummary().getProviderStatuses().stream()
-            .filter(ps -> ps.getProvider().equals(Constants.OSV_PROVIDER))
-            .findFirst()
-            .get();
-    assertTrue(status.getOk());
-    assertEquals(Response.Status.OK.getStatusCode(), status.getStatus());
     verifySnykRequest(UNAUTH_TOKEN);
   }
 
