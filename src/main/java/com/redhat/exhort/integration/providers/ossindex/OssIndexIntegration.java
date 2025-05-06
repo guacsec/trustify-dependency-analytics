@@ -137,10 +137,10 @@ public class OssIndexIntegration extends EndpointRouteBuilder {
     var username = message.getHeader(Constants.OSS_INDEX_USER_HEADER, String.class);
     var token = message.getHeader(Constants.OSS_INDEX_TOKEN_HEADER, String.class);
     message.setHeader(Exchange.HTTP_PATH, Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH);
-    var auth = new StringBuilder().append(username).append(":").append(token);
+    String auth = username + ":" + token;
     message.setHeader(
         Constants.AUTHORIZATION_HEADER,
-        "Basic " + Base64.getEncoder().encodeToString(auth.toString().getBytes()));
+        "Basic " + Base64.getEncoder().encodeToString(auth.getBytes()));
     message.removeHeader(Constants.OSS_INDEX_USER_HEADER);
     message.removeHeader(Constants.OSS_INDEX_TOKEN_HEADER);
     exchange.setProperty(

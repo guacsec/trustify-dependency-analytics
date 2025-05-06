@@ -15,6 +15,13 @@
 - `api.tpa.token` The TPA token for default authentication to use when the `ex-tpa-token` header is not provided
 - `api.snyk.token` Snyk API token for default authentication when the Snyk integration is enabled
 
+### TPA Client Authentication
+
+- `quarkus.oidc-client.tpa.enabled`: Defaults to true. Set to `false` to disable `tpa` authentication
+- `quarkus.oidc-client.tpa.auth-server-url`: Authentication server. Example: https://sso-tpa.example.com/auth/realms/myrealm
+- `quarkus.oidc-client.tpa.client-id`: OIDC Client ID
+- `quarkus.oidc-client.tpa.credentials.secret`: OIDC Client secret
+
 ## OpenAPI and SwaggerUI
 
 - OpenAPI Spec: There is an [openapi.yaml](https://github.com/trustification/exhort-api-spec/blob/main/api/v4/openapi.yaml)
