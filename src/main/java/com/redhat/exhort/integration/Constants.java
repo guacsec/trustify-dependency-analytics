@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
-
 import jakarta.ws.rs.core.MediaType;
 
 @RegisterForReflection
@@ -64,6 +63,7 @@ public final class Constants {
   public static final String SNYK_PROVIDER = "snyk";
   public static final String OSS_INDEX_PROVIDER = "oss-index";
   public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
+  public static final String OSV_PROVIDER = "osv";
   public static final String TPA_PROVIDER = "tpa";
   public static final String UNKNOWN_PROVIDER = "unknown";
 
@@ -100,6 +100,9 @@ public final class Constants {
   public static final String OSS_INDEX_AUTH_COMPONENT_API_PATH = "/authorized/component-report";
   public static final String OSS_INDEX_VERSION_PATH = "/version";
 
+  public static final String OSV_NVD_PURLS_PATH = "/purls";
+  public static final String OSV_NVD_HEALTH_PATH = "/q/health";
+
   public static final String TRUSTED_CONTENT_PATH = "/recommend";
   public static final String TPA_ANALYZE_PATH = "/vulnerability/analyze";
   public static final String TPA_HEALTH_PATH = "/health/live";
@@ -120,6 +123,7 @@ public final class Constants {
             {
               add(SNYK_PROVIDER);
               add(OSS_INDEX_PROVIDER);
+              add(OSV_PROVIDER);
               add(TPA_PROVIDER);
             }
           });

@@ -43,6 +43,7 @@ public class CustomMetrics {
           "snykRequest",
           "getTrustedContent",
           "tpaRequest",
+          "osvRequest",
           "ossValidateCredentials",
           "ossSplitReq",
           "ossIndexRequest",

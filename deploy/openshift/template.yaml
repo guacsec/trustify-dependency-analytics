@@ -101,9 +101,7 @@ objects:
                     secretKeyRef:
                       name: exhort-secret
                       key: tpa.client.secret
-                - name: API_SNYK_DISABLED
-                  value: "true"
-                - name: API_OSSINDEX_DISABLED
+                - name: API_TPA_DISABLED
                   value: "true"
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:

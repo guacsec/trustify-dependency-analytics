@@ -42,6 +42,7 @@ public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
         "api.snyk.token", SNYK_TOKEN,
         "api.trustedcontent.host", server.baseUrl(),
         "api.ossindex.host", server.baseUrl(),
+        "api.onguard.host", server.baseUrl(),
         "api.tpa.host", server.baseUrl(),
         "api.tpa.token", TPA_TOKEN);
   }
