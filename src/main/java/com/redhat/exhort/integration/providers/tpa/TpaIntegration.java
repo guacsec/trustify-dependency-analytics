@@ -39,8 +39,13 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class TpaIntegration extends EndpointRouteBuilder {
 
+  private static final String TPA_CLIENT_TENANT = "tpa";
+
   @ConfigProperty(name = "api.tpa.timeout", defaultValue = "30s")
   String timeout;
+
+  @ConfigProperty(name = "quarkus.oidc-client.tpa.enabled", defaultValue = "true")
+  boolean tpaEnabled;
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject TpaResponseHandler responseHandler;
@@ -134,13 +139,16 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
 
     String token = message.getHeader(Constants.TPA_TOKEN_HEADER, String.class);
+    if (token == null && !tpaEnabled) {
+      token = "placeholder";
+    }
     if (token == null) {
       token =
           oidcClients
-              .getClient("tpa")
+              .getClient(TPA_CLIENT_TENANT)
               .getTokens()
               .await()
-              .atMost(Duration.ofSeconds(10))
+              .atMost(Duration.parse(timeout))
               .getAccessToken();
     }
     if (token == null) {
