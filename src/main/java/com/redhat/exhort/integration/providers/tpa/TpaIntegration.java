@@ -40,6 +40,7 @@ import jakarta.ws.rs.core.Response;
 public class TpaIntegration extends EndpointRouteBuilder {
 
   private static final String TPA_CLIENT_TENANT = "tpa";
+  private static final int TPA_CLIENT_TIMEOUT = 10;
 
   @ConfigProperty(name = "api.tpa.timeout", defaultValue = "30s")
   String timeout;
@@ -148,7 +149,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
               .getClient(TPA_CLIENT_TENANT)
               .getTokens()
               .await()
-              .atMost(Duration.parse(timeout))
+              .atMost(Duration.ofSeconds(TPA_CLIENT_TIMEOUT))
               .getAccessToken();
     }
     if (token == null) {
