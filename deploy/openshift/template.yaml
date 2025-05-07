@@ -87,6 +87,20 @@ objects:
                   containerPort: '${{MANAGEMENT_PORT}}'
                   protocol: TCP
               env:
+                - name: TPA_HOST
+                  value: '${TPA_HOST}'
+                - name: TPA_AUTH_SERVER_URL
+                  value: '${TPA_AUTH_SERVER_URL}'
+                - name: TPA_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: exhort-secret
+                      key: tpa.client.id
+                - name: TPA_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: exhort-secret
+                      key: tpa.client.secret
                 - name: API_SNYK_DISABLED
                   value: "true"
                 - name: API_OSSINDEX_DISABLED
@@ -175,6 +189,16 @@ parameters:
     displayName: Elasticache Secret
     description: Name of the secret containing the Elasticache settings
     value: exhort-elasticache
+    required: true
+  - name: TPA_HOST
+    displayName: TPA Host
+    description: Trusted Profile Analyzer REST API
+    value: https://trust.rhcloud.com/api/v2/
+    required: true
+  - name: TPA_AUTH_SERVER_URL
+    displayName: TPA Auth Server URL
+    description: Trusted Profile Analyzer Auth Server URL
+    value: https://sso.redhat.com/auth/realms/redhat-external
     required: true
   - name: SERVICE_PORT
     displayName: Service port
