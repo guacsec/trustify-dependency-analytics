@@ -43,6 +43,7 @@ import jakarta.ws.rs.core.Response;
 public class TpaIntegration extends EndpointRouteBuilder {
 
   private static final String TPA_CLIENT_TENANT = "tpa";
+  private static final int TPA_CLIENT_TIMEOUT = 10;
 
   private static final int TPA_CLIENT_TIMEOUT = 10;
 
