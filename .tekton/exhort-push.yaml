@@ -32,17 +32,7 @@ spec:
     value: ../../../entitlement/gh-creds.txt
   - name: entitlement-secret
     value: gh-credentials
-  taskRunSpecs:
-    - pipelineTaskName: build-container
-      stepSpecs:
-        - name: build
-          computeResources:
-            requests:
-              memory: 8Gi
-            limits:
-              memory: 8Gi
   pipelineRef:
-    resolver: git
     params:
     - name: url
       value: https://github.com/trustification/dependency-analytics-pipelines
@@ -50,6 +40,18 @@ spec:
       value: main
     - name: pathInRepo
       value: pipelines/default-build.yaml
+    resolver: git
+  taskRunSpecs:
+  - pipelineTaskName: build-container
+    stepSpecs:
+    - computeResources:
+        limits:
+          memory: 8Gi
+        requests:
+          memory: 8Gi
+      name: build
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-exhort
   workspaces:
   - name: workspace
     volumeClaimTemplate:
@@ -61,9 +63,11 @@ spec:
         resources:
           requests:
             storage: 2Gi
+      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
   - name: mvn-settings
     secret:
       secretName: exhort-mvn-settings
+status: {}
