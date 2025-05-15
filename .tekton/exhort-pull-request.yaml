@@ -8,7 +8,9 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ( !( event_title.contains("[skip ci]") || event_title.contains("[ci skip]") ))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main" && ( !( event_title.contains("[skip ci]") || event_title.contains("[ci
+      skip]") ))
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: exhort
@@ -34,17 +36,7 @@ spec:
     value: ../../../entitlement/gh-creds.txt
   - name: entitlement-secret
     value: gh-credentials
-  taskRunSpecs:
-    - pipelineTaskName: build-container
-      stepSpecs:
-        - name: build
-          computeResources:
-            requests:
-              memory: 8Gi
-            limits:
-              memory: 8Gi
   pipelineRef:
-    resolver: git
     params:
     - name: url
       value: https://github.com/trustification/dependency-analytics-pipelines
@@ -52,6 +44,18 @@ spec:
       value: main
     - name: pathInRepo
       value: pipelines/default-build.yaml
+    resolver: git
+  taskRunSpecs:
+  - pipelineTaskName: build-container
+    stepSpecs:
+    - computeResources:
+        limits:
+          memory: 8Gi
+        requests:
+          memory: 8Gi
+      name: build
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-exhort
   workspaces:
   - name: workspace
     volumeClaimTemplate:
@@ -63,9 +67,11 @@ spec:
         resources:
           requests:
             storage: 4Gi
+      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
   - name: mvn-settings
     secret:
       secretName: exhort-mvn-settings
+status: {}
