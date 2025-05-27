@@ -37,7 +37,7 @@ export const ChartCard = ({summary}: { summary: Summary }) => {
                 {x: 'Medium', y: medium},
                 {x: 'Low', y: low},
               ] : [{x: 'Empty', y: 1e-10}]}
-              labels={({datum}) => `${datum.x}: ${datum.y}`}
+              labels={({datum}) => hasValues ? `${datum.x}: ${datum.y}` : 'No vulnerabilities'}
               legendData={legendData}
               legendOrientation="vertical"
               legendPosition="right"
