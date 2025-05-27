@@ -147,7 +147,7 @@ public class TcResponseHandler extends ProviderResponseHandler {
   }
 
   private Vulnerability filterFixed(Vulnerability a, Vulnerability b) {
-    if (!FIXED_STATUSES.contains(a.getStatus())) {
+    if (a.getStatus() != null && !FIXED_STATUSES.contains(a.getStatus())) {
       return a;
     }
     return b;
