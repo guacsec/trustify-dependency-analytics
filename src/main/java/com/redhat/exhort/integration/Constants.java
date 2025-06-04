@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+
 import jakarta.ws.rs.core.MediaType;
 
 @RegisterForReflection
