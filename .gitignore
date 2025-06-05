@@ -20,3 +20,5 @@ hs_err_pid*
 /.idea
 /target
 .DS_Store
+.env
+.flattened-pom.xml
