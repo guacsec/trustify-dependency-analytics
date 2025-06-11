@@ -233,7 +233,7 @@
       "versionInfo": "v1.0.0"
     },
     {
-      "SPDXID": "SPDXRef-pkg:golang/github.com/aws/aws-sdk-go@v1.43.31",
+      "SPDXID": "SPDXRef-pkg-golang-github.com-aws-aws-sdk-go-v1.43.31",
       "annotations": [
         {
           "annotationDate": "2023-07-27T15:55:52Z",
@@ -263,7 +263,7 @@
       "versionInfo": "v1.43.31"
     },
     {
-      "SPDXID": "SPDXRef-pkg:golang/github.com/jmespath/go-jmespath@v0.4.0",
+      "SPDXID": "SPDXRef-pkg-golang-github.com-jmespath-go-jmespath-v0.4.0",
       "annotations": [
         {
           "annotationDate": "2023-07-27T15:55:52Z",
@@ -293,7 +293,7 @@
       "versionInfo": "v0.4.0"
     },
     {
-      "SPDXID": "SPDXRef-pkg:golang/golang.org/x/net@v0.0.0-20220127200216-cd36cc0744dd",
+      "SPDXID": "SPDXRef-pkg-golang-golang.org-x-net-v0.0.0-20220127200216-cd36cc0744dd",
       "annotations": [
         {
           "annotationDate": "2023-07-27T15:55:52Z",
@@ -347,32 +347,32 @@
     {
       "spdxElementId": "SPDXRef-pkg-golang-golang.org-x-sys-v0.0.0-20210112080510-489259a85091-type-module",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/github.com/jmespath/go-jmespath@v0.4.0"
+      "relatedSpdxElement": "SPDXRef-pkg-golang-github.com-jmespath-go-jmespath-v0.4.0"
     },
     {
       "spdxElementId": "SPDXRef-pkg-golang-golang.org-x-sys-v0.0.0-20210112080510-489259a85091-type-module",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/golang.org/x/net@v0.0.0-20220127200216-cd36cc0744dd"
+      "relatedSpdxElement": "SPDXRef-pkg-golang-golang.org-x-net-v0.0.0-20220127200216-cd36cc0744dd"
     },
     {
-      "spdxElementId": "SPDXRef-pkg:golang/github.com/aws/aws-sdk-go@v1.43.31",
+      "spdxElementId": "SPDXRef-pkg-golang-github.com-aws-aws-sdk-go-v1.43.31",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/github.com/jmespath/go-jmespath@v0.4.0"
+      "relatedSpdxElement": "SPDXRef-pkg-golang-github.com-jmespath-go-jmespath-v0.4.0"
     },
     {
-      "spdxElementId": "SPDXRef-pkg:golang/github.com/aws/aws-sdk-go@v1.43.31",
+      "spdxElementId": "SPDXRef-pkg-golang-github.com-aws-aws-sdk-go-v1.43.31",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/golang.org/x/net@v0.0.0-20220127200216-cd36cc0744dd"
-    },
-    {
-      "spdxElementId": "SPDXRef-pkg-golang-github.com-jpillora-backoff-v1.0.0-type-module",
-      "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/github.com/jmespath/go-jmespath@v0.4.0"
+      "relatedSpdxElement": "SPDXRef-pkg-golang-golang.org-x-net-v0.0.0-20220127200216-cd36cc0744dd"
     },
     {
       "spdxElementId": "SPDXRef-pkg-golang-github.com-jpillora-backoff-v1.0.0-type-module",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pkg:golang/golang.org/x/net@v0.0.0-20220127200216-cd36cc0744dd"
+      "relatedSpdxElement": "SPDXRef-pkg-golang-github.com-jmespath-go-jmespath-v0.4.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-pkg-golang-github.com-jpillora-backoff-v1.0.0-type-module",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pkg-golang-golang.org-x-net-v0.0.0-20220127200216-cd36cc0744dd"
     }
   ]
 }

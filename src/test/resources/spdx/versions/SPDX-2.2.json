@@ -10,7 +10,7 @@
     },
     "name": "com.example demo-0.0.1-SNAPSHOT",
     "dataLicense": "CC0-1.0",
-    "documentNamespace": "http://spdx.org/spdxdocs/com.example demo-0.0.1-SNAPSHOT-ac697a31-6e06-45b4-ae9d-6b8ece911bf1",
+    "documentNamespace": "http://spdx.org/spdxdocs/com.example",
     "packages": [
         {
             "SPDXID": "SPDXRef-pkg:maven/io.quarkus/quarkus-resteasy@2.13.7.Final?type=jar",
@@ -9012,6 +9012,13 @@
             "originator": "NOASSERTION",
             "supplier": "NOASSERTION",
             "versionInfo": "2.13.7.Final"
+        }
+    ],
+    "relationships": [
+        {
+            "spdxElementId": "SPDXRef-DOCUMENT",
+            "relationshipType": "DESCRIBES",
+            "relatedSpdxElement": "SPDXRef-pkg:maven/io.quarkus/quarkus-resteasy@2.13.7.Final?type=jar"
         }
     ]
 }

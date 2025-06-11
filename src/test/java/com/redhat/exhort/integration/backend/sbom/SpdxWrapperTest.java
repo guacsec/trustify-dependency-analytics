@@ -26,10 +26,10 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.jacksonstore.MultiFormatStore;
 import org.spdx.jacksonstore.MultiFormatStore.Format;
-import org.spdx.library.InvalidSPDXAnalysisException;
-import org.spdx.library.Version;
+import org.spdx.library.model.v2.Version;
 import org.spdx.storage.simple.InMemSpdxStore;
 
 import com.redhat.exhort.config.exception.SpdxValidationException;
@@ -55,11 +55,15 @@ public class SpdxWrapperTest {
 
   @Test
   void testInvalidDocument() {
-    assertThrows(
-        SpdxValidationException.class,
-        () ->
-            new SpdxWrapper(
-                inputStore,
-                this.getClass().getClassLoader().getResourceAsStream("cyclonedx/empty-sbom.json")));
+    var err =
+        assertThrows(
+            SpdxValidationException.class,
+            () ->
+                new SpdxWrapper(
+                    inputStore,
+                    this.getClass()
+                        .getClassLoader()
+                        .getResourceAsStream("cyclonedx/empty-sbom.json")));
+    assertNotNull(err.getMessage());
   }
 }

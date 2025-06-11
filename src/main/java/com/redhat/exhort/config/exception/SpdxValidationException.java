@@ -31,6 +31,6 @@ public class SpdxValidationException extends SbomValidationException {
   }
 
   public SpdxValidationException(String message, Exception e) {
-    this(message + ": " + e.getMessage());
+    super(message + ": " + e.getMessage(), e);
   }
 }

@@ -24,13 +24,14 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.spdx.core.InvalidSPDXAnalysisException;
+import org.spdx.core.TypedValue;
 import org.spdx.jacksonstore.MultiFormatStore;
-import org.spdx.library.InvalidSPDXAnalysisException;
-import org.spdx.library.SpdxConstants;
-import org.spdx.library.model.ExternalRef;
-import org.spdx.library.model.SpdxDocument;
-import org.spdx.library.model.SpdxPackage;
-import org.spdx.library.model.TypedValue;
+import org.spdx.library.SpdxModelFactory;
+import org.spdx.library.model.v2.ExternalRef;
+import org.spdx.library.model.v2.SpdxConstantsCompatV2;
+import org.spdx.library.model.v2.SpdxDocument;
+import org.spdx.library.model.v2.SpdxPackage;
 
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.config.exception.SpdxValidationException;
@@ -41,16 +42,23 @@ public class SpdxWrapper {
 
   private MultiFormatStore inputStore;
   private SpdxDocument doc;
-  private String uri;
+  private String docUri;
   private Collection<SpdxPackage> packages;
+
+  static {
+    SpdxModelFactory.init();
+  }
 
   public SpdxWrapper(MultiFormatStore inputStore, InputStream input)
       throws SpdxValidationException {
     this.inputStore = inputStore;
     try {
       this.inputStore.deSerialize(input, false);
-      this.uri = inputStore.getDocumentUris().get(0);
-      this.doc = new SpdxDocument(inputStore, uri, null, false);
+      var uris = inputStore.getDocumentUris();
+      if (uris != null && !uris.isEmpty()) {
+        this.docUri = uris.iterator().next();
+      }
+      this.doc = new SpdxDocument(inputStore, docUri, null, false);
 
       var version = doc.getSpecVersion();
       var verify = doc.verify(version);
@@ -111,9 +119,17 @@ public class SpdxWrapper {
     return this.packages;
   }
 
+  public SpdxPackage getPackageByUri(String uri) {
+    try {
+      return new SpdxPackage(inputStore, docUri, uri.substring(docUri.length() + 1), null, false);
+    } catch (InvalidSPDXAnalysisException e) {
+      throw new SpdxValidationException("Unable to create SpdxPackage for URI: " + uri, e);
+    }
+  }
+
   public SpdxPackage getPackageById(String id) {
     try {
-      return new SpdxPackage(inputStore, uri, id, null, false);
+      return new SpdxPackage(inputStore, docUri, id, null, false);
     } catch (InvalidSPDXAnalysisException e) {
       throw new SpdxValidationException("Unable to create SpdxPackage for id: " + id, e);
     }
@@ -122,9 +138,9 @@ public class SpdxWrapper {
   private Collection<SpdxPackage> parsePackages() throws InvalidSPDXAnalysisException {
     var docName = doc.getName();
     return inputStore
-        .getAllItems(uri, SpdxConstants.CLASS_SPDX_PACKAGE)
-        .map(TypedValue::getId)
-        .map(this::getPackageById)
+        .getAllItems(docUri, SpdxConstantsCompatV2.CLASS_SPDX_PACKAGE)
+        .map(TypedValue::getObjectUri)
+        .map(this::getPackageByUri)
         .filter(this::hasPurl)
         .filter(p -> !packageHasName(p, docName))
         .collect(Collectors.toList());

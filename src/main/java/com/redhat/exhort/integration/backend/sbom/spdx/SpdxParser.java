@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.jacksonstore.MultiFormatStore;
 import org.spdx.jacksonstore.MultiFormatStore.Format;
-import org.spdx.library.InvalidSPDXAnalysisException;
-import org.spdx.library.model.SpdxPackage;
-import org.spdx.library.model.enumerations.RelationshipType;
+import org.spdx.library.model.v2.SpdxPackage;
+import org.spdx.library.model.v2.enumerations.RelationshipType;
 import org.spdx.storage.simple.InMemSpdxStore;
 
 import com.redhat.exhort.api.PackageRef;
@@ -44,7 +44,6 @@ public class SpdxParser extends SbomParser {
 
   @Override
   protected DependencyTree buildTree(InputStream input) {
-
     var inputStore = new MultiFormatStore(new InMemSpdxStore(), Format.JSON_PRETTY);
     var wrapper = new SpdxWrapper(inputStore, input);
     var deps = buildDeps(wrapper);
@@ -117,19 +116,19 @@ public class SpdxParser extends SbomParser {
                       packages.stream().anyMatch(pkg -> pkg.getId().equals(relatedId));
 
                   switch (RelationshipDirection.fromRelationshipType(rel.getRelationshipType())) {
-                    case FORWARD:
+                    case FORWARD -> {
                       if (shouldIndexRelated) {
                         addLink(links, pkgId, relatedId);
                       } else {
                         addLink(links, pkgId, null);
                       }
-                      break;
-                    case BACKWARDS:
+                    }
+                    case BACKWARDS -> {
                       if (shouldIndexRelated) {
                         addLink(links, relatedId, pkgId);
                       }
-                      break;
-                    case IGNORED:
+                    }
+                    default -> {}
                   }
                 } catch (InvalidSPDXAnalysisException e) {
                   throw new SpdxValidationException(

@@ -23,4 +23,8 @@ public abstract class SbomValidationException extends ClientDetailedException {
   public SbomValidationException(String message, String detail) {
     super(message, detail);
   }
+
+  public SbomValidationException(String message, Exception e) {
+    super(message, e);
+  }
 }
