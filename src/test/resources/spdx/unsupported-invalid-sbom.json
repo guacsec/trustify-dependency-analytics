@@ -12,12 +12,6 @@
   "documentNamespace" : "https://cyclonedx/21e8d828-b07f-4fd3-bd14-0458f7188d40_1",
   "packages" : [ {
     "SPDXID" : "SPDXRef-pkg-foo-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
-    "annotations" : [ {
-      "annotationDate" : "2023-07-26T09:11:21Z",
-      "annotationType" : "OTHER",
-      "annotator" : "Tool: CycloneToSpdx",
-      "comment" : "MISSING_CDX_PROPERTY:componentType=\"LIBRARY\""
-    } ],
     "copyrightText" : "NOASSERTION",
     "downloadLocation" : "NOASSERTION",
     "externalRefs" : [ {
@@ -31,10 +25,29 @@
     "name" : "org.acme.dbaas:postgresql-orm-quarkus",
     "primaryPackagePurpose" : "LIBRARY",
     "versionInfo" : "1.0.0-SNAPSHOT"
-  } ],
+  }, {
+    "SPDXID" : "SPDXRef-pkg-foo-io.quarkus-hibernate-orm-2.13.5.Final-type-jar",
+    "copyrightText" : "NOASSERTION",
+    "downloadLocation" : "NOASSERTION",
+    "externalRefs" : [ {
+      "referenceCategory" : "PACKAGE-MANAGER",
+      "referenceLocator" : "pkg:foo/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+      "referenceType" : "purl"
+    } ],
+    "filesAnalyzed" : false,
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "NOASSERTION",
+    "name" : "io.quarkus:quarkus-hibernate-orm",
+    "primaryPackagePurpose" : "LIBRARY",
+    "versionInfo" : "2.13.5.Final"
+  }],
   "relationships" : [ {
     "spdxElementId" : "SPDXRef-DOCUMENT",
     "relationshipType" : "DESCRIBES",
     "relatedSpdxElement" : "SPDXRef-pkg-foo-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar"
+  }, {
+    "spdxElementId" : "SPDXRef-pkg-foo-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-foo-io.quarkus-hibernate-orm-2.13.5.Final-type-jar"
   } ]
 }

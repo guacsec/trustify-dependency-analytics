@@ -10,7 +10,17 @@
   "name" : "SBOM-for-org.acme.dbaas:postgresql-orm-quarkus",
   "dataLicense" : "CC0-1.0",
   "documentNamespace" : "https://cyclonedx/21e8d828-b07f-4fd3-bd14-0458f7188d40_1",
-  "packages" : [ {
+  "packages" : [{
+    "SPDXID" : "SPDXRef-postgresql-orm-quarkus",
+    "copyrightText" : "NOASSERTION",
+    "downloadLocation" : "NOASSERTION",
+    "filesAnalyzed" : false,
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "NOASSERTION",
+    "name" : "amqp",
+    "primaryPackagePurpose" : "LIBRARY",
+    "versionInfo" : "2.6.1"
+  },  {
     "SPDXID" : "SPDXRef-d574b448-4022-4dd8-9612-e6296d717e7f",
     "annotations" : [ {
       "annotationDate" : "2023-07-26T09:11:22Z",
@@ -56,10 +66,14 @@
   "relationships" : [ {
     "spdxElementId" : "SPDXRef-DOCUMENT",
     "relationshipType" : "DESCRIBES",
-    "relatedSpdxElement" : "SPDXRef--xml-tools-common-0.1.6"
+    "relatedSpdxElement" : "SPDXRef-postgresql-orm-quarkus"
   }, {
-    "spdxElementId" : "SPDXRef-DOCUMENT",
-    "relationshipType" : "DESCRIBES",
+    "spdxElementId" : "SPDXRef-postgresql-orm-quarkus",
+    "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-d574b448-4022-4dd8-9612-e6296d717e7f"
+  }, {
+    "spdxElementId" : "SPDXRef-postgresql-orm-quarkus",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef--xml-tools-common-0.1.6"
   }]
 }
