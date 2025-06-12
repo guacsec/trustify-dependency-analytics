@@ -19,20 +19,10 @@
 package com.redhat.exhort.integration.backend.sbom.spdx;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.spdx.core.InvalidSPDXAnalysisException;
-import org.spdx.jacksonstore.MultiFormatStore;
-import org.spdx.jacksonstore.MultiFormatStore.Format;
-import org.spdx.library.model.v2.SpdxPackage;
-import org.spdx.library.model.v2.enumerations.RelationshipType;
-import org.spdx.storage.simple.InMemSpdxStore;
 
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.config.exception.SpdxValidationException;
@@ -44,160 +34,56 @@ public class SpdxParser extends SbomParser {
 
   @Override
   protected DependencyTree buildTree(InputStream input) {
-    var inputStore = new MultiFormatStore(new InMemSpdxStore(), Format.JSON_PRETTY);
-    var wrapper = new SpdxWrapper(inputStore, input);
+    var wrapper = new SpdxWrapper(input);
     var deps = buildDeps(wrapper);
-    var tree = new DependencyTree(deps);
-    return tree;
+    return new DependencyTree(deps);
   }
 
   private Map<PackageRef, DirectDependency> buildDeps(SpdxWrapper wrapper) {
-    var packages = wrapper.getPackages();
-    Map<String, Set<String>> links = new HashMap<>();
-    packages.stream().forEach(p -> createPackageLinks(p, packages, links));
+    var startFrom = wrapper.getStartFromPackages();
+    if (startFrom == null) {
+      throw new SpdxValidationException("No valid root packages found in SPDX SBOM");
+    }
+    Map<PackageRef, DirectDependency> tree = new HashMap<>();
+    Set<PackageRef> visited = new HashSet<>();
+    var relationships = wrapper.getRelationships();
 
-    var directDeps =
-        links.keySet().stream()
-            .filter(
-                k ->
-                    links.entrySet().stream()
-                        .filter(e -> !e.getKey().equals(k))
-                        .noneMatch(e -> e.getValue().contains(k)))
-            .collect(Collectors.toSet());
-    if (!links.isEmpty() && directDeps.isEmpty()) {
-      throw new SpdxValidationException(
-          "Unable to calculate direct dependencies due to a cyclic relationship");
+    for (PackageRef ref : startFrom) {
+      Set<PackageRef> deps = new HashSet<>();
+      retrieveTransitive(ref, deps, relationships, visited);
+      tree.put(ref, new DirectDependency(ref, deps));
+      visited.add(ref);
     }
 
-    Map<String, Set<String>> flatDepTree = new HashMap<>();
-    directDeps.stream()
-        .forEach(
-            d -> {
-              flatDepTree.put(d, addAllTransitive(d, links));
-            });
-    Map<PackageRef, DirectDependency> deps = new HashMap<>();
-    flatDepTree.keySet().stream()
-        .map(wrapper::getPackageById)
-        .forEach(
-            p -> {
-              PackageRef ref = wrapper.toPackageRef(p);
-              Set<PackageRef> transitive =
-                  flatDepTree.get(p.getId()).stream()
-                      .map(wrapper::getPackageById)
-                      .map(wrapper::toPackageRef)
-                      .collect(Collectors.toSet());
-              DirectDependency dep = new DirectDependency(ref, transitive);
-              deps.put(ref, dep);
-            });
-    return deps;
-  }
-
-  private void createPackageLinks(
-      SpdxPackage p, Collection<SpdxPackage> packages, Map<String, Set<String>> links) {
-    try {
-      var pkgId = p.getId();
-      if (packages.stream().noneMatch(pkg -> pkg.getId().equals(pkgId))) {
-        return;
+    // Orphan packages are added to the tree as a direct dependency
+    if (visited.size() < relationships.size()) {
+      for (var rel : relationships.entrySet()) {
+        if (!visited.contains(rel.getKey())) {
+          Set<PackageRef> deps = new HashSet<>();
+          retrieveTransitive(rel.getKey(), deps, relationships, visited);
+          tree.put(rel.getKey(), new DirectDependency(rel.getKey(), deps));
+        }
       }
-      if (p.getRelationships() == null || p.getRelationships().isEmpty()) {
-        addLink(links, pkgId, null);
-      }
-      p.getRelationships().stream()
-          .forEach(
-              rel -> {
-                try {
-                  String relatedId;
-                  if (rel.getRelatedSpdxElement().isPresent()) {
-                    relatedId = rel.getRelatedSpdxElement().get().getId();
-                  } else {
-                    relatedId = null;
-                  }
-                  boolean shouldIndexRelated =
-                      packages.stream().anyMatch(pkg -> pkg.getId().equals(relatedId));
-
-                  switch (RelationshipDirection.fromRelationshipType(rel.getRelationshipType())) {
-                    case FORWARD -> {
-                      if (shouldIndexRelated) {
-                        addLink(links, pkgId, relatedId);
-                      } else {
-                        addLink(links, pkgId, null);
-                      }
-                    }
-                    case BACKWARDS -> {
-                      if (shouldIndexRelated) {
-                        addLink(links, relatedId, pkgId);
-                      }
-                    }
-                    default -> {}
-                  }
-                } catch (InvalidSPDXAnalysisException e) {
-                  throw new SpdxValidationException(
-                      "Unable to determine relationship for " + p.getId(), e);
-                }
-              });
-    } catch (InvalidSPDXAnalysisException e) {
-      throw new SpdxValidationException("Unable to build package relationships", e);
     }
+
+    return tree;
   }
 
-  private enum RelationshipDirection {
-    FORWARD,
-    BACKWARDS,
-    IGNORED;
-
-    static RelationshipDirection fromRelationshipType(RelationshipType type) {
-      return switch (type) {
-        case DEPENDS_ON,
-            CONTAINED_BY,
-            BUILD_DEPENDENCY_OF,
-            OPTIONAL_COMPONENT_OF,
-            OPTIONAL_DEPENDENCY_OF,
-            PROVIDED_DEPENDENCY_OF,
-            TEST_DEPENDENCY_OF,
-            RUNTIME_DEPENDENCY_OF,
-            DEV_DEPENDENCY_OF,
-            ANCESTOR_OF -> FORWARD;
-        case DEPENDENCY_OF, DESCENDANT_OF, PACKAGE_OF, CONTAINS -> BACKWARDS;
-        default -> IGNORED;
-      };
-    }
-  }
-
-  private void addLink(Map<String, Set<String>> links, String fromId, String toId) {
-    validateCyclicRefs(links, fromId, toId);
-    var toRefs = links.get(fromId);
-    if (toRefs == null) {
-      toRefs = new HashSet<>();
-      links.put(fromId, toRefs);
-    }
-    if (toId != null) {
-      toRefs.add(toId);
-    }
-  }
-
-  private Set<String> addAllTransitive(String depKey, Map<String, Set<String>> links) {
-    var deps = links.get(depKey);
-    if (deps == null) {
-      return Collections.emptySet();
-    }
-    var result = new HashSet<>(deps);
-    deps.stream()
-        .forEach(
-            d -> {
-              result.addAll(addAllTransitive(d, links));
-            });
-    return result;
-  }
-
-  private void validateCyclicRefs(Map<String, Set<String>> links, String fromId, String toId) {
-    var toLinks = links.get(toId);
-    if (toLinks == null || toLinks.isEmpty()) {
+  private void retrieveTransitive(
+      PackageRef ref,
+      Set<PackageRef> deps,
+      Map<PackageRef, Set<PackageRef>> relationships,
+      Set<PackageRef> visited) {
+    var refDeps = relationships.get(ref);
+    if (refDeps == null) {
       return;
     }
-    if (toLinks.contains(fromId)) {
-      throw new SpdxValidationException(
-          "Cyclic reference found between: " + fromId + " and " + toId);
+    for (var dep : refDeps) {
+      if (!deps.contains(dep)) {
+        deps.add(dep);
+        retrieveTransitive(dep, deps, relationships, visited);
+        visited.add(dep);
+      }
     }
-    toLinks.forEach(lRef -> validateCyclicRefs(links, fromId, lRef));
   }
 }

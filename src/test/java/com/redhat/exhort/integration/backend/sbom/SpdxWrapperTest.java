@@ -27,30 +27,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
-import org.spdx.jacksonstore.MultiFormatStore;
-import org.spdx.jacksonstore.MultiFormatStore.Format;
 import org.spdx.library.model.v2.Version;
-import org.spdx.storage.simple.InMemSpdxStore;
 
 import com.redhat.exhort.config.exception.SpdxValidationException;
 import com.redhat.exhort.integration.backend.sbom.spdx.SpdxWrapper;
 
 public class SpdxWrapperTest {
 
-  private static final MultiFormatStore inputStore =
-      new MultiFormatStore(new InMemSpdxStore(), Format.JSON_PRETTY);
-
   @ParameterizedTest
   @ValueSource(strings = {Version.TWO_POINT_THREE_VERSION, Version.TWO_POINT_TWO_VERSION})
   void testVersions(String version) throws InvalidSPDXAnalysisException, IOException {
     var wrapper =
         new SpdxWrapper(
-            inputStore,
             this.getClass()
                 .getClassLoader()
                 .getResourceAsStream("spdx/versions/" + version + ".json"));
     assertNotNull(wrapper);
-    assertNotNull(wrapper.getPackages());
+    assertNotNull(wrapper.getStartFromPackages());
+    assertNotNull(wrapper.getRelationships());
   }
 
   @Test
@@ -60,7 +54,6 @@ public class SpdxWrapperTest {
             SpdxValidationException.class,
             () ->
                 new SpdxWrapper(
-                    inputStore,
                     this.getClass()
                         .getClassLoader()
                         .getResourceAsStream("cyclonedx/empty-sbom.json")));

@@ -194,7 +194,7 @@
     "filesAnalyzed" : false,
     "homepage" : "https://projects.eclipse.org/projects/ee4j.el",
     "licenseConcluded" : "NOASSERTION",
-    "licenseDeclared" : "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+    "licenseDeclared" : "(GPL-2.0-only AND EPL-2.0)",
     "name" : "jakarta.el:jakarta.el-api",
     "originator" : "Organization: Eclipse Foundation",
     "primaryPackagePurpose" : "LIBRARY",
@@ -577,7 +577,7 @@
     "filesAnalyzed" : false,
     "homepage" : "https://github.com/eclipse-ee4j/interceptor-api",
     "licenseConcluded" : "NOASSERTION",
-    "licenseDeclared" : "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+    "licenseDeclared" : "(GPL-2.0-only AND EPL-2.0)",
     "name" : "jakarta.interceptor:jakarta.interceptor-api",
     "originator" : "Organization: Eclipse Foundation",
     "primaryPackagePurpose" : "LIBRARY",
@@ -587,6 +587,14 @@
     "spdxElementId" : "SPDXRef-DOCUMENT",
     "relationshipType" : "DESCRIBES",
     "relatedSpdxElement" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar"
+  }, {
+    "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-postgresql-2.13.5.Final-type-jar"
+  }, {
+    "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-hibernate-orm-2.13.5.Final-type-jar"
   }, {
     "spdxElementId" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-postgresql-2.13.5.Final-type-jar",
     "relationshipType" : "DEPENDS_ON",

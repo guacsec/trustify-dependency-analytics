@@ -216,6 +216,14 @@
     "relationshipType" : "DESCRIBES",
     "relatedSpdxElement" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar"
   }, {
+    "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-postgresql-2.13.5.Final-type-jar"
+  }, {
+    "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-hibernate-orm-2.13.5.Final-type-jar"
+  }, {
     "spdxElementId" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-postgresql-2.13.5.Final-type-jar",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-pkg-maven-org.postgresql-postgresql-42.5.0-type-jar"

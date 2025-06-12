@@ -188,6 +188,14 @@
     "relationshipType" : "DESCRIBES",
     "relatedSpdxElement" : "SPDXRef-pkg-golang-github.com-fabric8-analytics-cli-tools-v0.2.6-0.20211007133944-2af417bfb988-type-module"
   }, {
+    "spdxElementId" : "SPDXRef-pkg-golang-github.com-fabric8-analytics-cli-tools-v0.2.6-0.20211007133944-2af417bfb988-type-module",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-golang-github.com-mattn-go-isatty-v0.0.12-type-module"
+  },{
+    "spdxElementId" : "SPDXRef-pkg-golang-github.com-fabric8-analytics-cli-tools-v0.2.6-0.20211007133944-2af417bfb988-type-module",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-golang-github.com-fatih-color-v1.10.0-type-module"
+  }, {
     "spdxElementId" : "SPDXRef-pkg-golang-github.com-mattn-go-isatty-v0.0.12-type-module",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-pkg-golang-golang.org-x-sys-v0.0.0-20210112080510-489259a85091-type-module"

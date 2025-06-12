@@ -273,10 +273,14 @@
     "relationshipType" : "DESCRIBES",
     "relatedSpdxElement" : "SPDXRef-fabric8-analytics-lsp-server-0.0.0-development"
   }, {
+    "spdxElementId" : "SPDXRef-fabric8-analytics-lsp-server-0.0.0-development",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef--xml-tools-ast-5.0.5"
+  }, {
     "spdxElementId" : "SPDXRef--xml-tools-ast-5.0.5",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef--xml-tools-common-0.1.6"
-  }, {
+  },{
     "spdxElementId" : "SPDXRef--xml-tools-ast-5.0.5",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-lodash-4.17.21"
@@ -288,5 +292,9 @@
     "spdxElementId" : "SPDXRef--xml-tools-parser-1.0.11",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-chevrotain-7.1.1"
+  }, {
+    "spdxElementId" : "SPDXRef-fabric8-analytics-lsp-server-0.0.0-development",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef--xml-tools-parser-1.0.11"
   } ]
 }
