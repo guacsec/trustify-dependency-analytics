@@ -24,8 +24,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 
-import com.redhat.exhort.api.converter.AnalysisReportV3Converter;
-import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.integration.Constants;
 
 import freemarker.template.Configuration;
@@ -102,7 +100,6 @@ public class ReportIntegration extends EndpointRouteBuilder {
             .routeId("jsonReport")
             .setBody(exchangeProperty(Constants.REPORT_PROPERTY))
             .bean(ReportTransformer.class, "filterVerboseResult")
-            .process(this::convertToApiVersion)
             .marshal(dataFormat);
 
         from(direct("batchJsonReport"))
@@ -110,14 +107,6 @@ public class ReportIntegration extends EndpointRouteBuilder {
             .bean(ReportTransformer.class, "batchFilterVerboseResult")
             .marshal(dataFormat);
         //fmt:on
-  }
-
-  private void convertToApiVersion(Exchange exchange) {
-    String apiVersion = exchange.getProperty(Constants.API_VERSION_PROPERTY, String.class);
-    AnalysisReport report = exchange.getIn().getBody(AnalysisReport.class);
-    if (Constants.API_VERSION_V3.equals(apiVersion)) {
-      exchange.getIn().setBody(AnalysisReportV3Converter.convert(report));
-    }
   }
 
   private void setReportsProperty(Exchange exchange) {

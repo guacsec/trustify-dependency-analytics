@@ -143,34 +143,15 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .end();
 
     rest()
-      .post("/v3/analysis")
-        .routeId("v3restAnalysis")
-        .to("direct:v3analysis")
       .post("/v4/analysis")
         .routeId("restAnalysis")
-        .to("direct:v4analysis")
+        .to("direct:analysis")
       .post("/v4/batch-analysis")
         .routeId("restBatchAnalysis")
         .to("direct:batchAnalysis")
-      .get("/v3/token")
-        .routeId("v3restTokenValidation")
-        .to("direct:v3validateToken")
       .get("/v4/token")
         .routeId("restTokenValidation")
-        .to("direct:v4validateToken");
-
-    from(direct("v3analysis"))
-      .routeId("v3Analysis")
-      .setProperty(Constants.API_VERSION_PROPERTY, constant(Constants.API_VERSION_V3))
-      .to(direct("analysis"));
-    
-    from(direct("v4analysis"))
-      .routeId("v4Analysis")
-      .setProperty(Constants.API_VERSION_PROPERTY, constant(Constants.API_VERSION_V4))
-      .to(direct("analysis"));
-
-    from(direct("v3validateToken")).toD("direct:validateToken");
-    from(direct("v4validateToken")).toD("direct:validateToken");
+        .to("direct:validateToken");
 
     from(direct("analysis"))
       .routeId("dependencyAnalysis")

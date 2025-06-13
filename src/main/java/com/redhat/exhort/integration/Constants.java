@@ -92,9 +92,6 @@ public final class Constants {
   public static final String UNSCANNED_REFS_PROPERTY = "unscannedRefs";
   public static final String CACHED_RECOMMENDATIONS = "missedRecommendations";
 
-  public static final String API_VERSION_V4 = "v4";
-  public static final String API_VERSION_V3 = "v3";
-
   public static final String SNYK_DEP_GRAPH_API_PATH = "/test/dep-graph";
   public static final String SNYK_TOKEN_API_PATH = "/user/me";
 

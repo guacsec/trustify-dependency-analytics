@@ -147,13 +147,6 @@ In case the vulnerability provider requires of Basic Authentication the headers 
 http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-oss-index-user:the-client-username ex-oss-index-token:the-client-token
 ```
 
-### V3 Support
-
-As long as clients consume V3 we will keep backwards compatible responses. The main difference between V4 and V3 is the multisource data model where providers
-can report vulnerabilities from multiple sources. In V3, all vulnerabilities will be merged and counted together.
-
-The HTML report will always be multisource using V4 data.
-
 ### HTML Report
 
 By default the response Content-Type will be `application/json` but if the `text/html` media type is requested instead, the response
