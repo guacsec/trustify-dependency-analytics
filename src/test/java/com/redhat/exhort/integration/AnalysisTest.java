@@ -18,19 +18,6 @@
 
 package com.redhat.exhort.integration;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
-import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
-import static io.restassured.RestAssured.given;
-import static org.apache.camel.Exchange.CONTENT_TYPE;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -45,21 +32,32 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.camel.Exchange;
+import static org.apache.camel.Exchange.CONTENT_TYPE;
+import static org.hamcrest.core.IsEqual.equalTo;
 import org.hamcrest.text.MatchesPattern;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.api.v4.DependencyReport;
 import com.redhat.exhort.api.v4.Scanned;
 import com.redhat.exhort.api.v4.SourceSummary;
+import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
+import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 
 import io.quarkus.test.junit.QuarkusTest;
-
+import static io.restassured.RestAssured.given;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
