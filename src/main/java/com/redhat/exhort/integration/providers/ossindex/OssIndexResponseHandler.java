@@ -56,6 +56,7 @@ public class OssIndexResponseHandler extends ProviderResponseHandler {
 
   @Inject ObjectMapper mapper;
 
+  @Override
   public ProviderResponse responseToIssues(
       @Body byte[] response,
       @ExchangeProperty(Constants.PROVIDER_PRIVATE_DATA_PROPERTY) String privateProviders,

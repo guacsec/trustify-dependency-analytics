@@ -62,11 +62,22 @@ public class TcResponseHandler extends ProviderResponseHandler {
 
   @Inject UBIRecommendation ubiRecommendation;
 
-  public TrustedContentResponse parseResponse(
+  public TrustedContentResponse mergeSplitRecommendations(
+      TrustedContentResponse oldResponse, TrustedContentResponse newResponse) {
+    if (oldResponse == null) {
+      return newResponse;
+    }
+    if (!oldResponse.status().getOk()) {
+      return oldResponse;
+    }
+    oldResponse.recommendations().putAll(newResponse.recommendations());
+    return oldResponse;
+  }
+
+  public TrustedContentResponse processRecommendations(
       @Body byte[] tcResponse, @ExchangeProperty(Constants.SBOM_ID_PROPERTY) String sbomId)
       throws IOException {
     var recommendations = mapper.readValue(tcResponse, Recommendations.class);
-
     var mergedRecommendations = mergeRecommendations(recommendations);
     mergedRecommendations.putAll(getUBIRecommendation(sbomId));
 
@@ -82,6 +93,9 @@ public class TcResponseHandler extends ProviderResponseHandler {
   private Map<PackageRef, IndexedRecommendation> mergeRecommendations(
       Recommendations recommendations) {
     Map<PackageRef, IndexedRecommendation> result = new HashMap<>();
+    if (recommendations == null) {
+      return result;
+    }
     recommendations.getMatchings().entrySet().stream()
         .forEach(
             e -> result.put(new PackageRef(e.getKey()), aggregateRecommendations(e.getValue())));

@@ -18,6 +18,7 @@
 
 package com.redhat.exhort.integration.trustedcontent;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +28,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
 
 import com.redhat.exhort.api.PackageRef;
+import com.redhat.exhort.api.v4.ProviderStatus;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.cache.CacheService;
 import com.redhat.exhort.model.trustedcontent.IndexedRecommendation;
@@ -37,6 +39,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.Response.Status;
 
 @Singleton
 @RegisterForReflection
@@ -57,6 +60,16 @@ public class TcResponseAggregation implements AggregationStrategy {
       Exchange exchange)
       throws ExecutionException {
     var externalResponse = exchange.getIn().getBody(TrustedContentResponse.class);
+    if (externalResponse == null) {
+      externalResponse =
+          new TrustedContentResponse(
+              Collections.emptyMap(),
+              new ProviderStatus()
+                  .name(Constants.TRUSTED_CONTENT_PROVIDER)
+                  .code(Status.OK.getStatusCode())
+                  .message(Status.OK.getReasonPhrase())
+                  .ok(Boolean.TRUE));
+    }
     cacheService.cacheRecommendations(externalResponse, cached.miss());
     Map<PackageRef, IndexedRecommendation> recommendations =
         new HashMap<>(externalResponse.recommendations());

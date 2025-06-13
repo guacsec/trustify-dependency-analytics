@@ -58,6 +58,7 @@ public final class Constants {
   public static final MediaType MULTIPART_MIXED_TYPE = new MediaType("multipart", "mixed");
   public static final String MULTIPART_MIXED = MULTIPART_MIXED_TYPE.toString();
   public static final String SPDX_MEDIATYPE_JSON = "application/vnd.spdx+json";
+  public static final String CYCLONEDX_MEDIATYPE_JSON = "application/vnd.cyclonedx+json";
 
   public static final String SNYK_PROVIDER = "snyk";
   public static final String OSS_INDEX_PROVIDER = "oss-index";

@@ -22,6 +22,7 @@ import java.time.Duration;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -65,26 +66,27 @@ public class TpaIntegration extends EndpointRouteBuilder {
         .transform().method(responseHandler, "buildReport")
       .endChoice()
       .otherwise()
-        .to(direct("tpaRequest"))
-        .transform().method(responseHandler, "buildReport")
-      .endChoice();
+        .to(direct("tpaSplitRequest"))
+        .transform().method(responseHandler, "buildReport");
 
-    from(direct("tpaRequest"))
-      .routeId("tpaRequest")
-      .circuitBreaker()
-        .faultToleranceConfiguration()
-          .timeoutEnabled(true)
-          .timeoutDuration(timeout)
-        .end()
-        .transform(method(requestBuilder, "buildRequest"))
-        .process(this::processRequest)
-        .process(requestBuilder::addAuthentication)
-        .to(http("{{api.tpa.host}}"))
-        .transform().method(responseHandler, "responseToIssues")
-      .endCircuitBreaker()
-      .onFallback()
-        .process(responseHandler::processResponseError)
-      .end();
+    from(direct("tpaSplitRequest"))
+      .routeId("tpaSplitRequest")
+      .transform(method(TpaRequestBuilder.class, "split"))
+      .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
+        .parallelProcessing()
+          .transform().method(requestBuilder, "buildRequest")
+          .process(this::processRequest)
+          .process(requestBuilder::addAuthentication)
+        .circuitBreaker()
+          .faultToleranceConfiguration()
+            .timeoutEnabled(true)
+            .timeoutDuration(timeout)
+          .end()
+          .to(http("{{api.tpa.host}}"))
+          .transform(method(responseHandler, "responseToIssues"))
+        .onFallback()
+          .process(responseHandler::processResponseError);
+  
 
     from(direct("tpaHealthCheck"))
       .routeId("tpaHealthCheck")

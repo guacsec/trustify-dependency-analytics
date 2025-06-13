@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.List;
 
-import org.cyclonedx.CycloneDxMediaType;
 import org.hamcrest.text.MatchesPattern;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
@@ -68,7 +67,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .when()
@@ -140,7 +139,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
@@ -199,7 +198,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .header(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)
@@ -240,7 +239,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .header(Constants.SNYK_TOKEN_HEADER, UNAUTH_TOKEN)
@@ -281,7 +280,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .header(Constants.SNYK_TOKEN_HEADER, ERROR_TOKEN)
@@ -328,7 +327,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     String body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadBatchSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)

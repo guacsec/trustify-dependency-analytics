@@ -45,6 +45,8 @@ import jakarta.inject.Inject;
 @TestProfile(TcResponseHandlerTest.SbomIdTestProfile.class)
 class TcResponseHandlerTest {
 
+  private static final String EXPECTED_UBI_RECOMMENDATION = "pkg:oci/ubi@0.0.2";
+
   @Inject TcResponseHandler handler;
 
   @Inject UBIRecommendation mapping;
@@ -52,7 +54,7 @@ class TcResponseHandlerTest {
   @Test
   void testAggregation() throws IOException {
     var response =
-        handler.parseResponse(
+        handler.processRecommendations(
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/simple.json")
@@ -96,7 +98,7 @@ class TcResponseHandlerTest {
   @Test
   void testEmpty() throws IOException {
     var response =
-        handler.parseResponse(
+        handler.processRecommendations(
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/empty_report.json")
@@ -116,7 +118,7 @@ class TcResponseHandlerTest {
     String sbomId = "pkg:oci/alpine@0.0.1";
     handler.ubiRecommendation = mapping;
     var response =
-        handler.parseResponse(
+        handler.processRecommendations(
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/empty_report.json")
@@ -130,19 +132,18 @@ class TcResponseHandlerTest {
 
     PackageRef sbomRef = new PackageRef(sbomId);
     IndexedRecommendation recommendation =
-        new IndexedRecommendation(new PackageRef(expectedUBIRecommendation), null);
+        new IndexedRecommendation(new PackageRef(EXPECTED_UBI_RECOMMENDATION), null);
     assertEquals(1, response.recommendations().size());
     assertEquals(recommendation, response.recommendations().get(sbomRef));
   }
 
   private static final record ExpectedRecommendation(String version, Set<String> cves) {}
 
-  private static final String expectedUBIRecommendation = "pkg:oci/ubi@0.0.2";
-
   public static class SbomIdTestProfile implements QuarkusTestProfile {
     @Override
     public Map<String, String> getConfigOverrides() {
-      return Map.of("trustedcontent.recommendation.ubi.mapping.alpine", expectedUBIRecommendation);
+      return Map.of(
+          "trustedcontent.recommendation.ubi.mapping.alpine", EXPECTED_UBI_RECOMMENDATION);
     }
   }
 }

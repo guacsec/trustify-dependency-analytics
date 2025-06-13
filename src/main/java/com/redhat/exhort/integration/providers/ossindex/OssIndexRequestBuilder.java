@@ -40,7 +40,7 @@ public class OssIndexRequestBuilder {
 
   private static final int BULK_SIZE = 128;
 
-  private ObjectMapper mapper = ObjectMapperProducer.newInstance();
+  private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
   public List<List<PackageRef>> split(DependencyTree tree) {
     List<List<PackageRef>> bulks = new ArrayList<>();

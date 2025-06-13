@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
-import org.cyclonedx.CycloneDxMediaType;
 import org.junit.jupiter.api.AfterEach;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -135,7 +134,7 @@ public abstract class AbstractAnalysisTest {
 
   protected String getContentType(String sbomType) {
     return switch (sbomType) {
-      case "cyclonedx" -> CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON;
+      case "cyclonedx" -> Constants.CYCLONEDX_MEDIATYPE_JSON;
       case "spdx" -> Constants.SPDX_MEDIATYPE_JSON;
       default -> fail("Sbom Type not implemented: " + sbomType);
     };

@@ -29,7 +29,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
 import com.redhat.exhort.model.DependencyTree;
-import com.redhat.exhort.monitoring.MonitoringProcessor;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -46,8 +45,6 @@ public class OssIndexIntegration extends EndpointRouteBuilder {
   @Inject VulnerabilityProvider vulnerabilityProvider;
 
   @Inject OssIndexResponseHandler responseHandler;
-
-  @Inject MonitoringProcessor monitoringProcessor;
 
   @Override
   public void configure() {

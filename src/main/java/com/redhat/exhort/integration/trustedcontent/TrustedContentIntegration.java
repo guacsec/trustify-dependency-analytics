@@ -19,6 +19,7 @@
 package com.redhat.exhort.integration.trustedcontent;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -55,19 +56,20 @@ public class TrustedContentIntegration extends EndpointRouteBuilder {
 
     from(direct("getRemoteTrustedContent"))
       .routeId("getRemoteTrustedContent")
-      .circuitBreaker()
-        .faultToleranceConfiguration()
-          .timeoutEnabled(true)
-          .timeoutDuration(timeout)
-        .end()
-        .transform().method(requestBuilder, "buildRequest")
-        .process(this::handleHeaders)
-        .to(vertxHttp("{{api.trustedcontent.host}}"))
-        .transform(method(TcResponseHandler.class, "parseResponse"))
-      .endCircuitBreaker()
-      .onFallback()
-        .process(responseHandler::processResponseError);
-
+      .transform(method(requestBuilder, "split"))
+      .split(body(), AggregationStrategies.bean(TcResponseHandler.class, "mergeSplitRecommendations"))
+        .parallelProcessing()
+          .transform().method(requestBuilder, "buildRequest")
+          .process(this::handleHeaders)
+        .circuitBreaker()
+          .faultToleranceConfiguration()
+            .timeoutEnabled(true)
+            .timeoutDuration(timeout)
+          .end()
+          .to(vertxHttp("{{api.trustedcontent.host}}"))
+          .transform(method(TcResponseHandler.class, "processRecommendations"))  
+        .onFallback()
+          .process(responseHandler::processResponseError);
     // fmt:on
   }
 

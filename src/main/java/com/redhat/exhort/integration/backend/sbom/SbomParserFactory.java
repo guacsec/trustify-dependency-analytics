@@ -18,8 +18,6 @@
 
 package com.redhat.exhort.integration.backend.sbom;
 
-import org.cyclonedx.CycloneDxMediaType;
-
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.backend.sbom.cyclonedx.CycloneDxParser;
 import com.redhat.exhort.integration.backend.sbom.spdx.SpdxParser;
@@ -31,7 +29,7 @@ public class SbomParserFactory {
 
   public static final SbomParser newInstance(String mediaType) {
     return switch (mediaType) {
-      case CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON -> new CycloneDxParser();
+      case Constants.CYCLONEDX_MEDIATYPE_JSON -> new CycloneDxParser();
       case Constants.SPDX_MEDIATYPE_JSON -> new SpdxParser();
       default -> throw new ClientErrorException(
           "Unsupported Content-Type header: " + mediaType, Response.Status.UNSUPPORTED_MEDIA_TYPE);

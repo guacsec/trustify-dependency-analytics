@@ -18,6 +18,8 @@
 
 package com.redhat.exhort.integration.providers.tpa;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.camel.Exchange;
@@ -37,17 +39,35 @@ import jakarta.enterprise.context.ApplicationScoped;
 @RegisterForReflection
 public class TpaRequestBuilder {
 
+  private static final int BULK_SIZE = 128;
+
   @ConfigProperty(name = "api.tpa.token")
   Optional<String> defaultToken;
 
-  private ObjectMapper mapper = ObjectMapperProducer.newInstance();
+  private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
-  public String buildRequest(DependencyTree tree) throws JsonProcessingException {
+  public String buildRequest(List<String> refs) throws JsonProcessingException {
     var request = mapper.createObjectNode();
     var purls = mapper.createArrayNode();
-    tree.getAll().forEach(dep -> purls.add(dep.ref()));
+    refs.forEach(dep -> purls.add(dep));
     request.set("purls", purls);
     return mapper.writeValueAsString(request);
+  }
+
+  public List<List<String>> split(DependencyTree tree) {
+    List<List<String>> bulks = new ArrayList<>();
+    List<String> bulk = new ArrayList<>();
+    for (var pkg : tree.getAll()) {
+      if (bulk.size() == BULK_SIZE) {
+        bulks.add(bulk);
+        bulk = new ArrayList<>();
+      }
+      bulk.add(pkg.ref());
+    }
+    if (!bulk.isEmpty()) {
+      bulks.add(bulk);
+    }
+    return bulks;
   }
 
   public void addAuthentication(Exchange exchange) {

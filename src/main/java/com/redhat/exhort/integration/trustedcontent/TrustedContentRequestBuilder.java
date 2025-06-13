@@ -18,8 +18,10 @@
 
 package com.redhat.exhort.integration.trustedcontent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,9 +46,30 @@ import jakarta.inject.Inject;
 @RegisterForReflection
 public class TrustedContentRequestBuilder {
 
+  private static final int BULK_SIZE = 128;
+
   @Inject ObjectMapper mapper;
 
   @Inject CacheService cacheService;
+
+  public List<List<PackageRef>> split(Set<PackageRef> misses) {
+    List<List<PackageRef>> bulks = new ArrayList<>();
+    List<PackageRef> bulk = new ArrayList<>();
+    for (var miss : misses) {
+      if (bulk.size() == BULK_SIZE) {
+        bulks.add(bulk);
+        bulk = new ArrayList<>();
+      }
+      bulk.add(miss);
+    }
+    if (!bulk.isEmpty()) {
+      bulks.add(bulk);
+    }
+    if (bulks.isEmpty()) {
+      return null;
+    }
+    return bulks;
+  }
 
   public String buildRequest(Set<PackageRef> misses) throws JsonProcessingException {
 

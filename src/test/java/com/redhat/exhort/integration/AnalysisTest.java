@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.camel.Exchange;
-import org.cyclonedx.CycloneDxMediaType;
 import org.hamcrest.text.MatchesPattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -115,12 +114,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asString();
 
     switch (sbom) {
-      case CYCLONEDX:
-        assertTrue(response.startsWith("CycloneDX Validation"));
-        break;
-      case SPDX:
-        assertTrue(response.startsWith("SPDX-2.3 Validation"));
-        break;
+      case CYCLONEDX -> assertTrue(response.startsWith("CycloneDX Validation"));
+      case SPDX -> assertTrue(response.startsWith("SPDX-2.3 Validation"));
     }
 
     verifyNoInteractions();
@@ -205,7 +200,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .headers(authHeaders)
             .queryParam(Constants.PROVIDERS_PARAM, providers.keySet())
             .body(loadFileAsString(String.format("%s/empty-sbom.json", CYCLONEDX)))
@@ -239,7 +234,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     verifyNoInteractionsWithSnyk();
     verifyNoInteractionsWithOSS();
     verifyNoInteractionsWithTpa();
-    verifyTrustedContentRequest();
+    verifyNoInteractionsWithTrustedContent();
   }
 
   private static Stream<Arguments> emptySbomArguments() {
@@ -314,7 +309,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .when()
@@ -340,7 +335,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
             .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
@@ -371,7 +366,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var body =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
             .queryParam(Constants.PROVIDERS_PARAM, Constants.SNYK_PROVIDER)
             .body(loadSBOMFile(CYCLONEDX))
@@ -398,7 +393,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
             .header(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)
@@ -438,7 +433,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
             .header(Constants.SNYK_TOKEN_HEADER, UNAUTH_TOKEN)
@@ -473,7 +468,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.APPLICATION_JSON)
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
@@ -509,7 +504,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.APPLICATION_JSON)
             .queryParam(Constants.VERBOSE_MODE_HEADER, Boolean.FALSE)
@@ -545,7 +540,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     var report =
         given()
-            .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
             .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
             .queryParam(Constants.VERBOSE_MODE_HEADER, Boolean.FALSE)
@@ -585,7 +580,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     var request =
         HttpRequest.newBuilder(URI.create("http://localhost:8081/api/v4/analysis"))
             .setHeader(Constants.RHDA_TOKEN_HEADER, DEFAULT_RHDA_TOKEN)
-            .setHeader(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+            .setHeader(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .setHeader("Accept", Constants.MULTIPART_MIXED)
             .setHeader(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
             .setHeader(Constants.OSS_INDEX_USER_HEADER, OK_USER)
@@ -605,7 +600,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
   @Test
   public void testUnknownMediaType() {
     given()
-        .header(CONTENT_TYPE, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON)
+        .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
         .body(loadSBOMFile(CYCLONEDX))
         .header("Accept", MediaType.APPLICATION_XML)
         .when()

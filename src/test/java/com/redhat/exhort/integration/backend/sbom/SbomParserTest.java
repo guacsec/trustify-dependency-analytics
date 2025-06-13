@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.cyclonedx.CycloneDxMediaType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -47,7 +46,7 @@ import jakarta.ws.rs.core.Response;
 public class SbomParserTest {
 
   private static final Collection<String> MEDIA_TYPES =
-      List.of(Constants.SPDX_MEDIATYPE_JSON, CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON);
+      List.of(Constants.SPDX_MEDIATYPE_JSON, Constants.CYCLONEDX_MEDIATYPE_JSON);
 
   @Test
   void testInvalidContentType() {
@@ -61,7 +60,7 @@ public class SbomParserTest {
 
   @Test
   void testCycloneDxContentType() {
-    var parser = SbomParserFactory.newInstance(CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON);
+    var parser = SbomParserFactory.newInstance(Constants.CYCLONEDX_MEDIATYPE_JSON);
     assertNotNull(parser);
     assertTrue(parser instanceof CycloneDxParser);
   }
@@ -165,7 +164,7 @@ public class SbomParserTest {
 
   @Test
   void testComplexGolangCycloneDX() {
-    var mediaType = CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON;
+    var mediaType = Constants.CYCLONEDX_MEDIATYPE_JSON;
     var parser = SbomParserFactory.newInstance(mediaType);
     var fileName = String.format("%s/golang-complex.json", getFolder(mediaType));
     var file = getClass().getClassLoader().getResourceAsStream(fileName);
@@ -193,7 +192,7 @@ public class SbomParserTest {
 
   private String getFolder(String mediaType) {
     return switch (mediaType) {
-      case CycloneDxMediaType.APPLICATION_CYCLONEDX_JSON -> "cyclonedx";
+      case Constants.CYCLONEDX_MEDIATYPE_JSON -> "cyclonedx";
       case Constants.SPDX_MEDIATYPE_JSON -> "spdx";
       default -> fail("Not implemented: " + mediaType);
     };
