@@ -50,9 +50,13 @@ public class TrustedContentIntegration extends EndpointRouteBuilder {
     // fmt:off
     from(direct("getTrustedContent"))
         .routeId("getTrustedContent")
-        .setBody(method(requestBuilder, "filterCachedRecommendations"))
-        .to(direct("getRemoteTrustedContent"))
-        .setBody(method(aggregation, "aggregateCachedResponse"));
+        .choice().when(exchangeProperty(Constants.RECOMMEND_PARAM).isEqualTo(Boolean.TRUE))
+          .setBody(method(requestBuilder, "filterCachedRecommendations"))
+          .to(direct("getRemoteTrustedContent"))
+          .setBody(method(aggregation, "aggregateCachedResponse"))
+        .otherwise()
+          .setBody(method(aggregation, "aggregateEmptyResponse"))
+        .endChoice();
 
     from(direct("getRemoteTrustedContent"))
       .routeId("getRemoteTrustedContent")

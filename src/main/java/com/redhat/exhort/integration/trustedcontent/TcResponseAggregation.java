@@ -59,6 +59,7 @@ public class TcResponseAggregation implements AggregationStrategy {
       @ExchangeProperty(Constants.CACHED_RECOMMENDATIONS) TrustedContentCachedRequest cached,
       Exchange exchange)
       throws ExecutionException {
+
     var externalResponse = exchange.getIn().getBody(TrustedContentResponse.class);
     if (externalResponse == null) {
       externalResponse =
@@ -73,8 +74,19 @@ public class TcResponseAggregation implements AggregationStrategy {
     cacheService.cacheRecommendations(externalResponse, cached.miss());
     Map<PackageRef, IndexedRecommendation> recommendations =
         new HashMap<>(externalResponse.recommendations());
+    cacheService.cacheRecommendations(externalResponse, cached.miss());
     recommendations.putAll(cached.cached());
     exchange.removeProperty(Constants.CACHED_RECOMMENDATIONS);
     return new TrustedContentResponse(recommendations, externalResponse.status());
+  }
+
+  public TrustedContentResponse aggregateEmptyResponse(Exchange exchange) {
+    return new TrustedContentResponse(
+        new HashMap<>(),
+        new ProviderStatus()
+            .name(Constants.TRUSTED_CONTENT_PROVIDER)
+            .code(Status.OK.getStatusCode())
+            .message(Status.OK.getReasonPhrase())
+            .ok(Boolean.TRUE));
   }
 }

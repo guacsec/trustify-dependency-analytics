@@ -19,6 +19,7 @@
 package com.redhat.exhort.integration.backend;
 
 import static com.redhat.exhort.integration.Constants.PROVIDERS_PARAM;
+import static com.redhat.exhort.integration.Constants.RECOMMEND_PARAM;
 import static com.redhat.exhort.integration.Constants.REQUEST_CONTENT_PROPERTY;
 import static com.redhat.exhort.integration.Constants.VERBOSE_MODE_HEADER;
 
@@ -41,6 +42,7 @@ import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.component.micrometer.MicrometerConstants;
 import org.apache.camel.component.micrometer.routepolicy.MicrometerRoutePolicyFactory;
+import org.apache.camel.model.rest.RestParamType;
 import org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -145,9 +147,21 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     rest()
       .post("/v4/analysis")
         .routeId("restAnalysis")
+        .param()
+          .name(RECOMMEND_PARAM)
+          .type(RestParamType.query)
+          .dataType("boolean")
+          .defaultValue(Boolean.TRUE.toString())
+          .endParam()
         .to("direct:analysis")
       .post("/v4/batch-analysis")
         .routeId("restBatchAnalysis")
+        .param()
+          .name(RECOMMEND_PARAM)
+          .type(RestParamType.query)
+          .dataType("boolean")
+          .defaultValue(Boolean.TRUE.toString())
+          .endParam()
         .to("direct:batchAnalysis")
       .get("/v4/token")
         .routeId("restTokenValidation")
@@ -197,6 +211,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
         .setProperty(Constants.GZIP_RESPONSE_PROPERTY, constant(Boolean.TRUE))
       .end()
       .setProperty(PROVIDERS_PARAM, method(vulnerabilityProvider, "getProvidersFromQueryParam"))
+      .setProperty(RECOMMEND_PARAM, header(RECOMMEND_PARAM))
       .setProperty(REQUEST_CONTENT_PROPERTY, method(BackendUtils.class, "getResponseMediaType"))
       .setProperty(VERBOSE_MODE_HEADER, header(VERBOSE_MODE_HEADER));
 

@@ -327,6 +327,35 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertJson("reports/report_default_token.json", body);
     verifySnykRequest(SNYK_TOKEN);
     verifyTpaRequest(TPA_TOKEN);
+    verifyTrustedContentRequest();
+  }
+
+  @Test
+  public void testDefaultTokensOptOutRecommendations() {
+    stubAllProviders();
+
+    var body =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .queryParam(Constants.RECOMMEND_PARAM, Boolean.FALSE)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v4/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asPrettyString();
+    assertJson("reports/report_default_token_no_recommend.json", body);
+    verifySnykRequest(SNYK_TOKEN);
+    verifyTpaRequest(TPA_TOKEN);
+    verifyNoInteractionsWithTrustedContent();
   }
 
   @Test

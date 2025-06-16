@@ -19,6 +19,7 @@
 package com.redhat.exhort.integration.providers.snyk;
 
 import static com.redhat.exhort.integration.Constants.PROVIDERS_PARAM;
+import static com.redhat.exhort.integration.Constants.RECOMMEND_PARAM;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -174,6 +175,7 @@ public class SnykIntegration extends EndpointRouteBuilder {
     message.removeHeader(Constants.SNYK_TOKEN_HEADER);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
     message.removeHeader(PROVIDERS_PARAM);
+    message.removeHeader(RECOMMEND_PARAM);
     message.setHeader(
         Constants.USER_AGENT_HEADER,
         String.format(Constants.SNYK_USER_AGENT_HEADER_FORMAT, projectName, projectVersion));

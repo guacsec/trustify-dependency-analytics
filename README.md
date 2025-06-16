@@ -39,6 +39,11 @@ You can disable a given provider for the dependency graph analysis by using `api
 
 Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=snyk&providers=oss-index`
 
+## Recommendations
+
+By default the service will look for Red Hat Trusted Content remmediations and recommendations. If you want to opt out from this service
+you can use the `recommend` query parameter and set it to `false`. Example `/analysis?recommend=false`
+
 ## Package URL Types
 
 The supported Package URL types depends on each external provider.

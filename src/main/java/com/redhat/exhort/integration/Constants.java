@@ -35,6 +35,7 @@ public final class Constants {
 
   public static final String EXCLUDE_FROM_READINESS_CHECK = "exclusionFromReadiness";
   public static final String PROVIDERS_PARAM = "providers";
+  public static final String RECOMMEND_PARAM = "recommend";
 
   public static final String HEALTH_CHECKS_LIST_HEADER_NAME = "healthChecksRoutesList";
   public static final String SBOM_TYPE_PARAM = "sbomType";
