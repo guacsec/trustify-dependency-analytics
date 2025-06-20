@@ -36,8 +36,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.exhort.config.exception.ClientDetailedException;
 import com.redhat.exhort.integration.Constants;
-import com.redhat.exhort.integration.backend.sbom.cyclonedx.CycloneDxParser;
-import com.redhat.exhort.integration.backend.sbom.spdx.SpdxParser;
+import com.redhat.exhort.integration.sbom.SbomParserFactory;
+import com.redhat.exhort.integration.sbom.cyclonedx.CycloneDxParser;
+import com.redhat.exhort.integration.sbom.spdx.SpdxParser;
 
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.core.MediaType;

@@ -35,6 +35,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.config.exception.CycloneDXValidationException;
+import com.redhat.exhort.integration.sbom.cyclonedx.CycloneDxParser;
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.DirectDependency;
 

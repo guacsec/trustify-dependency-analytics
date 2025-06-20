@@ -30,7 +30,7 @@ import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.library.model.v2.Version;
 
 import com.redhat.exhort.config.exception.SpdxValidationException;
-import com.redhat.exhort.integration.backend.sbom.spdx.SpdxWrapper;
+import com.redhat.exhort.integration.sbom.spdx.SpdxWrapper;
 
 public class SpdxWrapperTest {
 

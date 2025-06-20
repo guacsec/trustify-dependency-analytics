@@ -52,11 +52,11 @@ import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.config.exception.DetailedException;
 import com.redhat.exhort.integration.Constants;
-import com.redhat.exhort.integration.backend.sbom.SbomParser;
-import com.redhat.exhort.integration.backend.sbom.SbomParserFactory;
 import com.redhat.exhort.integration.providers.ProviderAggregationStrategy;
 import com.redhat.exhort.integration.providers.ProvidersBodyPlusResponseCodeAggregationStrategy;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
+import com.redhat.exhort.integration.sbom.SbomParser;
+import com.redhat.exhort.integration.sbom.SbomParserFactory;
 import com.redhat.exhort.integration.trustedcontent.TcResponseAggregation;
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.DirectDependency;
@@ -101,7 +101,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     getContext().getRegistry().bind(MicrometerConstants.METRICS_REGISTRY_NAME, registry);
     getContext().addRoutePolicyFactory(new MicrometerRoutePolicyFactory());
     
-    restConfiguration().contextPath("/api/")
+    restConfiguration().contextPath("/api/v4")
       .clientRequestValidation(true);
 
     errorHandler(deadLetterChannel("direct:processInternalError"));
@@ -145,7 +145,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .end();
 
     rest()
-      .post("/v4/analysis")
+      .post("/analysis")
         .routeId("restAnalysis")
         .param()
           .name(RECOMMEND_PARAM)
@@ -154,7 +154,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
           .defaultValue(Boolean.TRUE.toString())
           .endParam()
         .to("direct:analysis")
-      .post("/v4/batch-analysis")
+      .post("/batch-analysis")
         .routeId("restBatchAnalysis")
         .param()
           .name(RECOMMEND_PARAM)
@@ -163,9 +163,15 @@ public class ExhortIntegration extends EndpointRouteBuilder {
           .defaultValue(Boolean.TRUE.toString())
           .endParam()
         .to("direct:batchAnalysis")
-      .get("/v4/token")
+      .get("/token")
         .routeId("restTokenValidation")
-        .to("direct:validateToken");
+        .to("direct:validateToken")
+      .get("/model-cards/{modelCardId}")
+        .routeId("restModelCard")
+        .to("direct:getModelCard")
+      .post("/model-cards")
+        .routeId("restListModelCards")
+        .to("direct:listModelCards");
 
     from(direct("analysis"))
       .routeId("dependencyAnalysis")
