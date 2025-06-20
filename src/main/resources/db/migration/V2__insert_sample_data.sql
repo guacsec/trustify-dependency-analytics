@@ -193,3 +193,9 @@ INSERT INTO model_card_task_scores (model_card_task_id, metric_id, score) VALUES
 (10, 11, 0.3599), -- acc
 -- Winogender scores (task 11)
 (11, 17, 0.6167); -- acc 
+
+-- Update sequence values to prevent conflicts with existing data
+SELECT setval('task_definition_SEQ', (SELECT MAX(id) FROM task_definition) + 1);
+SELECT setval('task_metric_SEQ', (SELECT MAX(id) FROM task_metric) + 1);
+SELECT setval('threshold_SEQ', (SELECT MAX(id) FROM threshold) + 1);
+SELECT setval('model_card_task_SEQ', (SELECT MAX(id) FROM model_card_task) + 1);

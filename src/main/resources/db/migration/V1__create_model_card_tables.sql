@@ -22,7 +22,7 @@ CREATE TABLE task_definition (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
     description TEXT,
-    tags TEXT -- JSON array as text
+    tags VARCHAR(255)[]
 );
 
 -- Task Metric table (child entity of task_definition)
@@ -39,8 +39,8 @@ CREATE TABLE task_metric (
 CREATE TABLE threshold (
     id BIGSERIAL PRIMARY KEY,
     task_metric_id BIGINT NOT NULL,
-    lower_value FLOAT,
-    upper_value FLOAT,
+    lower FLOAT,
+    upper FLOAT,
     name VARCHAR(255),
     category INTEGER,
     interpretation TEXT,
@@ -65,6 +65,18 @@ CREATE TABLE model_card_task_scores (
     FOREIGN KEY (model_card_task_id) REFERENCES model_card_task(id) ON DELETE CASCADE,
     FOREIGN KEY (metric_id) REFERENCES task_metric(id) ON DELETE CASCADE
 );
+
+-- Create explicit sequences to match Hibernate's naming expectations
+CREATE SEQUENCE model_card_task_SEQ START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE task_definition_SEQ START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE task_metric_SEQ START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE threshold_SEQ START WITH 1 INCREMENT BY 50;
+
+-- Update tables to use explicit sequences
+ALTER TABLE model_card_task ALTER COLUMN id SET DEFAULT nextval('model_card_task_SEQ');
+ALTER TABLE task_definition ALTER COLUMN id SET DEFAULT nextval('task_definition_SEQ');
+ALTER TABLE task_metric ALTER COLUMN id SET DEFAULT nextval('task_metric_SEQ');
+ALTER TABLE threshold ALTER COLUMN id SET DEFAULT nextval('threshold_SEQ');
 
 -- Create indexes for better performance
 CREATE INDEX idx_model_card_report_name ON model_card_report(name);

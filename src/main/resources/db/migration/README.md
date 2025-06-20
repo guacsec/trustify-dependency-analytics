@@ -26,8 +26,20 @@ Stores the actual scores for each task (Map<String, Float> relationship).
 
 ## Usage
 
-### Option 1: Manual Execution
-Run the scripts manually in your database:
+### Flyway Migration (Current Setup)
+This project is configured to use Flyway for database migrations. The migration scripts will be automatically executed when the application starts.
+
+Configuration in `application.properties`:
+```properties
+quarkus.flyway.migrate-at-start=true
+quarkus.flyway.locations=classpath:db/migration
+quarkus.flyway.baseline-on-migrate=true
+quarkus.flyway.baseline-version=0
+quarkus.hibernate-orm.database.generation=none
+```
+
+### Manual Execution (Alternative)
+You can also run the scripts manually in your database:
 
 ```sql
 -- First create the tables
@@ -35,16 +47,6 @@ Run the scripts manually in your database:
 
 -- Then insert sample data
 \i V2__insert_sample_data.sql
-```
-
-### Option 2: Flyway Migration (Recommended)
-If you're using Flyway for database migrations, these scripts will be automatically executed when the application starts.
-
-### Option 3: Quarkus Hibernate Auto-Generation
-You can also let Hibernate generate the schema automatically by adding to `application.properties`:
-
-```properties
-quarkus.hibernate-orm.database.generation=drop-and-create
 ```
 
 ## Sample Data
