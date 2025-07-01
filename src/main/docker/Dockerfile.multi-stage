@@ -15,7 +15,7 @@ COPY --chown=quarkus:quarkus src /code/src
 RUN ./mvnw verify -B -Dmaven.test.skip=true -Dquarkus.native.native-image-xmx=8g
 
 ## Stage 2 : create the docker final image
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1749489516
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1751286687
 
 LABEL description="Red Hat Trusted Profile Analyzer - Exhort Backend Service"
 LABEL io.k8s.description="Red Hat Trusted Profile Analyzer - Exhort Backend Service"
