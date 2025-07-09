@@ -43,10 +43,10 @@ You can also run the scripts manually in your database:
 
 ```sql
 -- First create the tables
-\i V1__create_model_card_tables.sql
+migration/V1__create_model_card_tables.sql
 
 -- Then insert sample data
-\i V2__insert_sample_data.sql
+examples/V2__insert_sample_data.sql
 ```
 
 ## Sample Data

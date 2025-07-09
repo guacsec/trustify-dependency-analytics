@@ -120,6 +120,38 @@ objects:
                     secretKeyRef:
                       name: '${ELASTICACHE_SECRET}'
                       key: db.port
+                - name: DB_POSTGRES_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.host
+                - name: DB_POSTGRES_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.port
+                - name: DB_POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.user
+                - name: DB_POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.password
+                - name: DB_POSTGRES_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.name
+                - name: DB_POSTGRES_CA_CERT
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${POSTGRES_SECRET}'
+                      key: db.ca_cert
+                - name: DB_POSTGRES_SSL_MODE
+                  value: 'require'
                 - name: MONITORING_ENABLED
                   value: "true"
                 - name: MONITORING_SENTRY_DSN
@@ -189,6 +221,11 @@ parameters:
     displayName: Elasticache Secret
     description: Name of the secret containing the Elasticache settings
     value: exhort-elasticache
+    required: true
+  - name: POSTGRES_SECRET
+    displayName: Postgres Secret
+    description: Name of the secret containing the Postgres settings
+    value: exhort-rds
     required: true
   - name: TPA_HOST
     displayName: TPA Host

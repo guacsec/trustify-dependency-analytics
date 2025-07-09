@@ -35,7 +35,7 @@ CREATE TABLE task_metric (
     FOREIGN KEY (task_definition_id) REFERENCES task_definition(id) ON DELETE CASCADE
 );
 
--- Threshold table (now references task_metric instead of task_definition)
+-- Threshold table
 CREATE TABLE threshold (
     id BIGSERIAL PRIMARY KEY,
     task_metric_id BIGINT NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE model_card_task (
     FOREIGN KEY (task_id) REFERENCES task_definition(id) ON DELETE CASCADE
 );
 
--- Model Card Task Scores table (now uses metric_id instead of score_name)
+-- Model Card Task Scores table
 CREATE TABLE model_card_task_scores (
     model_card_task_id BIGINT NOT NULL,
     metric_id BIGINT NOT NULL,

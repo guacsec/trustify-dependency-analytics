@@ -2,13 +2,12 @@
 
 There are 2 endpoints one for query the existing reports and another one to retrieve the full report.
 
-The database contains only 2 reports.
+The Development database contains only 2 example reports. See [Database README](../src/main/resources/db/README.md).
 
 Model name|UUID
 ----------|----
 microsoft/phi-2|550e8400-e29b-41d4-a716-446655440004
 meta-llama/Llama-3.1-8B-Instruct|550e8400-e29b-41d4-a716-446655440005
-
 
 ## Query model reports
 
@@ -29,9 +28,8 @@ POST /api/v4/model-cards HTTP/1.1
 }
 ```
 
-The response for this request can be found [here](./responses/query-response.json)
-
-It contains an array of results with the following data:
+The response will contain an array of results with the minimum data of the metrics
+from the existing tasks:
 
 - ID
 - Report name
@@ -50,29 +48,9 @@ Gets a full report from a given UUID.
 GET /api/v4/model-cards/{report_id}
 ```
 
-Will return a full report containing the following information:
+Will return a full report:
 
 - ID
 - Report name (example: Llama-3.1-8B-Instruct Evaluation Report)
 - How the report was generated (batch_size, lm_eval_version, etc.)
 - Tasks
-  - Name
-  - Description
-  - Tags
-  - Metrics
-    - name
-    - score
-    - higher_is_better
-    - categories (Custom list of categories where the metric can fit in)
-    - thresholds
-      - upper
-      - lower
-      - name (Moderate)
-      - interpretation (Understands many facts, but still susceptible to misinformation or overconfidence.)
-      - category (this helps knowing how many thresholds are defined)
-
-See the 2 possible responses here:
-
-- [microsoft/phi-2](./responses/phi-2.json)
-- [meta-llama/Llama-3.1-8B-Instruct](./responses/llama-3.1-8B-Instruct.json)
-

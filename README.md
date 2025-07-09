@@ -8,6 +8,7 @@
 - Redis cache: Allows caching Red Hat recommendations and remediations. Can be configured with the `quarkus.redis.host` parameter
 - TrustedContent: Provides Red Hat recommendations and remediations.
 - External Vulnerability providers enabled.
+- Postgres Database: Stores data needed for the Model Cards functionality. See [Model Cards](#model-cards)
 
 ## Required parameters
 
@@ -275,6 +276,15 @@ The possible responses are:
 - 403 - The token is not authorized
 - 429 - Rate limit exceeded
 - 500 - Server error
+
+## Model Cards
+
+These API endpoints provide security and safety metrics about Large Language Models
+coming from different sources together with recommendations that will help users make
+informed decisions about which LLM is more suitable to their needs and how to increase
+the security with the use of recommended guardrails.
+
+See [Model Cards Readme](docs/model-cards.md) for more details.
 
 ## Telemetry
 
