@@ -35,10 +35,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.config.exception.CycloneDXValidationException;
-<<<<<<< HEAD
 import com.redhat.exhort.integration.sbom.cyclonedx.CycloneDxParser;
-=======
->>>>>>> c0673fc (feat: support cyclonedx 1.6 (#424))
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.DirectDependency;
 
