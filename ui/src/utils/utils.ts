@@ -12,6 +12,9 @@ const NPM_URL = 'https://www.npmjs.com/package/'
 const PYPI_TYPE = 'pypi';
 const PYPI_URL = 'https://pypi.org/project/';
 
+const DEBIAN_TYPE = 'deb';
+const DEBIAN_URL = 'https://sources.debian.org/patches/';
+
 const ISSUE_PLACEHOLDER = '__ISSUE_ID__';
 
 const PURL_PKG_PREFIX = 'pkg:';
@@ -56,8 +59,9 @@ const extractName = (pkgUrl: PackageURL): string => {
 export const extractDependencyName = (name: string, showVersion: boolean) => {
   const pkgUrl = PackageURL.fromString(name);
   let result = extractName(pkgUrl);
+  const decodedVersion = pkgUrl.version ? decodeURIComponent(pkgUrl.version) : '';
   if(showVersion) {
-    return result + `@${pkgUrl.version}`;
+    return result + `@${decodedVersion}`;
   }
   return result;
 };
@@ -98,13 +102,15 @@ export const extractDependencyUrl = (name: string) => {
         return `${PYPI_URL}${pkgUrl.namespace}/${pkgUrl.name}/${pkgUrl.version}`
       }
       return `${PYPI_URL}${pkgUrl.name}/${pkgUrl.version}`
+    case DEBIAN_TYPE:
+      return `${DEBIAN_URL}${pkgUrl.name}/${pkgUrl.version}`
     default: return pkgUrl.toString();
   }
 };
 
 export const extractDependencyVersion = (name: string): string => {
   const version = PackageURL.fromString(name).version;
-  return version ? version : '';
+  return version ? decodeURIComponent(version) : '';
 };
 
 export const issueLink = (provider: string, issueId: string, appData: AppData) => {
