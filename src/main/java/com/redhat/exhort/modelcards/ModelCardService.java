@@ -41,11 +41,14 @@ import com.redhat.exhort.model.modelcards.Threshold;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class ModelCardService {
+
   @Inject ModelCardRepository repository;
 
+  @Transactional
   public ModelCardResponse get(UUID id) {
     var report = repository.findById(id);
     if (report == null) {
@@ -54,6 +57,7 @@ public class ModelCardService {
     return toDto(report);
   }
 
+  @Transactional
   public List<ListModelCardResponse> find(List<ModelCardQueryItem> queries) {
     if (queries == null || queries.isEmpty()) {
       return Collections.emptyList();
