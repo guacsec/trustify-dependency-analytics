@@ -200,7 +200,7 @@ parameters:
   - name: IMAGE
     displayName: Container image name
     description: Container image name
-    value: quay.io/ecosystem-appeng/exhort
+    value: quay.io/redhat-services-prod/trusted-content/exhort
     required: true
   - name: IMAGE_TAG
     displayName: Container image tag
