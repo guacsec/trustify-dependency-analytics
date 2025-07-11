@@ -5,7 +5,8 @@ This directory contains SQL scripts for setting up the Model Card database schem
 ## Files
 
 - `V1__create_model_card_tables.sql` - Creates the database tables for Model Card entities
-- `V2__insert_sample_data.sql` - Inserts sample data for testing and development
+- `V2__insert_base_data.sql` - Inserts initial configuration data for Tasks and Thresholds
+- `V3__insert_report_data.sql` - Inserts data from the available reports existing at the moment 
 
 ## Table Structure
 
@@ -45,29 +46,6 @@ You can also run the scripts manually in your database:
 -- First create the tables
 migration/V1__create_model_card_tables.sql
 
--- Then insert sample data
-examples/V2__insert_sample_data.sql
+-- Then insert other data
+examples/VX__insert_XXXX_data.sql
 ```
-
-## Sample Data
-
-The sample data includes:
-- 3 model evaluation reports (Llama-3.1-8B, GPT-4, Claude-3)
-- 5 task definitions (MMLU, ARC, HellaSWAG, TruthfulQA, GSM8K)
-- Performance thresholds for each task
-- Sample scores for each model-task combination
-
-## Testing the Data
-
-You can test the data by querying:
-
-```sql
--- Get all model reports
-SELECT * FROM model_card_report;
-
--- Get tasks for a specific report
-SELECT mct.alias, mcrs.score_name, mcrs.score_value 
-FROM model_card_task mct
-JOIN model_card_task_scores mcrs ON mct.id = mcrs.model_card_task_id
-WHERE mct.report_id = '550e8400-e29b-41d4-a716-446655440001';
-``` 

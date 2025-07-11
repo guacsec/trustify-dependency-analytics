@@ -1,4 +1,4 @@
--- Insert sample data for Model Card entities
+-- Insert sample data for Model Card entities (H2 Database Version)
 
 -- Insert sample Model Card Reports
 INSERT INTO model_card_report (
@@ -16,7 +16,7 @@ INSERT INTO model_card_report (
     'hf',
     'torch.float16',
     'auto',
-    '{64}',
+    (64),
     '0.4.8',
     '4.51.3'
 ),
@@ -30,46 +30,46 @@ INSERT INTO model_card_report (
     'hf',
     'torch.bfloat16',
     '2',
-    '{2}',
+    (2),
     '0.4.8',
     '4.51.3'
 );
 
 -- Insert sample Task Definitions (parent entities)
 INSERT INTO task_definition (id, name, description, tags) VALUES
-(1, 'bbq', 'Bias Benchmark for QA - tests for social bias in question answering', '{"bias", "fairness", "question-answering"}'),
-(2, 'crows_pairs_english', 'CrowS-Pairs - measures stereotype bias in masked language models', '{"bias", "stereotype", "language-modeling"}'),
-(3, 'truthfulqa_mc1', 'TruthfulQA Multiple Choice - tests truthfulness in question answering', '{"truthfulness", "factual-accuracy", "question-answering"}'),
-(4, 'toxigen', 'ToxiGen - tests for toxic content generation', '{"toxicity", "hate-speech", "safety"}'),
-(5, 'ethics_cm', 'Ethics Commonsense Morality - tests ethical reasoning', '{"ethics", "morality", "reasoning"}'),
-(6, 'winogender', 'Winogender - tests for gender bias in coreference resolution', '{"bias", "gender", "coreference"}');
+(1, 'bbq', 'Bias Benchmark for QA - tests for social bias in question answering', ('bias', 'fairness', 'question-answering')),
+(2, 'crows_pairs_english', 'CrowS-Pairs - measures stereotype bias in masked language models', ('bias', 'stereotype', 'language-modeling')),
+(3, 'truthfulqa_mc1', 'TruthfulQA Multiple Choice - tests truthfulness in question answering', ('truthfulness', 'factual-accuracy', 'question-answering')),
+(4, 'toxigen', 'ToxiGen - tests for toxic content generation', ('toxicity', 'hate-speech', 'safety')),
+(5, 'ethics_cm', 'Ethics Commonsense Morality - tests ethical reasoning', ('ethics', 'morality', 'reasoning')),
+(6, 'winogender', 'Winogender - tests for gender bias in coreference resolution', ('bias', 'gender', 'coreference'));
 
 -- Insert sample Task Metrics (child entities of task definitions)
 INSERT INTO task_metric (id, name, task_definition_id, higher_is_better, categories) VALUES
 -- BBQ metrics
-(1, 'acc', 1, true, '{"performance", "accuracy"}'),
-(2, 'accuracy_amb', 1, true, '{"performance", "accuracy"}'),
-(3, 'accuracy_disamb', 1, true, '{"performance", "accuracy"}'),
-(4, 'amb_bias_score_Age', 1, false, '{"bias", "fairness"}'),
-(5, 'disamb_bias_score_Age', 1, false, '{"bias", "fairness"}'),
-(6, 'amb_bias_score_Gender_identity', 1, false, '{"bias", "fairness"}'),
-(7, 'disamb_bias_score_Gender_identity', 1, false, '{"bias", "fairness"}'),
-(8, 'amb_bias_score_Race_ethnicity', 1, false, '{"bias", "fairness"}'),
-(9, 'disamb_bias_score_Race_ethnicity', 1, false, '{"bias", "fairness"}'),
+(1, 'acc', 1, true, ('performance', 'accuracy')),
+(2, 'accuracy_amb', 1, true, ('performance', 'accuracy')),
+(3, 'accuracy_disamb', 1, true, ('performance', 'accuracy')),
+(4, 'amb_bias_score_Age', 1, false, ('bias', 'fairness')),
+(5, 'disamb_bias_score_Age', 1, false, ('bias', 'fairness')),
+(6, 'amb_bias_score_Gender_identity', 1, false, ('bias', 'fairness')),
+(7, 'disamb_bias_score_Gender_identity', 1, false, ('bias', 'fairness')),
+(8, 'amb_bias_score_Race_ethnicity', 1, false, ('bias', 'fairness')),
+(9, 'disamb_bias_score_Race_ethnicity', 1, false, ('bias', 'fairness')),
 -- Crows Pairs metrics
-(10, 'pct_stereotype', 2, false, '{"bias", "stereotype"}'),
+(10, 'pct_stereotype', 2, false, ('bias', 'stereotype')),
 -- TruthfulQA metrics
-(11, 'acc', 3, true, '{"truthfulness", "accuracy"}'),
-(12, 'acc_norm', 3, true, '{"truthfulness", "accuracy"}'),
+(11, 'acc', 3, true, ('truthfulness', 'accuracy')),
+(12, 'acc_norm', 3, true, ('truthfulness', 'accuracy')),
 -- Toxigen metrics
-(13, 'acc', 4, true, '{"safety", "toxicity"}'),
-(14, 'acc_norm', 4, true, '{"safety", "toxicity"}'),
+(13, 'acc', 4, true, ('safety', 'toxicity')),
+(14, 'acc_norm', 4, true, ('safety', 'toxicity')),
 -- Ethics CM metrics
-(15, 'acc', 5, true, '{"ethics", "accuracy"}'),
-(16, 'acc_norm', 5, true, '{"ethics", "accuracy"}'),
+(15, 'acc', 5, true, ('ethics', 'accuracy')),
+(16, 'acc_norm', 5, true, ('ethics', 'accuracy')),
 -- Winogender metrics
-(17, 'acc', 6, true, '{"bias", "accuracy"}'),
-(18, 'acc_norm', 6, true, '{"bias", "accuracy"}');
+(17, 'acc', 6, true, ('bias', 'accuracy')),
+(18, 'acc_norm', 6, true, ('bias', 'accuracy'));
 
 -- Insert sample Thresholds for task metrics
 INSERT INTO threshold (id, task_metric_id, lower, upper, name, interpretation, category) VALUES
@@ -194,8 +194,5 @@ INSERT INTO model_card_task_scores (model_card_task_id, metric_id, score) VALUES
 -- Winogender scores (task 11)
 (11, 17, 0.6167); -- acc 
 
--- Update sequence values to prevent conflicts with existing data
-SELECT setval('task_definition_SEQ', (SELECT MAX(id) FROM task_definition) + 1);
-SELECT setval('task_metric_SEQ', (SELECT MAX(id) FROM task_metric) + 1);
-SELECT setval('threshold_SEQ', (SELECT MAX(id) FROM threshold) + 1);
-SELECT setval('model_card_task_SEQ', (SELECT MAX(id) FROM model_card_task) + 1);
+-- Note: H2 does not support SELECT setval() function like PostgreSQL
+-- The sequences will auto-increment from the next available value 
