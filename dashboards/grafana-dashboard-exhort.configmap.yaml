@@ -28,7 +28,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 692867,
+      "id": 933407,
       "links": [
         {
           "asDropdown": false,
@@ -55,7 +55,6 @@ data:
           "url": "https://grafana.app-sre.devshift.net/goto/9sauZtpIk?orgId=1"
         }
       ],
-      "liveNow": false,
       "panels": [
         {
           "collapsed": false,
@@ -88,6 +87,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 40,
                 "gradientMode": "none",
@@ -119,8 +119,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -148,11 +147,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -189,6 +189,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 40,
                 "gradientMode": "none",
@@ -220,8 +221,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -249,11 +249,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -289,6 +290,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -323,8 +325,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -348,11 +349,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -388,6 +390,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 40,
                 "gradientMode": "none",
@@ -421,8 +424,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -449,11 +451,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -489,6 +492,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 40,
                 "gradientMode": "none",
@@ -520,8 +524,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -544,11 +547,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -608,6 +612,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -639,8 +644,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -663,11 +667,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "9.3.8",
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -703,6 +708,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 42,
                 "gradientMode": "none",
@@ -736,8 +742,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -764,10 +769,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -826,6 +833,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 42,
                 "gradientMode": "none",
@@ -859,8 +867,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -887,10 +894,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -949,6 +958,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 42,
                 "gradientMode": "none",
@@ -982,8 +992,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1010,10 +1019,12 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
@@ -1129,7 +1140,7 @@ data:
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 2
+                "y": 244
               },
               "id": 38,
               "options": {
@@ -1251,7 +1262,7 @@ data:
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 2
+                "y": 244
               },
               "id": 39,
               "options": {
@@ -1359,7 +1370,7 @@ data:
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 10
+                "y": 352
               },
               "id": 40,
               "options": {
@@ -1451,7 +1462,7 @@ data:
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 10
+                "y": 352
               },
               "id": 41,
               "options": {
@@ -1531,7 +1542,7 @@ data:
                 "h": 9,
                 "w": 8,
                 "x": 0,
-                "y": 43
+                "y": 385
               },
               "id": 50,
               "options": {
@@ -1601,7 +1612,7 @@ data:
                 "h": 9,
                 "w": 8,
                 "x": 8,
-                "y": 43
+                "y": 385
               },
               "id": 51,
               "options": {
@@ -1699,7 +1710,7 @@ data:
                 "h": 9,
                 "w": 8,
                 "x": 16,
-                "y": 43
+                "y": 385
               },
               "id": 52,
               "options": {
@@ -1715,6 +1726,11 @@ data:
                 }
               },
               "pluginVersion": "9.3.8",
+              "targets": [
+                {
+                  "refId": "A"
+                }
+              ],
               "title": "[ TDB] Error budget ($slo_time_window days)",
               "type": "timeseries"
             }
@@ -1748,8 +1764,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       }
                     ]
                   },
@@ -1761,7 +1776,7 @@ data:
                 "h": 4,
                 "w": 4,
                 "x": 0,
-                "y": 26
+                "y": 28
               },
               "id": 4,
               "options": {
@@ -1769,6 +1784,7 @@ data:
                 "graphMode": "area",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -1780,7 +1796,7 @@ data:
                 "textMode": "auto",
                 "wideLayout": true
               },
-              "pluginVersion": "10.4.1",
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -1825,8 +1841,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       }
                     ]
                   },
@@ -1838,7 +1853,7 @@ data:
                 "h": 4,
                 "w": 4,
                 "x": 4,
-                "y": 26
+                "y": 28
               },
               "id": 6,
               "options": {
@@ -1846,6 +1861,7 @@ data:
                 "graphMode": "area",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -1857,7 +1873,7 @@ data:
                 "textMode": "auto",
                 "wideLayout": true
               },
-              "pluginVersion": "10.4.1",
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -1904,6 +1920,7 @@ data:
                     "axisLabel": "",
                     "axisPlacement": "auto",
                     "barAlignment": 0,
+                    "barWidthFactor": 0.6,
                     "drawStyle": "line",
                     "fillOpacity": 0,
                     "gradientMode": "none",
@@ -1934,8 +1951,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       },
                       {
                         "color": "red",
@@ -1951,7 +1967,7 @@ data:
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 26
+                "y": 28
               },
               "id": 3,
               "options": {
@@ -1962,11 +1978,12 @@ data:
                   "showLegend": true
                 },
                 "tooltip": {
+                  "hideZeros": false,
                   "mode": "single",
                   "sort": "none"
                 }
               },
-              "pluginVersion": "9.3.8",
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -2013,6 +2030,7 @@ data:
                     "axisLabel": "",
                     "axisPlacement": "auto",
                     "barAlignment": 0,
+                    "barWidthFactor": 0.6,
                     "drawStyle": "line",
                     "fillOpacity": 0,
                     "gradientMode": "none",
@@ -2043,8 +2061,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       },
                       {
                         "color": "red",
@@ -2060,7 +2077,7 @@ data:
                 "h": 8,
                 "w": 8,
                 "x": 16,
-                "y": 26
+                "y": 28
               },
               "id": 2,
               "options": {
@@ -2071,10 +2088,12 @@ data:
                   "showLegend": true
                 },
                 "tooltip": {
+                  "hideZeros": false,
                   "mode": "single",
                   "sort": "none"
                 }
               },
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -2119,8 +2138,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       }
                     ]
                   },
@@ -2132,7 +2150,7 @@ data:
                 "h": 4,
                 "w": 4,
                 "x": 0,
-                "y": 30
+                "y": 49
               },
               "id": 8,
               "options": {
@@ -2140,6 +2158,7 @@ data:
                 "graphMode": "area",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2151,7 +2170,7 @@ data:
                 "textMode": "auto",
                 "wideLayout": true
               },
-              "pluginVersion": "10.4.1",
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -2196,8 +2215,7 @@ data:
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "green",
-                        "value": null
+                        "color": "green"
                       }
                     ]
                   },
@@ -2209,7 +2227,7 @@ data:
                 "h": 4,
                 "w": 4,
                 "x": 4,
-                "y": 30
+                "y": 49
               },
               "id": 5,
               "options": {
@@ -2217,6 +2235,7 @@ data:
                 "graphMode": "area",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2228,7 +2247,7 @@ data:
                 "textMode": "auto",
                 "wideLayout": true
               },
-              "pluginVersion": "10.4.1",
+              "pluginVersion": "11.6.3",
               "targets": [
                 {
                   "datasource": {
@@ -2262,7 +2281,7 @@ data:
           "type": "row"
         },
         {
-          "collapsed": true,
+          "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -2270,577 +2289,1244 @@ data:
             "y": 28
           },
           "id": 15,
-          "panels": [
-            {
-              "datasource": {
-                "type": "cloudwatch",
-                "uid": "${cloudwatch_datasource}"
-              },
-              "description": "The percentage of CPU utilization for the entire host",
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "mappings": [],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green"
-                      },
-                      {
-                        "color": "#EAB839",
-                        "value": 70
-                      },
-                      {
-                        "color": "red",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 0,
-                "y": 11
-              },
-              "id": 9,
-              "options": {
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "pluginVersion": "9.3.8",
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "cloudwatch",
-                    "uid": "${cloudwatch_datasource}"
-                  },
-                  "dimensions": {},
-                  "expression": "",
-                  "id": "",
-                  "label": "CPUUtilization",
-                  "matchExact": true,
-                  "metricEditorMode": 0,
-                  "metricName": "CPUUtilization",
-                  "metricQueryType": 1,
-                  "namespace": "AWS/ElastiCache",
-                  "period": "",
-                  "queryMode": "Metrics",
-                  "refId": "A",
-                  "region": "$region",
-                  "sql": {
-                    "from": {
-                      "property": {
-                        "name": "AWS/ElastiCache",
-                        "type": "string"
-                      },
-                      "type": "property"
-                    },
-                    "select": {
-                      "name": "AVG",
-                      "parameters": [
-                        {
-                          "name": "CPUUtilization",
-                          "type": "functionParameter"
-                        }
-                      ],
-                      "type": "function"
-                    },
-                    "where": {
-                      "expressions": [
-                        {
-                          "operator": {
-                            "name": "=",
-                            "value": "$cacheclusterId"
-                          },
-                          "property": {
-                            "name": "CacheClusterId",
-                            "type": "string"
-                          },
-                          "type": "operator"
-                        }
-                      ],
-                      "type": "and"
-                    }
-                  },
-                  "sqlExpression": "SELECT AVG(CPUUtilization) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
-                  "statistic": "Average"
-                }
-              ],
-              "title": "CPUUtilization",
-              "type": "timeseries"
-            },
-            {
-              "datasource": {
-                "type": "cloudwatch",
-                "uid": "${cloudwatch_datasource}"
-              },
-              "description": "The amount of free memory available on the host",
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "dashed"
-                    }
-                  },
-                  "mappings": [],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green"
-                      },
-                      {
-                        "color": "red",
-                        "value": 100000000
-                      }
-                    ]
-                  },
-                  "unit": "bytes"
-                },
-                "overrides": []
-              },
-              "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 8,
-                "y": 11
-              },
-              "id": 10,
-              "options": {
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "pluginVersion": "9.3.8",
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "cloudwatch",
-                    "uid": "${cloudwatch_datasource}"
-                  },
-                  "dimensions": {},
-                  "expression": "",
-                  "id": "",
-                  "label": "FreeableMemory",
-                  "matchExact": true,
-                  "metricEditorMode": 0,
-                  "metricName": "",
-                  "metricQueryType": 1,
-                  "namespace": "AWS/ElastiCache",
-                  "period": "",
-                  "queryMode": "Metrics",
-                  "refId": "A",
-                  "region": "$region",
-                  "sql": {
-                    "from": {
-                      "property": {
-                        "name": "AWS/ElastiCache",
-                        "type": "string"
-                      },
-                      "type": "property"
-                    },
-                    "select": {
-                      "name": "AVG",
-                      "parameters": [
-                        {
-                          "name": "FreeableMemory",
-                          "type": "functionParameter"
-                        }
-                      ],
-                      "type": "function"
-                    },
-                    "where": {
-                      "expressions": [
-                        {
-                          "operator": {
-                            "name": "=",
-                            "value": "$cacheclusterId"
-                          },
-                          "property": {
-                            "name": "CacheClusterId",
-                            "type": "string"
-                          },
-                          "type": "operator"
-                        }
-                      ],
-                      "type": "and"
-                    }
-                  },
-                  "sqlExpression": "SELECT AVG(FreeableMemory) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
-                  "statistic": "Average"
-                }
-              ],
-              "title": "FreeableMemory",
-              "type": "timeseries"
-            },
-            {
-              "datasource": {
-                "type": "cloudwatch",
-                "uid": "${cloudwatch_datasource}"
-              },
-              "description": "The amount of swap used on the host.",
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "mappings": [],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green"
-                      },
-                      {
-                        "color": "#EAB839",
-                        "value": 70
-                      },
-                      {
-                        "color": "red",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  "unit": "bytes"
-                },
-                "overrides": []
-              },
-              "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 16,
-                "y": 11
-              },
-              "id": 11,
-              "options": {
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "pluginVersion": "9.3.8",
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "cloudwatch",
-                    "uid": "${cloudwatch_datasource}"
-                  },
-                  "dimensions": {},
-                  "expression": "",
-                  "id": "",
-                  "label": "SwapUsage",
-                  "matchExact": true,
-                  "metricEditorMode": 0,
-                  "metricName": "",
-                  "metricQueryType": 1,
-                  "namespace": "AWS/ElastiCache",
-                  "period": "",
-                  "queryMode": "Metrics",
-                  "refId": "A",
-                  "region": "$region",
-                  "sql": {
-                    "from": {
-                      "property": {
-                        "name": "AWS/ElastiCache",
-                        "type": "string"
-                      },
-                      "type": "property"
-                    },
-                    "select": {
-                      "name": "AVG",
-                      "parameters": [
-                        {
-                          "name": "SwapUsage",
-                          "type": "functionParameter"
-                        }
-                      ],
-                      "type": "function"
-                    },
-                    "where": {
-                      "expressions": [
-                        {
-                          "operator": {
-                            "name": "=",
-                            "value": "$cacheclusterId"
-                          },
-                          "property": {
-                            "name": "CacheClusterId",
-                            "type": "string"
-                          },
-                          "type": "operator"
-                        }
-                      ],
-                      "type": "and"
-                    }
-                  },
-                  "sqlExpression": "SELECT AVG(SwapUsage) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
-                  "statistic": "Average"
-                }
-              ],
-              "title": "SwapUsage",
-              "type": "timeseries"
-            },
-            {
-              "datasource": {
-                "type": "cloudwatch",
-                "uid": "${cloudwatch_datasource}"
-              },
-              "description": "Provides CPU utilization of the Redis engine thread",
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "mappings": [],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green"
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  },
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "gridPos": {
-                "h": 8,
-                "w": 8,
-                "x": 0,
-                "y": 20
-              },
-              "id": 7,
-              "options": {
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "cloudwatch",
-                    "uid": "${cloudwatch_datasource}"
-                  },
-                  "dimensions": {},
-                  "expression": "",
-                  "id": "",
-                  "label": "EngineCPUUtilization",
-                  "matchExact": true,
-                  "metricEditorMode": 0,
-                  "metricName": "",
-                  "metricQueryType": 1,
-                  "namespace": "AWS/ElastiCache",
-                  "period": "",
-                  "queryMode": "Metrics",
-                  "refId": "A",
-                  "region": "$region",
-                  "sql": {
-                    "from": {
-                      "property": {
-                        "name": "AWS/ElastiCache",
-                        "type": "string"
-                      },
-                      "type": "property"
-                    },
-                    "select": {
-                      "name": "AVG",
-                      "parameters": [
-                        {
-                          "name": "EngineCPUUtilization",
-                          "type": "functionParameter"
-                        }
-                      ],
-                      "type": "function"
-                    },
-                    "where": {
-                      "expressions": [
-                        {
-                          "operator": {
-                            "name": "=",
-                            "value": "$cacheclusterId"
-                          },
-                          "property": {
-                            "name": "CacheClusterId",
-                            "type": "string"
-                          },
-                          "type": "operator"
-                        }
-                      ],
-                      "type": "and"
-                    }
-                  },
-                  "sqlExpression": "SELECT AVG(EngineCPUUtilization) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
-                  "statistic": "Average"
-                }
-              ],
-              "title": "EngineCPUUtilization",
-              "type": "timeseries"
-            }
-          ],
+          "panels": [],
           "title": "Elasticache host",
           "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The percentage of CPU utilization for the entire host",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 29
+          },
+          "id": 9,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {},
+              "expression": "",
+              "id": "",
+              "label": "CPUUtilization",
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "CPUUtilization",
+              "metricQueryType": 1,
+              "namespace": "AWS/ElastiCache",
+              "period": "",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "$region",
+              "sql": {
+                "from": {
+                  "property": {
+                    "name": "AWS/ElastiCache",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "select": {
+                  "name": "AVG",
+                  "parameters": [
+                    {
+                      "name": "CPUUtilization",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                "where": {
+                  "expressions": [
+                    {
+                      "operator": {
+                        "name": "=",
+                        "value": "$cacheclusterId"
+                      },
+                      "property": {
+                        "name": "CacheClusterId",
+                        "type": "string"
+                      },
+                      "type": "operator"
+                    }
+                  ],
+                  "type": "and"
+                }
+              },
+              "sqlExpression": "SELECT AVG(CPUUtilization) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
+              "statistic": "Average"
+            }
+          ],
+          "title": "CPUUtilization",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The amount of free memory available on the host",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 100000000
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 29
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {},
+              "expression": "",
+              "id": "",
+              "label": "FreeableMemory",
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "",
+              "metricQueryType": 1,
+              "namespace": "AWS/ElastiCache",
+              "period": "",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "$region",
+              "sql": {
+                "from": {
+                  "property": {
+                    "name": "AWS/ElastiCache",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "select": {
+                  "name": "AVG",
+                  "parameters": [
+                    {
+                      "name": "FreeableMemory",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                "where": {
+                  "expressions": [
+                    {
+                      "operator": {
+                        "name": "=",
+                        "value": "$cacheclusterId"
+                      },
+                      "property": {
+                        "name": "CacheClusterId",
+                        "type": "string"
+                      },
+                      "type": "operator"
+                    }
+                  ],
+                  "type": "and"
+                }
+              },
+              "sqlExpression": "SELECT AVG(FreeableMemory) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
+              "statistic": "Average"
+            }
+          ],
+          "title": "FreeableMemory",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The amount of swap used on the host.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 29
+          },
+          "id": 11,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {},
+              "expression": "",
+              "id": "",
+              "label": "SwapUsage",
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "",
+              "metricQueryType": 1,
+              "namespace": "AWS/ElastiCache",
+              "period": "",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "$region",
+              "sql": {
+                "from": {
+                  "property": {
+                    "name": "AWS/ElastiCache",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "select": {
+                  "name": "AVG",
+                  "parameters": [
+                    {
+                      "name": "SwapUsage",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                "where": {
+                  "expressions": [
+                    {
+                      "operator": {
+                        "name": "=",
+                        "value": "$cacheclusterId"
+                      },
+                      "property": {
+                        "name": "CacheClusterId",
+                        "type": "string"
+                      },
+                      "type": "operator"
+                    }
+                  ],
+                  "type": "and"
+                }
+              },
+              "sqlExpression": "SELECT AVG(SwapUsage) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
+              "statistic": "Average"
+            }
+          ],
+          "title": "SwapUsage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "Provides CPU utilization of the Redis engine thread",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 38
+          },
+          "id": 7,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {},
+              "expression": "",
+              "id": "",
+              "label": "EngineCPUUtilization",
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "",
+              "metricQueryType": 1,
+              "namespace": "AWS/ElastiCache",
+              "period": "",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "$region",
+              "sql": {
+                "from": {
+                  "property": {
+                    "name": "AWS/ElastiCache",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "select": {
+                  "name": "AVG",
+                  "parameters": [
+                    {
+                      "name": "EngineCPUUtilization",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                "where": {
+                  "expressions": [
+                    {
+                      "operator": {
+                        "name": "=",
+                        "value": "$cacheclusterId"
+                      },
+                      "property": {
+                        "name": "CacheClusterId",
+                        "type": "string"
+                      },
+                      "type": "operator"
+                    }
+                  ],
+                  "type": "and"
+                }
+              },
+              "sqlExpression": "SELECT AVG(EngineCPUUtilization) FROM \"AWS/ElastiCache\" WHERE CacheClusterId = '$cacheclusterId'",
+              "statistic": "Average"
+            }
+          ],
+          "title": "EngineCPUUtilization",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 46
+          },
+          "id": 55,
+          "panels": [],
+          "title": "PostgreSQL",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The percentage of CPU utilization for the database instance",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 47
+          },
+          "id": 56,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "CPUUtilization",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            }
+          ],
+          "title": "CPU Utilization",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The amount of available random access memory for the database instance",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 2000000000
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 47
+          },
+          "id": 57,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "FreeableMemory",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            }
+          ],
+          "title": "Freeable Memory",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The amount of available storage space for the database instance",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 55
+          },
+          "id": 58,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "FreeStorageSpace",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            }
+          ],
+          "title": "Free Storage Space",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The number of database connections in use",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 55
+          },
+          "id": 59,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "DatabaseConnections",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "SampleCount"
+            },
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "hide": false,
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "ClientConnectionsTLS",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "B",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            },
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "hide": false,
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "ClientConnections",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "C",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            }
+          ],
+          "title": "Database Connections",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch_datasource}"
+          },
+          "description": "The average amount of time taken per disk I/O operation (read/write)",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 63
+          },
+          "id": 60,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "ReadLatency",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "A",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            },
+            {
+              "datasource": {
+                "type": "cloudwatch",
+                "uid": "${cloudwatch_datasource}"
+              },
+              "dimensions": {
+                "DBInstanceIdentifier": "$databaseInstanceId"
+              },
+              "expression": "",
+              "hide": false,
+              "id": "",
+              "label": "",
+              "logGroups": [],
+              "matchExact": true,
+              "metricEditorMode": 0,
+              "metricName": "WriteLatency",
+              "metricQueryType": 0,
+              "namespace": "AWS/RDS",
+              "period": "",
+              "queryLanguage": "CWLI",
+              "queryMode": "Metrics",
+              "refId": "B",
+              "region": "default",
+              "sqlExpression": "",
+              "statistic": "Average"
+            }
+          ],
+          "title": "Latency",
+          "type": "timeseries"
         }
       ],
+      "preload": false,
       "refresh": false,
-      "schemaVersion": 39,
+      "schemaVersion": 41,
       "tags": [
         "exhort",
         "trusted-content"
@@ -2849,32 +3535,24 @@ data:
         "list": [
           {
             "current": {
-              "selected": false,
               "text": "appsrep08ue2-prometheus",
               "value": "PC7027C05BC564040"
             },
-            "hide": 0,
             "includeAll": false,
-            "multi": false,
             "name": "datasource",
             "options": [],
             "query": "prometheus",
-            "queryValue": "",
             "refresh": 1,
             "regex": "appsres11ue1-prometheus|appsrep08ue2-prometheus",
-            "skipUrlSync": false,
             "type": "datasource"
           },
           {
             "current": {
-              "selected": false,
               "text": "exhort-production",
               "value": "exhort-production"
             },
-            "hide": 0,
             "includeAll": false,
             "label": "Namespace",
-            "multi": false,
             "name": "namespace",
             "options": [
               {
@@ -2889,8 +3567,6 @@ data:
               }
             ],
             "query": "exhort-stage,exhort-production",
-            "queryValue": "",
-            "skipUrlSync": false,
             "type": "custom"
           },
           {
@@ -2898,43 +3574,38 @@ data:
             "hide": 2,
             "name": "slo_time_window",
             "query": "28",
-            "skipUrlSync": false,
+            "skipUrlSync": true,
             "type": "constant"
           },
           {
             "hide": 2,
             "name": "slo_availability_objective",
             "query": "95",
-            "skipUrlSync": false,
+            "skipUrlSync": true,
             "type": "constant"
           },
           {
             "hide": 2,
             "name": "slo_latency_objective",
             "query": "95",
-            "skipUrlSync": false,
+            "skipUrlSync": true,
             "type": "constant"
           },
           {
             "current": {
-              "selected": false,
               "text": "AWS app-sre",
               "value": "PCB1035EE776137AD"
             },
-            "hide": 0,
             "includeAll": false,
-            "multi": false,
             "name": "cloudwatch_datasource",
             "options": [],
             "query": "cloudwatch",
             "refresh": 1,
             "regex": "AWS app-sre-stage|AWS app-sre",
-            "skipUrlSync": false,
             "type": "datasource"
           },
           {
             "current": {
-              "selected": false,
               "text": "us-east-2",
               "value": "us-east-2"
             },
@@ -2943,10 +3614,8 @@ data:
               "uid": "${cloudwatch_datasource}"
             },
             "definition": "",
-            "hide": 0,
             "includeAll": false,
             "label": "Region",
-            "multi": false,
             "name": "region",
             "options": [],
             "query": {
@@ -2956,13 +3625,10 @@ data:
             },
             "refresh": 1,
             "regex": "us-east-[0-9]",
-            "skipUrlSync": false,
-            "sort": 0,
             "type": "query"
           },
           {
             "current": {
-              "selected": false,
               "text": "exhort-elasticache-production-001",
               "value": "exhort-elasticache-production-001"
             },
@@ -2971,10 +3637,8 @@ data:
               "uid": "${cloudwatch_datasource}"
             },
             "definition": "",
-            "hide": 0,
             "includeAll": false,
             "label": "CacheClusterID",
-            "multi": false,
             "name": "cacheclusterId",
             "options": [],
             "query": {
@@ -2987,13 +3651,10 @@ data:
             },
             "refresh": 1,
             "regex": "exhort-elasticache-.*",
-            "skipUrlSync": false,
-            "sort": 0,
             "type": "query"
           },
           {
             "current": {
-              "selected": false,
               "text": "0001",
               "value": "0001"
             },
@@ -3002,10 +3663,8 @@ data:
               "uid": "${cloudwatch_datasource}"
             },
             "definition": "",
-            "hide": 0,
             "includeAll": false,
             "label": "CacheNodeId",
-            "multi": false,
             "name": "cachenodeid",
             "options": [],
             "query": {
@@ -3018,8 +3677,33 @@ data:
             },
             "refresh": 1,
             "regex": "",
-            "skipUrlSync": false,
-            "sort": 0,
+            "type": "query"
+          },
+          {
+            "allowCustomValue": false,
+            "current": {
+              "text": "exhort-rds-stage",
+              "value": "exhort-rds-stage"
+            },
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "${cloudwatch_datasource}"
+            },
+            "definition": "",
+            "description": "PostgreSQL RDS Instance Identifier",
+            "label": "DatabaseInstanceId",
+            "name": "databaseInstanceId",
+            "options": [],
+            "query": {
+              "dimensionKey": "DBInstanceIdentifier",
+              "metricName": "CPUUtilization",
+              "namespace": "AWS/RDS",
+              "queryType": "dimensionValues",
+              "refId": "CloudWatchVariableQueryEditor-VariableQuery",
+              "region": "$region"
+            },
+            "refresh": 1,
+            "regex": "exhort-rds-.*",
             "type": "query"
           }
         ]
@@ -3028,36 +3712,11 @@ data:
         "from": "now-1h",
         "to": "now"
       },
-      "timepicker": {
-        "refresh_intervals": [
-          "5s",
-          "10s",
-          "30s",
-          "1m",
-          "5m",
-          "15m",
-          "30m",
-          "1h",
-          "2h",
-          "1d"
-        ],
-        "time_options": [
-          "5m",
-          "15m",
-          "1h",
-          "6h",
-          "12h",
-          "24h",
-          "2d",
-          "7d",
-          "30d"
-        ]
-      },
+      "timepicker": {},
       "timezone": "utc",
       "title": "Exhort",
       "uid": "trusted-content-exhort",
-      "version": 10,
-      "weekStart": ""
+      "version": 5
     }
 kind: ConfigMap
 metadata:

@@ -150,8 +150,8 @@ objects:
                     secretKeyRef:
                       name: '${POSTGRES_SECRET}'
                       key: db.ca_cert
-                - name: DB_POSTGRES_SSL_MODE
-                  value: 'require'
+                - name: DB_POSTGRES_SSLMODE
+                  value: '${POSTGRES_SSLMODE}'
                 - name: MONITORING_ENABLED
                   value: "true"
                 - name: MONITORING_SENTRY_DSN
@@ -226,6 +226,11 @@ parameters:
     displayName: Postgres Secret
     description: Name of the secret containing the Postgres settings
     value: exhort-rds
+    required: true
+  - name: POSTGRES_SSLMODE
+    displayName: Postgres SSL Mode
+    description: SSL Mode for Postgres
+    value: 'prefer'
     required: true
   - name: TPA_HOST
     displayName: TPA Host
