@@ -21,6 +21,7 @@ package com.redhat.exhort.modelcards;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
@@ -87,6 +88,41 @@ public class ModelCardServiceTest {
     var tasks = report.getTasks();
     assertNotNull(tasks);
     assertEquals(5, tasks.size());
+    var bbqTask = tasks.stream().filter(t -> t.getName().equals("bbq")).findFirst().orElseThrow();
+    var bbqMetrics = bbqTask.getMetrics();
+    assertEquals(9, bbqMetrics.size());
+    var biasScoreMetric =
+        bbqMetrics.stream()
+            .filter(m -> m.getName().equals("disamb_bias_score_Age"))
+            .findFirst()
+            .orElseThrow();
+    assertEquals(1, biasScoreMetric.getGuardrails().size());
+    assertEquals(1L, biasScoreMetric.getGuardrails().get(0));
+
+    var crowsPairsTask =
+        tasks.stream()
+            .filter(t -> t.getName().equals("crows_pairs_english"))
+            .findFirst()
+            .orElseThrow();
+    var crowsPairsMetrics = crowsPairsTask.getMetrics();
+    assertEquals(1, crowsPairsMetrics.size());
+    var pctStereotypeMetric =
+        crowsPairsMetrics.stream()
+            .filter(m -> m.getName().equals("pct_stereotype"))
+            .findFirst()
+            .orElseThrow();
+    assertEquals(2, pctStereotypeMetric.getGuardrails().size());
+    assertTrue(pctStereotypeMetric.getGuardrails().containsAll(List.of(1L, 2L)));
+
+    var guardrails = report.getGuardrails();
+    assertNotNull(guardrails);
+    assertEquals(2, guardrails.size());
+
+    var guardrail = guardrails.get(0);
+    assertEquals("Guardrails.ai", guardrail.getName());
+
+    guardrail = guardrails.get(1);
+    assertEquals("NeMo Guardrails", guardrail.getName());
   }
 
   @Test

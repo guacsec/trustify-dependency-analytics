@@ -7,6 +7,8 @@ This directory contains SQL scripts for setting up the Model Card database schem
 - `V1__create_model_card_tables.sql` - Creates the database tables for Model Card entities
 - `V2__insert_base_data.sql` - Inserts initial configuration data for Tasks and Thresholds
 - `V3__insert_report_data.sql` - Inserts data from the available reports existing at the moment 
+- `V4__create_guardrail_tables.sql` - Creates the database tables for Guardrail entities
+- `V5__inert_guardrail_data.sql` - Inserts Guardrail data for 4 initial recommendations
 
 ## Table Structure
 

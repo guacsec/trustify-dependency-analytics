@@ -194,5 +194,43 @@ INSERT INTO model_card_task_scores (model_card_task_id, metric_id, score) VALUES
 -- Winogender scores (task 11)
 (11, 17, 0.6167); -- acc 
 
+-- Insert sample Guardrails
+INSERT INTO guardrail (id, name, description, scope, external_references, metadata_keys, instructions) VALUES
+(1, 'Guardrails.ai', 'Python SDK with input/output validation: toxicity, bias, hallucination, format/schema enforcement', 'BOTH', 
+ '{"https://github.com/guardrails-ai/guardrails"}', 
+ '{"sources", "embed_function", "pii_entities"}', 'Example instructions for Guardrails.ai'),
+
+(2, 'NeMo Guardrails', 'Programmable DSL-based SDK: input, output, RAG fact-checking, bias/equality flows', 'BOTH', 
+ '{"https://docs.nvidia.com/nemo/guardrails/latest/index.html"}', 
+ '{"knowledge_base", "rag_documents"}', 'Example instructions for NeMo Guardrails');
+
+-- Insert Guardrail Metrics relationships
+INSERT INTO guardrail_metrics (guardrail_id, task_metric_id) VALUES
+-- Guardrails.ai metrics
+(1, 4),  -- amb_bias_score_Age
+(1, 5),  -- disamb_bias_score_Age
+(1, 6),  -- amb_bias_score_Gender_identity
+(1, 7),  -- disamb_bias_score_Gender_identity
+(1, 8),  -- amb_bias_score_Race_ethnicity
+(1, 9),  -- disamb_bias_score_Race_ethnicity
+(1, 10), -- pct_stereotype
+(1, 11), -- acc (truthfulqa_mc1)
+(1, 12), -- acc_norm (truthfulqa_mc1)
+(1, 13), -- acc (toxigen)
+(1, 14), -- acc_norm (toxigen)
+(1, 15), -- acc (ethics_cm)
+(1, 16), -- acc_norm (ethics_cm)
+(1, 17), -- acc (winogender)
+(1, 18), -- acc_norm (winogender)
+
+-- NeMo Guardrails metrics
+(2, 10), -- pct_stereotype
+(2, 11), -- acc (truthfulqa_mc1)
+(2, 12), -- acc_norm (truthfulqa_mc1)
+(2, 15), -- acc (ethics_cm)
+(2, 16), -- acc_norm (ethics_cm)
+(2, 17), -- acc (winogender)
+(2, 18); -- acc_norm (winogender)
+
 -- Note: H2 does not support SELECT setval() function like PostgreSQL
 -- The sequences will auto-increment from the next available value 
