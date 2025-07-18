@@ -21,6 +21,7 @@ package com.redhat.exhort.integration.providers.tpa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,9 +39,10 @@ import com.redhat.exhort.api.v4.Remediation;
 import com.redhat.exhort.api.v4.SeverityUtils;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.ProviderResponseHandler;
-import com.redhat.exhort.model.CvssParser;
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.ProviderResponse;
+import com.redhat.exhort.model.tpa.AdvisoryScore;
+import com.redhat.exhort.model.tpa.ScoreType;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -50,6 +52,13 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 @RegisterForReflection
 public class TpaResponseHandler extends ProviderResponseHandler {
+
+  private static final Map<ScoreType, Integer> SCORE_TYPE_ORDER =
+      Map.of(
+          ScoreType.V4, 1,
+          ScoreType.V3_1, 2,
+          ScoreType.V3_0, 3,
+          ScoreType.V2, 4);
 
   @Inject ObjectMapper mapper;
 
@@ -82,10 +91,11 @@ public class TpaResponseHandler extends ProviderResponseHandler {
     List<Issue> issues = new ArrayList<>();
     response.forEach(
         vuln -> {
-          var advisories = (ArrayNode) vuln.get("advisories");
-          if (advisories == null) {
+          var status = (ObjectNode) vuln.get("status");
+          if (status == null || !status.hasNonNull("affected")) {
             return;
           }
+          var affected = (ArrayNode) status.get("affected");
           var id = getTextValue(vuln, "identifier");
           var title = getTextValue(vuln, "title");
           final String iTitle;
@@ -95,17 +105,11 @@ public class TpaResponseHandler extends ProviderResponseHandler {
             iTitle = title;
           }
 
-          advisories.forEach(
+          affected.forEach(
               data -> {
                 var issue =
                     new Issue().id(id).title(iTitle).source(getSource(data)).cves(List.of(id));
-
                 setCvssData(issue, data);
-
-                var affected = data.get("affected");
-                if (affected != null) {
-                  issue.setRemediation(getRemediation((ArrayNode) affected));
-                }
                 if (issue.getCvssScore() != null) {
                   issues.add(issue);
                 }
@@ -116,48 +120,54 @@ public class TpaResponseHandler extends ProviderResponseHandler {
   }
 
   private void setCvssData(Issue issue, JsonNode node) {
-    var cvss3Scores = node.get("cvss3_scores");
-    if (cvss3Scores != null) {
-      cvss3Scores.forEach(
-          s -> {
-            issue.cvss(CvssParser.fromVectorString(s.asText()));
-          });
+    var scores = (ArrayNode) node.get("scores");
+
+    if (scores != null && !scores.isEmpty()) {
+      var advisoryScores = getAdvisoryScore(scores);
+      if (!advisoryScores.isEmpty()) {
+        var score = advisoryScores.get(0);
+        issue.cvssScore(score.score().floatValue());
+        if (score.severity() != null) {
+          issue.setSeverity(score.severity());
+        } else {
+          issue.setSeverity(SeverityUtils.fromScore(score.score().floatValue()));
+        }
+      }
     }
-    if (issue.getCvss() == null) {
+    var ranges = (ArrayNode) node.get("ranges");
+    if (ranges == null) {
       return;
     }
-    var score = node.get("score").asDouble();
-    issue.cvssScore(Double.valueOf(score).floatValue());
-
-    var severity = getTextValue(node, "severity");
-    if (severity != null) {
-      issue.severity(SeverityUtils.fromValue(severity));
-    } else {
-      issue.severity(SeverityUtils.fromScore(issue.getCvssScore()));
-    }
-  }
-
-  private Remediation getRemediation(ArrayNode affected) {
     var r = new Remediation();
-    affected.forEach(
-        affectedNode -> {
-          var ranges = (ArrayNode) affectedNode.get("ranges");
-          if (ranges == null) {
-            return;
-          }
-          ranges.forEach(
-              rangeNode -> {
-                var events = (ArrayNode) rangeNode.get("events");
-                events.forEach(
-                    eventNode -> {
-                      var fixed = getTextValue(eventNode, "fixed");
-                      if (fixed != null) {
-                        r.addFixedInItem(fixed);
-                      }
-                    });
+    ranges.forEach(
+        rangeNode -> {
+          var events = (ArrayNode) rangeNode.get("events");
+          events.forEach(
+              eventNode -> {
+                var fixed = getTextValue(eventNode, "fixed");
+                if (fixed != null) {
+                  r.addFixedInItem(fixed);
+                }
               });
         });
-    return r;
+    issue.setRemediation(r);
+  }
+
+  private List<AdvisoryScore> getAdvisoryScore(ArrayNode scores) {
+    var result = new ArrayList<AdvisoryScore>();
+    scores.forEach(
+        score -> {
+          var scoreType = ScoreType.fromValue(getTextValue(score, "type"));
+          var severity = getTextValue(score, "severity");
+          var scoreValue = score.get("value").asDouble();
+          result.add(
+              new AdvisoryScore(
+                  scoreType, SeverityUtils.fromValue(severity.toUpperCase()), scoreValue));
+        });
+
+    result.sort(
+        Comparator.comparing(advisoryScore -> SCORE_TYPE_ORDER.get(advisoryScore.scoreType())));
+    return result;
   }
 
   private String getTextValue(JsonNode node, String key) {
