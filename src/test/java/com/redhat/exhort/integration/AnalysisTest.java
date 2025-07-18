@@ -741,7 +741,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-
     assertJson("reports/batch_report_all_token.json", body);
     verifySnykRequest(OK_TOKEN, 3);
     verifyOssRequest(OK_USER, OK_TOKEN, 3);
