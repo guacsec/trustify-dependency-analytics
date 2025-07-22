@@ -69,7 +69,9 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public abstract class ProviderResponseHandler {
 
-  public static final String AFFECTED_STATUS = "Affected";
+  public static final String NOT_AFFECTED_STATUS = "NotAffected";
+  public static final String FIXED_STATUS = "Fixed";
+  public static final List<String> FIXED_STATUSES = List.of(NOT_AFFECTED_STATUS, FIXED_STATUS);
 
   private static final Logger LOGGER = Logger.getLogger(ProviderResponseHandler.class);
 
@@ -411,10 +413,10 @@ public abstract class ProviderResponseHandler {
   }
 
   private boolean isAffected(Vulnerability vuln) {
-    if (vuln == null) {
+    if (vuln == null || vuln.getStatus() == null) {
       return true;
     }
-    return AFFECTED_STATUS.equals(vuln.getStatus());
+    return !FIXED_STATUSES.contains(vuln.getStatus());
   }
 
   private SourceSummary buildSummary(

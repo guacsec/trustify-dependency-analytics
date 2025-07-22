@@ -381,7 +381,7 @@ public class ProviderResponseHandlerTest {
                     "CVE-007",
                     new Vulnerability("cve-007", "Not Affected", "test"),
                     "CVE-008",
-                    new Vulnerability("cve-008", "Affected", "test"))));
+                    new Vulnerability("cve-008", null, "test"))));
     Map<String, List<Issue>> issues =
         Map.of(
             "pkg:npm/aa@1", List.of(buildIssue(1, 4f)),
@@ -400,7 +400,7 @@ public class ProviderResponseHandlerTest {
             new TrustedContentResponse(recommendations, null));
     Source source = getValidSource(report);
     assertEquals(1, source.getSummary().getRecommendations());
-    assertEquals(2, source.getSummary().getRemediations());
+    assertEquals(1, source.getSummary().getRemediations());
     assertEquals(3, source.getDependencies().size());
 
     // ab has an affected vuln so it should not contain the remediation
@@ -430,8 +430,9 @@ public class ProviderResponseHandlerTest {
     // ac the provider reports a vulnerability but TC says it's Not Affected
     dep = source.getDependencies().stream().filter(d -> d.getRef().name().equals("ac")).findFirst();
     assertTrue(dep.isPresent());
-    assertEquals(1, dep.get().getIssues().size());
-    assertEquals("CVE-008", dep.get().getIssues().get(0).getCves().get(0));
+    assertEquals(2, dep.get().getIssues().size());
+    assertEquals("CVE-007", dep.get().getIssues().get(0).getCves().get(0));
+    assertEquals("CVE-008", dep.get().getIssues().get(1).getCves().get(0));
     assertNull(dep.get().getIssues().get(0).getRemediation());
   }
 
