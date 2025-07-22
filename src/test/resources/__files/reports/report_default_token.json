@@ -248,11 +248,11 @@
                 "csaf": {
                     "summary": {
                         "direct": 0,
-                        "transitive": 12,
-                        "total": 12,
+                        "transitive": 2,
+                        "total": 2,
                         "dependencies": 2,
-                        "critical": 8,
-                        "high": 4,
+                        "critical": 1,
+                        "high": 1,
                         "medium": 0,
                         "low": 0,
                         "remediations": 0,
@@ -269,83 +269,6 @@
                                 {
                                     "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
                                     "issues": [
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-1597",
-                                            "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
-                                            "cvssScore": 9.8,
-                                            "severity": "CRITICAL",
-                                            "cves": [
-                                                "CVE-2024-1597"
-                                            ],
-                                            "unique": false
-                                        },
                                         {
                                             "id": "CVE-2024-1597",
                                             "title": "pgjdbc SQL Injection via line comment generation",
@@ -393,39 +316,6 @@
                                 {
                                     "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
                                     "issues": [
-                                        {
-                                            "id": "CVE-2024-2700",
-                                            "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                            "source": "csaf",
-                                            "cvssScore": 7.0,
-                                            "severity": "HIGH",
-                                            "cves": [
-                                                "CVE-2024-2700"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-2700",
-                                            "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                            "source": "csaf",
-                                            "cvssScore": 7.0,
-                                            "severity": "HIGH",
-                                            "cves": [
-                                                "CVE-2024-2700"
-                                            ],
-                                            "unique": false
-                                        },
-                                        {
-                                            "id": "CVE-2024-2700",
-                                            "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                            "source": "csaf",
-                                            "cvssScore": 7.0,
-                                            "severity": "HIGH",
-                                            "cves": [
-                                                "CVE-2024-2700"
-                                            ],
-                                            "unique": false
-                                        },
                                         {
                                             "id": "CVE-2024-2700",
                                             "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
