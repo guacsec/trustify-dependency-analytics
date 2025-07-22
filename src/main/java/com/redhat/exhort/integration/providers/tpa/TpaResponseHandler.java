@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,16 +105,25 @@ public class TpaResponseHandler extends ProviderResponseHandler {
           } else {
             iTitle = title;
           }
+          Map<String, Issue> issuesByCveSource = new HashMap<>();
 
           affected.forEach(
               data -> {
-                var issue =
-                    new Issue().id(id).title(iTitle).source(getSource(data)).cves(List.of(id));
+                var source = getSource(data);
+                if (source == null) {
+                  return;
+                }
+                var key = String.format("%s:%s", source, id);
+                if (issuesByCveSource.containsKey(key)) {
+                  return;
+                }
+                var issue = new Issue().id(id).title(iTitle).source(source).cves(List.of(id));
                 setCvssData(issue, data);
                 if (issue.getCvssScore() != null) {
-                  issues.add(issue);
+                  issuesByCveSource.put(key, issue);
                 }
               });
+          issues.addAll(issuesByCveSource.values());
         });
 
     return issues;

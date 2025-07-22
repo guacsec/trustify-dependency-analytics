@@ -108,6 +108,17 @@ class CycloneDxParserTest {
     }
   }
 
+  @Test
+  void testParseSbomWithNoRootPurl() throws IOException {
+    CycloneDxParser parser = new CycloneDxParser();
+    try (InputStream input =
+        getClass().getResourceAsStream(TEST_RESOURCES_PATH + "no-root-purl-sbom.json")) {
+      assertNotNull(input, "Test resource not found");
+      var tree = parser.buildTree(input);
+      assertEquals(1, tree.dependencies().size());
+    }
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"})
   void testSupportedVersions(String version) throws IOException {

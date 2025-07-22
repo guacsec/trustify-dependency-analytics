@@ -1,0 +1,44 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-07-22T12:00:00Z",
+    "tools": [
+      {
+        "vendor": "OpenAI",
+        "name": "ChatGPT-SBOM-Generator",
+        "version": "1.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "example-app",
+      "version": "1.0.0",
+      "bom-ref": "pkg:generic/example-app@1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "commons-compress",
+      "version": "1.21.0.redhat-00001",
+      "publisher": "Red Hat, Inc.",
+      "group": "org.apache.commons",
+      "purl": "pkg:maven/org.apache.commons/commons-compress@1.21.0.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+      "bom-ref": "pkg:maven/org.apache.commons/commons-compress@1.21.0.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/example-app@1.0.0",
+      "dependsOn": [
+        "pkg:maven/org.apache.commons/commons-compress@1.21.0.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/org.apache.commons/commons-compress@1.21.0.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+      "dependsOn": []
+    }
+  ]
+}

@@ -76,6 +76,13 @@ public class CycloneDxParser extends SbomParser {
       } else if (componentPurls.containsKey(rootComponent.get().getBomRef())) {
         rootRef = componentPurls.get(rootComponent.get().getBomRef());
       }
+      if (rootRef == null) {
+        rootRef =
+            new PackageRef(
+                String.format(
+                    "pkg:generic/%s@%s",
+                    rootComponent.get().getName(), rootComponent.get().getVersion()));
+      }
     }
     var tree = treeBuilder.dependencies(buildDependencies(bom, componentPurls, rootRef)).build();
     return tree;
