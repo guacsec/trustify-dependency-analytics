@@ -21,6 +21,9 @@ package com.redhat.exhort.model.modelcards;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,6 +35,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "task_definition")
+@JsonPropertyOrder({"id", "name", "description", "tags", "metrics"})
 public class TaskDefinition {
 
   @Id @GeneratedValue public Long id;
@@ -43,6 +47,7 @@ public class TaskDefinition {
 
   @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "task_definition_id")
+  @JsonManagedReference
   public List<TaskMetric> metrics;
 
   public Set<String> tags;

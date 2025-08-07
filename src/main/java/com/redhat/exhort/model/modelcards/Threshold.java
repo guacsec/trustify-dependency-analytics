@@ -18,12 +18,18 @@
 
 package com.redhat.exhort.model.modelcards;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
+@JsonPropertyOrder({"id", "name", "lower", "upper", "category", "interpretation"})
 public class Threshold {
   @Id @GeneratedValue public Long id;
   public Float lower;
@@ -34,4 +40,9 @@ public class Threshold {
   public String interpretation;
 
   public Integer category;
+
+  @ManyToOne
+  @JoinColumn(name = "task_metric_id")
+  @JsonBackReference
+  public TaskMetric taskMetric;
 }
