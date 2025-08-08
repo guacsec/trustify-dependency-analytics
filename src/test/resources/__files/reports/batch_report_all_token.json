@@ -199,6 +199,367 @@
                     
                 }
             },
+            "osv": {
+                "status": {
+                    "ok": true,
+                    "name": "osv",
+                    "code": 200,
+                    "message": "OK"
+                },
+                "sources": {
+                    "osv": {
+                        "summary": {
+                            "direct": 0,
+                            "transitive": 5,
+                            "total": 5,
+                            "dependencies": 3,
+                            "critical": 0,
+                            "high": 3,
+                            "medium": 2,
+                            "low": 0,
+                            "remediations": 2,
+                            "recommendations": 2,
+                            "unscanned": 0
+                        },
+                        "dependencies": [
+                            {
+                                "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+                                "issues": [
+                                    
+                                ],
+                                "transitive": [
+                                    {
+                                        "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+                                        "issues": [
+                                            {
+                                                "id": "CVE-2023-2974",
+                                                "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                                                "source": "osv",
+                                                "cvss": {
+                                                    "attackVector": "Network",
+                                                    "attackComplexity": "Low",
+                                                    "privilegesRequired": "Low",
+                                                    "userInteraction": "None",
+                                                    "scope": "Unchanged",
+                                                    "confidentialityImpact": "High",
+                                                    "integrityImpact": "High",
+                                                    "availabilityImpact": "None",
+                                                    "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                                                },
+                                                "cvssScore": 8.1,
+                                                "severity": "HIGH",
+                                                "cves": [
+                                                    "CVE-2023-2974"
+                                                ],
+                                                "unique": false,
+                                                "remediation": {
+                                                    "fixedIn": [
+                                                        "2.16.8.Final"
+                                                    ],
+                                                    "trustedContent": {
+                                                        "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                                        "status": "NotAffected",
+                                                        "justification": "VulnerableCodeNotPresent"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "highestVulnerability": {
+                                            "id": "CVE-2023-2974",
+                                            "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                                            "source": "osv",
+                                            "cvss": {
+                                                "attackVector": "Network",
+                                                "attackComplexity": "Low",
+                                                "privilegesRequired": "Low",
+                                                "userInteraction": "None",
+                                                "scope": "Unchanged",
+                                                "confidentialityImpact": "High",
+                                                "integrityImpact": "High",
+                                                "availabilityImpact": "None",
+                                                "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                                            },
+                                            "cvssScore": 8.1,
+                                            "severity": "HIGH",
+                                            "cves": [
+                                                "CVE-2023-2974"
+                                            ],
+                                            "unique": false,
+                                            "remediation": {
+                                                "fixedIn": [
+                                                    "2.16.8.Final"
+                                                ],
+                                                "trustedContent": {
+                                                    "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                                    "status": "NotAffected",
+                                                    "justification": "VulnerableCodeNotPresent"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+                                        "issues": [
+                                            {
+                                                "id": "CVE-2022-42003",
+                                                "title": "In FasterXML jackson-databind 2.4.0-rc1 until 2.12.7.1 and in 2.13.x before 2.13.4.2 resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled. This was patched in 2.12.7.1, 2.13.4.2, and 2.14.0.",
+                                                "source": "osv",
+                                                "cvss": {
+                                                    "attackVector": "Network",
+                                                    "attackComplexity": "Low",
+                                                    "privilegesRequired": "None",
+                                                    "userInteraction": "None",
+                                                    "scope": "Unchanged",
+                                                    "confidentialityImpact": "None",
+                                                    "integrityImpact": "None",
+                                                    "availabilityImpact": "High",
+                                                    "cvss": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                                },
+                                                "cvssScore": 7.5,
+                                                "severity": "HIGH",
+                                                "cves": [
+                                                    "CVE-2022-42003"
+                                                ],
+                                                "unique": false,
+                                                "remediation": {
+                                                    "fixedIn": [
+                                                        "2.12.7.1",
+                                                        "2.13.4.2"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "id": "CVE-2022-42004",
+                                                "title": "Uncontrolled Resource Consumption in FasterXML jackson-databind",
+                                                "source": "osv",
+                                                "cvss": {
+                                                    "attackVector": "Network",
+                                                    "attackComplexity": "Low",
+                                                    "privilegesRequired": "None",
+                                                    "userInteraction": "None",
+                                                    "scope": "Unchanged",
+                                                    "confidentialityImpact": "None",
+                                                    "integrityImpact": "None",
+                                                    "availabilityImpact": "High",
+                                                    "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                                },
+                                                "cvssScore": 7.5,
+                                                "severity": "HIGH",
+                                                "cves": [
+                                                    "CVE-2022-42004"
+                                                ],
+                                                "unique": false,
+                                                "remediation": {
+                                                    "fixedIn": [
+                                                        "2.12.7.1",
+                                                        "2.13.4"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "id": "CVE-2020-36518",
+                                                "title": "Deeply nested json in jackson-databind",
+                                                "source": "osv",
+                                                "cvss": {
+                                                    "attackVector": "Network",
+                                                    "attackComplexity": "Low",
+                                                    "privilegesRequired": "None",
+                                                    "confidentialityImpact": "None",
+                                                    "integrityImpact": "None",
+                                                    "availabilityImpact": "Low",
+                                                    "cvss": "AV:N/AC:L/Au:N/C:N/I:N/A:P"
+                                                },
+                                                "cvssScore": 5.0,
+                                                "severity": "MEDIUM",
+                                                "cves": [
+                                                    "CVE-2020-36518"
+                                                ],
+                                                "unique": false,
+                                                "remediation": {
+                                                    "fixedIn": [
+                                                        "2.13.2.1",
+                                                        "2.12.6.1"
+                                                    ],
+                                                    "trustedContent": {
+                                                        "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                                        "status": "NotAffected",
+                                                        "justification": "VulnerableCodeNotPresent"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "highestVulnerability": {
+                                            "id": "CVE-2022-42003",
+                                            "title": "In FasterXML jackson-databind 2.4.0-rc1 until 2.12.7.1 and in 2.13.x before 2.13.4.2 resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled. This was patched in 2.12.7.1, 2.13.4.2, and 2.14.0.",
+                                            "source": "osv",
+                                            "cvss": {
+                                                "attackVector": "Network",
+                                                "attackComplexity": "Low",
+                                                "privilegesRequired": "None",
+                                                "userInteraction": "None",
+                                                "scope": "Unchanged",
+                                                "confidentialityImpact": "None",
+                                                "integrityImpact": "None",
+                                                "availabilityImpact": "High",
+                                                "cvss": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                            },
+                                            "cvssScore": 7.5,
+                                            "severity": "HIGH",
+                                            "cves": [
+                                                "CVE-2022-42003"
+                                            ],
+                                            "unique": false,
+                                            "remediation": {
+                                                "fixedIn": [
+                                                    "2.12.7.1",
+                                                    "2.13.4.2"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                "highestVulnerability": {
+                                    "id": "CVE-2023-2974",
+                                    "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+                                    "source": "osv",
+                                    "cvss": {
+                                        "attackVector": "Network",
+                                        "attackComplexity": "Low",
+                                        "privilegesRequired": "Low",
+                                        "userInteraction": "None",
+                                        "scope": "Unchanged",
+                                        "confidentialityImpact": "High",
+                                        "integrityImpact": "High",
+                                        "availabilityImpact": "None",
+                                        "cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+                                    },
+                                    "cvssScore": 8.1,
+                                    "severity": "HIGH",
+                                    "cves": [
+                                        "CVE-2023-2974"
+                                    ],
+                                    "unique": false,
+                                    "remediation": {
+                                        "fixedIn": [
+                                            "2.16.8.Final"
+                                        ],
+                                        "trustedContent": {
+                                            "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                            "status": "NotAffected",
+                                            "justification": "VulnerableCodeNotPresent"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+                                "issues": [
+                                    
+                                ],
+                                "transitive": [
+                                    {
+                                        "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
+                                        "issues": [
+                                            {
+                                                "id": "CVE-2022-41946",
+                                                "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+                                                "source": "osv",
+                                                "cvss": {
+                                                    "attackVector": "Local",
+                                                    "attackComplexity": "Low",
+                                                    "privilegesRequired": "Low",
+                                                    "userInteraction": "None",
+                                                    "scope": "Unchanged",
+                                                    "confidentialityImpact": "High",
+                                                    "integrityImpact": "None",
+                                                    "availabilityImpact": "None",
+                                                    "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                                                },
+                                                "cvssScore": 5.5,
+                                                "severity": "MEDIUM",
+                                                "cves": [
+                                                    "CVE-2022-41946"
+                                                ],
+                                                "unique": false,
+                                                "remediation": {
+                                                    "fixedIn": [
+                                                        "42.2.27",
+                                                        "42.3.8",
+                                                        "42.4.3",
+                                                        "42.5.1"
+                                                    ]
+                                                }
+                                            }
+                                        ],
+                                        "highestVulnerability": {
+                                            "id": "CVE-2022-41946",
+                                            "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+                                            "source": "osv",
+                                            "cvss": {
+                                                "attackVector": "Local",
+                                                "attackComplexity": "Low",
+                                                "privilegesRequired": "Low",
+                                                "userInteraction": "None",
+                                                "scope": "Unchanged",
+                                                "confidentialityImpact": "High",
+                                                "integrityImpact": "None",
+                                                "availabilityImpact": "None",
+                                                "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                                            },
+                                            "cvssScore": 5.5,
+                                            "severity": "MEDIUM",
+                                            "cves": [
+                                                "CVE-2022-41946"
+                                            ],
+                                            "unique": false,
+                                            "remediation": {
+                                                "fixedIn": [
+                                                    "42.2.27",
+                                                    "42.3.8",
+                                                    "42.4.3",
+                                                    "42.5.1"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                                "highestVulnerability": {
+                                    "id": "CVE-2022-41946",
+                                    "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+                                    "source": "osv",
+                                    "cvss": {
+                                        "attackVector": "Local",
+                                        "attackComplexity": "Low",
+                                        "privilegesRequired": "Low",
+                                        "userInteraction": "None",
+                                        "scope": "Unchanged",
+                                        "confidentialityImpact": "High",
+                                        "integrityImpact": "None",
+                                        "availabilityImpact": "None",
+                                        "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                                    },
+                                    "cvssScore": 5.5,
+                                    "severity": "MEDIUM",
+                                    "cves": [
+                                        "CVE-2022-41946"
+                                    ],
+                                    "unique": false,
+                                    "remediation": {
+                                        "fixedIn": [
+                                            "42.2.27",
+                                            "42.3.8",
+                                            "42.4.3",
+                                            "42.5.1"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
             "tpa": {
                 "status": {
                     "ok": true,
@@ -865,6 +1226,17 @@
                     
                 }
             },
+            "osv": {
+                "status": {
+                    "ok": true,
+                    "name": "osv",
+                    "code": 200,
+                    "message": "OK"
+                },
+                "sources": {
+                    
+                }
+            },
             "tpa": {
                 "status": {
                     "ok": true,
@@ -939,6 +1311,43 @@
                 },
                 "sources": {
                     
+                }
+            },
+            "osv": {
+                "status": {
+                    "ok": true,
+                    "name": "osv",
+                    "code": 200,
+                    "message": "OK"
+                },
+                "sources": {
+                    "osv": {
+                        "summary": {
+                            "direct": 0,
+                            "transitive": 0,
+                            "total": 0,
+                            "dependencies": 0,
+                            "critical": 0,
+                            "high": 0,
+                            "medium": 0,
+                            "low": 0,
+                            "remediations": 0,
+                            "recommendations": 1,
+                            "unscanned": 0
+                        },
+                        "dependencies": [
+                            {
+                                "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
+                                "issues": [
+                                    
+                                ],
+                                "transitive": [
+                                    
+                                ],
+                                "recommendation": "pkg:oci/ubi@sha256%3Af5983f7c7878cc9b26a3962be7756e3c810e9831b0b9f9613e6f6b445f884e74?arch=amd64&repository_url=registry.access.redhat.com%2Fubi9%2Fubi&tag=9.3-1552"
+                            }
+                        ]
+                    }
                 }
             },
             "tpa": {

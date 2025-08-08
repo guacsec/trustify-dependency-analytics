@@ -141,7 +141,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     var snykProvider = report.getProviders().get(Constants.SNYK_PROVIDER);
@@ -155,6 +155,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     verifyNoInteractionsWithOSS();
     verifyNoInteractionsWithSnyk();
+    verifyTpaRequest(TPA_TOKEN);
     verifyTrustedContentRequest();
   }
 
@@ -179,7 +180,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         Status.UNAUTHORIZED.getStatusCode(),
         report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
@@ -327,6 +328,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertJson("reports/report_default_token.json", body);
     verifySnykRequest(SNYK_TOKEN);
     verifyTpaRequest(TPA_TOKEN);
+    verifyOsvRequest();
     verifyTrustedContentRequest();
   }
 
@@ -355,6 +357,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertJson("reports/report_default_token_no_recommend.json", body);
     verifySnykRequest(SNYK_TOKEN);
     verifyTpaRequest(TPA_TOKEN);
+    verifyOsvRequest();
     verifyNoInteractionsWithTrustedContent();
   }
 
@@ -387,6 +390,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     verifySnykRequest(OK_TOKEN);
     verifyOssRequest(OK_USER, OK_TOKEN);
     verifyTpaRequest(OK_TOKEN);
+    verifyOsvRequest();
   }
 
   @Test
@@ -411,7 +415,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-
     assertJson("reports/report_all_no_snyk_token.json", body);
     verifySnykRequest(null);
   }
@@ -440,7 +443,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
         report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
@@ -479,7 +482,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(4, report.getProviders().size());
+    assertEquals(5, report.getProviders().size());
     assertEquals(
         401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
     assertTrue(report.getProviders().get(Constants.SNYK_PROVIDER).getSources().isEmpty());
@@ -745,6 +748,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     verifySnykRequest(OK_TOKEN, 3);
     verifyOssRequest(OK_USER, OK_TOKEN, 3);
     verifyTpaRequest(OK_TOKEN, 3);
+    verifyOsvRequest(3);
   }
 
   private void assertScanned(Scanned scanned) {

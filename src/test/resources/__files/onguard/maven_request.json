@@ -1,0 +1,14 @@
+{
+    "purls": [
+      "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
+      "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+      "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+      "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+      "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+      "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+      "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+      "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
+      "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar"
+    ]
+  }
+  

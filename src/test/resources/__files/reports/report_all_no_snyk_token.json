@@ -12,9 +12,9 @@
                 "code": 200,
                 "message": "OK"
             },
-          "sources": {
-
-          }
+            "sources": {
+                
+            }
         },
         "snyk": {
             "status": {
@@ -41,10 +41,10 @@
                     "dependencies": [
                         {
                             "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-                          "issues": [
-
-                          ],
-                          "transitive": [
+                            "issues": [
+                                
+                            ],
+                            "transitive": [
                                 {
                                     "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
                                     "issues": [
@@ -199,9 +199,9 @@
                         },
                         {
                             "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-                          "issues": [
-
-                          ],
+                            "issues": [
+                                
+                            ],
                             "transitive": [
                                 {
                                     "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",

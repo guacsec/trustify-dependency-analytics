@@ -1,0 +1,1118 @@
+{
+  "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar": [],
+  "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar": [],
+  "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar": [],
+  "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar": [],
+  "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar": [],
+  "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar": [
+    {
+      "aliases": [
+        "BIT-postgresql-jdbc-driver-2022-41946",
+        "GHSA-562r-vg33-8x8h"
+      ],
+      "id": "CVE-2022-41946",
+      "created": "2024-01-15T21:37:48.619+00:00",
+      "summary": "TemporaryFolder on unix-like systems does not limit access to created files",
+      "description": "**Vulnerability**\n\n`PreparedStatement.setText(int, InputStream)`\nand\n\n`PreparedStatemet.setBytea(int, InputStream)`\n\nwill create a temporary file if the InputStream is larger than 51k\n\n \nExample of vulnerable code:\n\n```java\nString s = \"some very large string greater than 51200 bytes\";\n\nPreparedStatement.setInputStream(1, new ByteArrayInputStream(s.getBytes()) );\n```\nThis will create a temporary file which is readable by other users on Unix like systems, but not MacOS.\n\nImpact\nOn Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system.\n\nThis vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability.\n\nWhen analyzing the impact of this vulnerability, here are the important questions to ask:\n\nIs the driver running in an environment where the OS has other untrusted users.\nIf yes, and you answered 'yes' to question 1, this vulnerability impacts you.\nIf no, this vulnerability does not impact you.\nPatches\nBecause certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using.\n\nJava 1.8 and higher users: this vulnerability is fixed in 42.2.27, 42.3.8, 42.4.3, 42.5.1\nJava 1.7 users: this vulnerability is fixed in 42.2.27.jre7\nJava 1.6 and lower users: no patch is available; you must use the workaround below.\nWorkarounds\nIf you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will fix this vulnerability.\n\nReferences\n[CWE-200: Exposure of Sensitive Information to an Unauthorized Actor](https://cwe.mitre.org/data/definitions/200.html)\nFix commit https://github.com/pgjdbc/pgjdbc/commit/9008dc9aade6dbfe4efafcd6872ebc55f4699cf5\nSimilar Vulnerabilities\nGoogle Guava - https://github.com/google/guava/issues/4011\nApache Ant - https://nvd.nist.gov/vuln/detail/CVE-2020-1945\nJetBrains Kotlin Compiler - https://nvd.nist.gov/vuln/detail/CVE-2020-15824",
+      "affected": [
+        {
+          "package": {
+            "name": "org.postgresql:postgresql",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/org.postgresql/postgresql"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "42.2.0"
+                },
+                {
+                  "fixed": "42.2.27"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "42.2.0",
+            "42.2.0.jre6",
+            "42.2.0.jre7",
+            "42.2.1",
+            "42.2.1.jre6",
+            "42.2.1.jre7",
+            "42.2.10",
+            "42.2.10.jre6",
+            "42.2.10.jre7",
+            "42.2.11",
+            "42.2.11.jre6",
+            "42.2.11.jre7",
+            "42.2.12",
+            "42.2.12.jre6",
+            "42.2.12.jre7",
+            "42.2.13",
+            "42.2.13.jre6",
+            "42.2.13.jre7",
+            "42.2.14",
+            "42.2.14.jre6",
+            "42.2.14.jre7",
+            "42.2.15",
+            "42.2.15.jre6",
+            "42.2.15.jre7",
+            "42.2.16",
+            "42.2.16.jre6",
+            "42.2.16.jre7",
+            "42.2.17",
+            "42.2.17.jre6",
+            "42.2.17.jre7",
+            "42.2.18",
+            "42.2.18.jre6",
+            "42.2.18.jre7",
+            "42.2.19",
+            "42.2.19.jre6",
+            "42.2.19.jre7",
+            "42.2.2",
+            "42.2.2.jre6",
+            "42.2.2.jre7",
+            "42.2.20",
+            "42.2.20.jre6",
+            "42.2.20.jre7",
+            "42.2.21",
+            "42.2.21.jre6",
+            "42.2.21.jre7",
+            "42.2.22",
+            "42.2.22.jre6",
+            "42.2.22.jre7",
+            "42.2.23",
+            "42.2.23.jre6",
+            "42.2.23.jre7",
+            "42.2.24",
+            "42.2.24.jre6",
+            "42.2.24.jre7",
+            "42.2.25",
+            "42.2.25.jre6",
+            "42.2.25.jre7",
+            "42.2.26",
+            "42.2.26.jre6",
+            "42.2.26.jre7",
+            "42.2.3",
+            "42.2.3.jre6",
+            "42.2.3.jre7",
+            "42.2.4",
+            "42.2.4.jre6",
+            "42.2.4.jre7",
+            "42.2.5",
+            "42.2.5.jre6",
+            "42.2.5.jre7",
+            "42.2.6",
+            "42.2.6.jre6",
+            "42.2.6.jre7",
+            "42.2.7",
+            "42.2.7.jre6",
+            "42.2.7.jre7",
+            "42.2.8",
+            "42.2.8.jre6",
+            "42.2.8.jre7",
+            "42.2.9",
+            "42.2.9.jre6",
+            "42.2.9.jre7"
+          ]
+        },
+        {
+          "package": {
+            "name": "org.postgresql:postgresql",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/org.postgresql/postgresql"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "42.3.0"
+                },
+                {
+                  "fixed": "42.3.8"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "42.3.0",
+            "42.3.1",
+            "42.3.2",
+            "42.3.3",
+            "42.3.4",
+            "42.3.5",
+            "42.3.6",
+            "42.3.7"
+          ]
+        },
+        {
+          "package": {
+            "name": "org.postgresql:postgresql",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/org.postgresql/postgresql"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "42.4.0"
+                },
+                {
+                  "fixed": "42.4.3"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "42.4.0",
+            "42.4.1",
+            "42.4.2"
+          ]
+        },
+        {
+          "package": {
+            "name": "org.postgresql:postgresql",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/org.postgresql/postgresql"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "42.5.0"
+                },
+                {
+                  "fixed": "42.5.1"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "42.5.0"
+          ]
+        }
+      ],
+      "severity": [
+        {
+          "type": "CVSS_V3",
+          "score": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ]
+    }
+  ],
+  "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar": [
+    {
+      "aliases": [
+        "GHSA-57j2-w4cx-62h2"
+      ],
+      "id": "CVE-2020-36518",
+      "created": "2024-01-15T21:37:47.413+00:00",
+      "summary": "Deeply nested json in jackson-databind",
+      "description": "jackson-databind is a data-binding package for the Jackson Data Processor. jackson-databind allows a Java stack overflow exception and denial of service via a large depth of nested objects.",
+      "affected": [
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "2.13.0"
+                },
+                {
+                  "fixed": "2.13.2.1"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.13.0",
+            "2.13.1",
+            "2.13.2"
+          ]
+        },
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "0"
+                },
+                {
+                  "fixed": "2.12.6.1"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.0.0",
+            "2.0.0-RC1",
+            "2.0.0-RC2",
+            "2.0.0-RC3",
+            "2.0.1",
+            "2.0.2",
+            "2.0.4",
+            "2.0.5",
+            "2.0.6",
+            "2.1.0",
+            "2.1.1",
+            "2.1.2",
+            "2.1.3",
+            "2.1.4",
+            "2.1.5",
+            "2.10.0",
+            "2.10.0.pr1",
+            "2.10.0.pr2",
+            "2.10.0.pr3",
+            "2.10.1",
+            "2.10.2",
+            "2.10.3",
+            "2.10.4",
+            "2.10.5",
+            "2.10.5.1",
+            "2.11.0",
+            "2.11.0.rc1",
+            "2.11.1",
+            "2.11.2",
+            "2.11.3",
+            "2.11.4",
+            "2.12.0",
+            "2.12.0-rc1",
+            "2.12.0-rc2",
+            "2.12.1",
+            "2.12.2",
+            "2.12.3",
+            "2.12.4",
+            "2.12.5",
+            "2.12.6",
+            "2.2.0",
+            "2.2.0-rc1",
+            "2.2.1",
+            "2.2.2",
+            "2.2.3",
+            "2.2.4",
+            "2.3.0",
+            "2.3.0-rc1",
+            "2.3.1",
+            "2.3.2",
+            "2.3.3",
+            "2.3.4",
+            "2.3.5",
+            "2.4.0",
+            "2.4.0-rc1",
+            "2.4.0-rc2",
+            "2.4.0-rc3",
+            "2.4.1",
+            "2.4.1.1",
+            "2.4.1.2",
+            "2.4.1.3",
+            "2.4.2",
+            "2.4.3",
+            "2.4.4",
+            "2.4.5",
+            "2.4.5.1",
+            "2.4.6",
+            "2.4.6.1",
+            "2.5.0",
+            "2.5.0-rc1",
+            "2.5.1",
+            "2.5.2",
+            "2.5.3",
+            "2.5.4",
+            "2.5.5",
+            "2.6.0",
+            "2.6.0-rc1",
+            "2.6.0-rc2",
+            "2.6.0-rc3",
+            "2.6.0-rc4",
+            "2.6.1",
+            "2.6.2",
+            "2.6.3",
+            "2.6.4",
+            "2.6.5",
+            "2.6.6",
+            "2.6.7",
+            "2.6.7.1",
+            "2.6.7.2",
+            "2.6.7.3",
+            "2.6.7.4",
+            "2.6.7.5",
+            "2.7.0",
+            "2.7.0-rc1",
+            "2.7.0-rc2",
+            "2.7.0-rc3",
+            "2.7.1",
+            "2.7.1-1",
+            "2.7.2",
+            "2.7.3",
+            "2.7.4",
+            "2.7.5",
+            "2.7.6",
+            "2.7.7",
+            "2.7.8",
+            "2.7.9",
+            "2.7.9.1",
+            "2.7.9.2",
+            "2.7.9.3",
+            "2.7.9.4",
+            "2.7.9.5",
+            "2.7.9.6",
+            "2.7.9.7",
+            "2.8.0",
+            "2.8.0.rc1",
+            "2.8.0.rc2",
+            "2.8.1",
+            "2.8.10",
+            "2.8.11",
+            "2.8.11.1",
+            "2.8.11.2",
+            "2.8.11.3",
+            "2.8.11.4",
+            "2.8.11.5",
+            "2.8.11.6",
+            "2.8.2",
+            "2.8.3",
+            "2.8.4",
+            "2.8.5",
+            "2.8.6",
+            "2.8.7",
+            "2.8.8",
+            "2.8.8.1",
+            "2.8.9",
+            "2.9.0",
+            "2.9.0.pr1",
+            "2.9.0.pr2",
+            "2.9.0.pr3",
+            "2.9.0.pr4",
+            "2.9.1",
+            "2.9.10",
+            "2.9.10.1",
+            "2.9.10.2",
+            "2.9.10.3",
+            "2.9.10.4",
+            "2.9.10.5",
+            "2.9.10.6",
+            "2.9.10.7",
+            "2.9.10.8",
+            "2.9.2",
+            "2.9.3",
+            "2.9.4",
+            "2.9.5",
+            "2.9.6",
+            "2.9.7",
+            "2.9.8",
+            "2.9.9",
+            "2.9.9.1",
+            "2.9.9.2",
+            "2.9.9.3"
+          ]
+        }
+      ],
+      "severity": [
+        {
+          "type": "CVSS_V2",
+          "score": "AV:N/AC:L/Au:N/C:N/I:N/A:P"
+        }
+      ]
+    },
+    {
+      "aliases": [
+        "GHSA-jjjh-jjxp-wpff"
+      ],
+      "id": "CVE-2022-42003",
+      "created": "2024-01-15T21:37:47.413+00:00",
+      "description": "In FasterXML jackson-databind 2.4.0-rc1 until 2.12.7.1 and in 2.13.x before 2.13.4.2 resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled. This was patched in 2.12.7.1, 2.13.4.2, and 2.14.0.",
+      "affected": [
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "2.4.0-rc1"
+                },
+                {
+                  "fixed": "2.12.7.1"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.10.0",
+            "2.10.0.pr1",
+            "2.10.0.pr2",
+            "2.10.0.pr3",
+            "2.10.1",
+            "2.10.2",
+            "2.10.3",
+            "2.10.4",
+            "2.10.5",
+            "2.10.5.1",
+            "2.11.0",
+            "2.11.0.rc1",
+            "2.11.1",
+            "2.11.2",
+            "2.11.3",
+            "2.11.4",
+            "2.12.0",
+            "2.12.0-rc1",
+            "2.12.0-rc2",
+            "2.12.1",
+            "2.12.2",
+            "2.12.3",
+            "2.12.4",
+            "2.12.5",
+            "2.12.6",
+            "2.12.6.1",
+            "2.12.7",
+            "2.4.0",
+            "2.4.0-rc1",
+            "2.4.0-rc2",
+            "2.4.0-rc3",
+            "2.4.1",
+            "2.4.1.1",
+            "2.4.1.2",
+            "2.4.1.3",
+            "2.4.2",
+            "2.4.3",
+            "2.4.4",
+            "2.4.5",
+            "2.4.5.1",
+            "2.4.6",
+            "2.4.6.1",
+            "2.5.0",
+            "2.5.0-rc1",
+            "2.5.1",
+            "2.5.2",
+            "2.5.3",
+            "2.5.4",
+            "2.5.5",
+            "2.6.0",
+            "2.6.0-rc1",
+            "2.6.0-rc2",
+            "2.6.0-rc3",
+            "2.6.0-rc4",
+            "2.6.1",
+            "2.6.2",
+            "2.6.3",
+            "2.6.4",
+            "2.6.5",
+            "2.6.6",
+            "2.6.7",
+            "2.6.7.1",
+            "2.6.7.2",
+            "2.6.7.3",
+            "2.6.7.4",
+            "2.6.7.5",
+            "2.7.0",
+            "2.7.0-rc1",
+            "2.7.0-rc2",
+            "2.7.0-rc3",
+            "2.7.1",
+            "2.7.1-1",
+            "2.7.2",
+            "2.7.3",
+            "2.7.4",
+            "2.7.5",
+            "2.7.6",
+            "2.7.7",
+            "2.7.8",
+            "2.7.9",
+            "2.7.9.1",
+            "2.7.9.2",
+            "2.7.9.3",
+            "2.7.9.4",
+            "2.7.9.5",
+            "2.7.9.6",
+            "2.7.9.7",
+            "2.8.0",
+            "2.8.0.rc1",
+            "2.8.0.rc2",
+            "2.8.1",
+            "2.8.10",
+            "2.8.11",
+            "2.8.11.1",
+            "2.8.11.2",
+            "2.8.11.3",
+            "2.8.11.4",
+            "2.8.11.5",
+            "2.8.11.6",
+            "2.8.2",
+            "2.8.3",
+            "2.8.4",
+            "2.8.5",
+            "2.8.6",
+            "2.8.7",
+            "2.8.8",
+            "2.8.8.1",
+            "2.8.9",
+            "2.9.0",
+            "2.9.0.pr1",
+            "2.9.0.pr2",
+            "2.9.0.pr3",
+            "2.9.0.pr4",
+            "2.9.1",
+            "2.9.10",
+            "2.9.10.1",
+            "2.9.10.2",
+            "2.9.10.3",
+            "2.9.10.4",
+            "2.9.10.5",
+            "2.9.10.6",
+            "2.9.10.7",
+            "2.9.10.8",
+            "2.9.2",
+            "2.9.3",
+            "2.9.4",
+            "2.9.5",
+            "2.9.6",
+            "2.9.7",
+            "2.9.8",
+            "2.9.9",
+            "2.9.9.1",
+            "2.9.9.2",
+            "2.9.9.3"
+          ]
+        },
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "2.13.0"
+                },
+                {
+                  "fixed": "2.13.4.2"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.13.0",
+            "2.13.1",
+            "2.13.2",
+            "2.13.2.1",
+            "2.13.2.2",
+            "2.13.3",
+            "2.13.4",
+            "2.13.4.1"
+          ]
+        }
+      ],
+      "severity": [
+        {
+          "type": "CVSS_V3",
+          "score": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ]
+    },
+    {
+      "aliases": [
+        "GHSA-rgv9-q543-rqg4"
+      ],
+      "id": "CVE-2022-42004",
+      "created": "2024-01-15T21:37:47.413+00:00",
+      "summary": "Uncontrolled Resource Consumption in FasterXML jackson-databind",
+      "description": "In FasterXML jackson-databind before 2.12.7.1 and in 2.13.x before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
+      "affected": [
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "0"
+                },
+                {
+                  "fixed": "2.12.7.1"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.0.0",
+            "2.0.0-RC1",
+            "2.0.0-RC2",
+            "2.0.0-RC3",
+            "2.0.1",
+            "2.0.2",
+            "2.0.4",
+            "2.0.5",
+            "2.0.6",
+            "2.1.0",
+            "2.1.1",
+            "2.1.2",
+            "2.1.3",
+            "2.1.4",
+            "2.1.5",
+            "2.10.0",
+            "2.10.0.pr1",
+            "2.10.0.pr2",
+            "2.10.0.pr3",
+            "2.10.1",
+            "2.10.2",
+            "2.10.3",
+            "2.10.4",
+            "2.10.5",
+            "2.10.5.1",
+            "2.11.0",
+            "2.11.0.rc1",
+            "2.11.1",
+            "2.11.2",
+            "2.11.3",
+            "2.11.4",
+            "2.12.0",
+            "2.12.0-rc1",
+            "2.12.0-rc2",
+            "2.12.1",
+            "2.12.2",
+            "2.12.3",
+            "2.12.4",
+            "2.12.5",
+            "2.12.6",
+            "2.12.6.1",
+            "2.12.7",
+            "2.2.0",
+            "2.2.0-rc1",
+            "2.2.1",
+            "2.2.2",
+            "2.2.3",
+            "2.2.4",
+            "2.3.0",
+            "2.3.0-rc1",
+            "2.3.1",
+            "2.3.2",
+            "2.3.3",
+            "2.3.4",
+            "2.3.5",
+            "2.4.0",
+            "2.4.0-rc1",
+            "2.4.0-rc2",
+            "2.4.0-rc3",
+            "2.4.1",
+            "2.4.1.1",
+            "2.4.1.2",
+            "2.4.1.3",
+            "2.4.2",
+            "2.4.3",
+            "2.4.4",
+            "2.4.5",
+            "2.4.5.1",
+            "2.4.6",
+            "2.4.6.1",
+            "2.5.0",
+            "2.5.0-rc1",
+            "2.5.1",
+            "2.5.2",
+            "2.5.3",
+            "2.5.4",
+            "2.5.5",
+            "2.6.0",
+            "2.6.0-rc1",
+            "2.6.0-rc2",
+            "2.6.0-rc3",
+            "2.6.0-rc4",
+            "2.6.1",
+            "2.6.2",
+            "2.6.3",
+            "2.6.4",
+            "2.6.5",
+            "2.6.6",
+            "2.6.7",
+            "2.6.7.1",
+            "2.6.7.2",
+            "2.6.7.3",
+            "2.6.7.4",
+            "2.6.7.5",
+            "2.7.0",
+            "2.7.0-rc1",
+            "2.7.0-rc2",
+            "2.7.0-rc3",
+            "2.7.1",
+            "2.7.1-1",
+            "2.7.2",
+            "2.7.3",
+            "2.7.4",
+            "2.7.5",
+            "2.7.6",
+            "2.7.7",
+            "2.7.8",
+            "2.7.9",
+            "2.7.9.1",
+            "2.7.9.2",
+            "2.7.9.3",
+            "2.7.9.4",
+            "2.7.9.5",
+            "2.7.9.6",
+            "2.7.9.7",
+            "2.8.0",
+            "2.8.0.rc1",
+            "2.8.0.rc2",
+            "2.8.1",
+            "2.8.10",
+            "2.8.11",
+            "2.8.11.1",
+            "2.8.11.2",
+            "2.8.11.3",
+            "2.8.11.4",
+            "2.8.11.5",
+            "2.8.11.6",
+            "2.8.2",
+            "2.8.3",
+            "2.8.4",
+            "2.8.5",
+            "2.8.6",
+            "2.8.7",
+            "2.8.8",
+            "2.8.8.1",
+            "2.8.9",
+            "2.9.0",
+            "2.9.0.pr1",
+            "2.9.0.pr2",
+            "2.9.0.pr3",
+            "2.9.0.pr4",
+            "2.9.1",
+            "2.9.10",
+            "2.9.10.1",
+            "2.9.10.2",
+            "2.9.10.3",
+            "2.9.10.4",
+            "2.9.10.5",
+            "2.9.10.6",
+            "2.9.10.7",
+            "2.9.10.8",
+            "2.9.2",
+            "2.9.3",
+            "2.9.4",
+            "2.9.5",
+            "2.9.6",
+            "2.9.7",
+            "2.9.8",
+            "2.9.9",
+            "2.9.9.1",
+            "2.9.9.2",
+            "2.9.9.3"
+          ]
+        },
+        {
+          "package": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "2.13.0"
+                },
+                {
+                  "fixed": "2.13.4"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "2.13.0",
+            "2.13.1",
+            "2.13.2",
+            "2.13.2.1",
+            "2.13.2.2",
+            "2.13.3"
+          ]
+        }
+      ],
+      "severity": [
+        {
+          "type": "CVSS_V3",
+          "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ]
+    }
+  ],
+  "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar": [],
+  "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": [
+    {
+      "aliases": [
+        "GHSA-3fhx-3vvg-2j84"
+      ],
+      "id": "CVE-2023-2974",
+      "created": "2024-01-15T21:37:49.155+00:00",
+      "description": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+      "affected": [
+        {
+          "package": {
+            "name": "io.quarkus:quarkus-core",
+            "ecosystem": "Maven",
+            "purl": "pkg:maven/io.quarkus/quarkus-core"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "0"
+                },
+                {
+                  "fixed": "2.16.8.Final"
+                }
+              ]
+            }
+          ],
+          "versions": [
+            "0.11.0",
+            "0.12.0",
+            "0.13.0",
+            "0.13.1",
+            "0.13.2",
+            "0.13.3",
+            "0.14.0",
+            "0.15.0",
+            "0.16.0",
+            "0.16.1",
+            "0.17.0",
+            "0.18.0",
+            "0.19.0",
+            "0.19.1",
+            "0.20.0",
+            "0.21.0",
+            "0.21.1",
+            "0.21.2",
+            "0.22.0",
+            "0.23.0",
+            "0.23.1",
+            "0.23.2",
+            "0.24.0",
+            "0.25.0",
+            "0.26.0",
+            "0.26.1",
+            "0.27.0",
+            "0.28.0",
+            "0.28.1",
+            "1.0.0.CR1",
+            "1.0.0.CR2",
+            "1.0.0.Final",
+            "1.0.1.Final",
+            "1.1.0.CR1",
+            "1.1.0.Final",
+            "1.1.1.Final",
+            "1.10.0.CR1",
+            "1.10.0.Final",
+            "1.10.1.Final",
+            "1.10.2.Final",
+            "1.10.3.Final",
+            "1.10.4.Final",
+            "1.10.5.Final",
+            "1.11.0.Beta1",
+            "1.11.0.Beta2",
+            "1.11.0.CR1",
+            "1.11.0.Final",
+            "1.11.1.Final",
+            "1.11.2.Final",
+            "1.11.3.Final",
+            "1.11.4.Final",
+            "1.11.5.Final",
+            "1.11.6.Final",
+            "1.11.7.Final",
+            "1.12.0.CR1",
+            "1.12.0.Final",
+            "1.12.1.Final",
+            "1.12.2.Final",
+            "1.13.0.CR1",
+            "1.13.0.Final",
+            "1.13.1.Final",
+            "1.13.2.Final",
+            "1.13.3.Final",
+            "1.13.4.Final",
+            "1.13.5.Final",
+            "1.13.6.Final",
+            "1.13.7.Final",
+            "1.2.0.CR1",
+            "1.2.0.Final",
+            "1.2.1.Final",
+            "1.3.0.Alpha1",
+            "1.3.0.Alpha2",
+            "1.3.0.CR1",
+            "1.3.0.CR2",
+            "1.3.0.Final",
+            "1.3.1.Final",
+            "1.3.2.Final",
+            "1.3.3.Final",
+            "1.3.4.Final",
+            "1.4.0.CR1",
+            "1.4.0.Final",
+            "1.4.1.Final",
+            "1.4.2.Final",
+            "1.5.0.CR1",
+            "1.5.0.Final",
+            "1.5.1.Final",
+            "1.5.2.Final",
+            "1.6.0.CR1",
+            "1.6.0.Final",
+            "1.6.1.Final",
+            "1.7.0.CR1",
+            "1.7.0.CR2",
+            "1.7.0.Final",
+            "1.7.1.Final",
+            "1.7.2.Final",
+            "1.7.3.Final",
+            "1.7.4.Final",
+            "1.7.5.Final",
+            "1.7.6.Final",
+            "1.8.0.CR1",
+            "1.8.0.Final",
+            "1.8.1.Final",
+            "1.8.2.Final",
+            "1.8.3.Final",
+            "1.9.0.CR1",
+            "1.9.0.Final",
+            "1.9.1.Final",
+            "1.9.2.Final",
+            "2.0.0.Alpha1",
+            "2.0.0.Alpha2",
+            "2.0.0.Alpha3",
+            "2.0.0.CR1",
+            "2.0.0.CR2",
+            "2.0.0.CR3",
+            "2.0.0.Final",
+            "2.0.1.Final",
+            "2.0.2.Final",
+            "2.0.3.Final",
+            "2.1.0.CR1",
+            "2.1.0.Final",
+            "2.1.1.Final",
+            "2.1.2.Final",
+            "2.1.3.Final",
+            "2.1.4.Final",
+            "2.10.0.CR1",
+            "2.10.0.Final",
+            "2.10.1.Final",
+            "2.10.2.Final",
+            "2.10.3.Final",
+            "2.10.4.Final",
+            "2.11.0.CR1",
+            "2.11.0.Final",
+            "2.11.1.Final",
+            "2.11.2.Final",
+            "2.11.3.Final",
+            "2.12.0.CR1",
+            "2.12.0.Final",
+            "2.12.1.Final",
+            "2.12.2.Final",
+            "2.12.3.Final",
+            "2.13.0.CR1",
+            "2.13.0.Final",
+            "2.13.1.Final",
+            "2.13.2.Final",
+            "2.13.3.Final",
+            "2.13.4.Final",
+            "2.13.5.Final",
+            "2.13.6.Final",
+            "2.13.7.Final",
+            "2.13.8.Final",
+            "2.14.0.CR1",
+            "2.14.0.Final",
+            "2.14.1.Final",
+            "2.14.2.Final",
+            "2.14.3.Final",
+            "2.15.0.CR1",
+            "2.15.0.Final",
+            "2.15.1.Final",
+            "2.15.2.Final",
+            "2.15.3.Final",
+            "2.16.0.CR1",
+            "2.16.0.Final",
+            "2.16.1.Final",
+            "2.16.2.Final",
+            "2.16.3.Final",
+            "2.16.4.Final",
+            "2.16.5.Final",
+            "2.16.6.Final",
+            "2.16.7.Final",
+            "2.2.0.CR1",
+            "2.2.0.Final",
+            "2.2.1.Final",
+            "2.2.2.Final",
+            "2.2.3.Final",
+            "2.2.4.Final",
+            "2.2.5.Final",
+            "2.3.0.CR1",
+            "2.3.0.Final",
+            "2.3.1.Final",
+            "2.4.0.CR1",
+            "2.4.0.Final",
+            "2.4.1.Final",
+            "2.4.2.Final",
+            "2.5.0.CR1",
+            "2.5.0.Final",
+            "2.5.1.Final",
+            "2.5.2.Final",
+            "2.5.3.Final",
+            "2.5.4.Final",
+            "2.6.0.CR1",
+            "2.6.0.Final",
+            "2.6.1.Final",
+            "2.6.2.Final",
+            "2.6.3.Final",
+            "2.7.0.CR1",
+            "2.7.0.Final",
+            "2.7.1.Final",
+            "2.7.2.Final",
+            "2.7.3.Final",
+            "2.7.4.Final",
+            "2.7.5.Final",
+            "2.7.6.Final",
+            "2.7.7.Final",
+            "2.8.0.CR1",
+            "2.8.0.Final",
+            "2.8.1.Final",
+            "2.8.2.Final",
+            "2.8.3.Final",
+            "2.9.0.CR1",
+            "2.9.0.Final",
+            "2.9.1.Final",
+            "2.9.2.Final"
+          ]
+        }
+      ],
+      "severity": [
+        {
+          "type": "CVSS_V3",
+          "score": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+        }
+      ]
+    }
+  ]
+}
