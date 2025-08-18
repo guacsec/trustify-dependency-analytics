@@ -102,7 +102,7 @@ objects:
                       name: exhort-secret
                       key: tpa.client.secret
                 - name: API_TPA_DISABLED
-                  value: "true"
+                  value: '${TPA_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:
                     secretKeyRef:
@@ -229,6 +229,11 @@ parameters:
     displayName: Postgres SSL Mode
     description: SSL Mode for Postgres
     value: 'prefer'
+    required: true
+  - name: TPA_DISABLED
+    displayName: Disable TPA
+    description: Disable TPA integration
+    value: "true"
     required: true
   - name: TPA_HOST
     displayName: TPA Host
