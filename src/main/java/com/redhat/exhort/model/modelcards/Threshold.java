@@ -29,12 +29,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-@JsonPropertyOrder({"id", "name", "lower", "upper", "category", "interpretation"})
+@JsonPropertyOrder({"id", "impact", "lower", "upper", "category", "interpretation"})
 public class Threshold {
   @Id @GeneratedValue public Long id;
   public Float lower;
   public Float upper;
-  public String name;
+
+  public String impact;
 
   @Column(nullable = true)
   public String interpretation;
