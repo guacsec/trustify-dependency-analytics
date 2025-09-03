@@ -43,7 +43,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
   private static final String TPA_CLIENT_TENANT = "tpa";
   private static final int TPA_CLIENT_TIMEOUT = 10;
 
-  @ConfigProperty(name = "api.tpa.timeout", defaultValue = "30s")
+  @ConfigProperty(name = "api.tpa.timeout", defaultValue = "60s")
   String timeout;
 
   @ConfigProperty(name = "quarkus.oidc-client.tpa.enabled", defaultValue = "true")

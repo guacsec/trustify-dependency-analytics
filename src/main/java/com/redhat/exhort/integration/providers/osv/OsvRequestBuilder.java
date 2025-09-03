@@ -18,6 +18,9 @@
 
 package com.redhat.exhort.integration.providers.osv;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.config.ObjectMapperProducer;
@@ -28,13 +31,35 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class OsvRequestBuilder {
 
-  private ObjectMapper mapper = ObjectMapperProducer.newInstance();
+  private static final int BULK_SIZE = 128;
 
-  public String buildRequest(DependencyTree tree) throws JsonProcessingException {
+  private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
+
+  public String buildRequest(List<String> refs) throws JsonProcessingException {
     var request = mapper.createObjectNode();
     var purls = mapper.createArrayNode();
-    tree.getAll().forEach(dep -> purls.add(dep.ref()));
+    refs.forEach(dep -> purls.add(dep));
     request.set("purls", purls);
     return mapper.writeValueAsString(request);
+  }
+
+  public List<List<String>> split(DependencyTree tree) {
+    List<List<String>> bulks = new ArrayList<>();
+    List<String> bulk = new ArrayList<>();
+    for (var pkg : tree.getAll()) {
+      if (bulk.size() == BULK_SIZE) {
+        bulks.add(bulk);
+        bulk = new ArrayList<>();
+      }
+      bulk.add(pkg.ref());
+    }
+    if (!bulk.isEmpty()) {
+      bulks.add(bulk);
+    }
+    return bulks;
+  }
+
+  public boolean isEmpty(DependencyTree tree) {
+    return tree.dependencies().isEmpty();
   }
 }
