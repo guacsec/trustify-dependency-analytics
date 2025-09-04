@@ -91,7 +91,9 @@ public abstract class AbstractAnalysisTest {
 
   @AfterEach
   void resetMock() {
-    server.resetAll();
+    if (server != null) {
+      server.resetAll();
+    }
   }
 
   protected void assertJson(String expectedFile, String currentBody) {
@@ -443,7 +445,8 @@ public abstract class AbstractAnalysisTest {
         get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
             .withQueryParam("limit", equalTo("0"))
             .willReturn(aResponse().withStatus(401)));
-    // Default request
+
+    // Accepted tokens
     server.stubFor(
         get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
             .withHeader(
@@ -455,12 +458,14 @@ public abstract class AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("tpa/empty_report.json")));
+
     // Internal Error
     server.stubFor(
         get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))
             .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
             .withQueryParam("limit", equalTo("0"))
             .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
+
     // Invalid token
     server.stubFor(
         get(urlPathEqualTo(Constants.TPA_TOKEN_PATH))

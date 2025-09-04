@@ -57,7 +57,9 @@ import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.api.v4.DependencyReport;
 import com.redhat.exhort.api.v4.Scanned;
 import com.redhat.exhort.api.v4.SourceSummary;
+import com.redhat.exhort.extensions.OidcWiremockExtension;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.ws.rs.core.MediaType;
@@ -65,6 +67,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 @QuarkusTest
+@QuarkusTestResource(OidcWiremockExtension.class)
 public class AnalysisTest extends AbstractAnalysisTest {
 
   private static final String CYCLONEDX = "cyclonedx";

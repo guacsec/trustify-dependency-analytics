@@ -18,8 +18,6 @@
 
 package com.redhat.exhort.integration.providers.tpa;
 
-import java.time.Duration;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AggregationStrategies;
@@ -28,8 +26,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
-
-import io.quarkus.oidc.client.OidcClients;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,20 +36,12 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class TpaIntegration extends EndpointRouteBuilder {
 
-  private static final String TPA_CLIENT_TENANT = "tpa";
-  private static final int TPA_CLIENT_TIMEOUT = 10;
-
   @ConfigProperty(name = "api.tpa.timeout", defaultValue = "60s")
   String timeout;
-
-  @ConfigProperty(name = "quarkus.oidc-client.tpa.enabled", defaultValue = "true")
-  boolean tpaEnabled;
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject TpaResponseHandler responseHandler;
   @Inject TpaRequestBuilder requestBuilder;
-
-  @Inject OidcClients oidcClients;
 
   @Override
   public void configure() throws Exception {
@@ -75,13 +63,13 @@ public class TpaIntegration extends EndpointRouteBuilder {
       .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
         .parallelProcessing()
           .transform().method(requestBuilder, "buildRequest")
-          .process(this::processRequest)
-          .process(requestBuilder::addAuthentication)
-        .circuitBreaker()
+          .circuitBreaker()
           .faultToleranceConfiguration()
             .timeoutEnabled(true)
             .timeoutDuration(timeout)
           .end()
+          .process(this::processRequest)
+          .process(requestBuilder::addAuthentication)
           .to(http("{{api.tpa.host}}"))
           .transform(method(responseHandler, "responseToIssues"))
         .onFallback()
@@ -140,20 +128,6 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     message.setHeader(Exchange.HTTP_PATH, Constants.TPA_ANALYZE_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
-
-    String token = message.getHeader(Constants.TPA_TOKEN_HEADER, String.class);
-    if (token == null && !tpaEnabled) {
-      token = "placeholder";
-    }
-    if (token == null) {
-      token =
-          oidcClients
-              .getClient(TPA_CLIENT_TENANT)
-              .getTokens()
-              .await()
-              .atMost(Duration.ofSeconds(TPA_CLIENT_TIMEOUT))
-              .getAccessToken();
-    }
   }
 
   private void processHealthRequest(Exchange exchange) {

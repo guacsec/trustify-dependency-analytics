@@ -18,9 +18,9 @@
 
 package com.redhat.exhort.integration.providers.tpa;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -31,18 +31,25 @@ import com.redhat.exhort.config.ObjectMapperProducer;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.model.DependencyTree;
 
+import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 @RegisterForReflection
 public class TpaRequestBuilder {
 
+  @ConfigProperty(name = "quarkus.oidc-client.tpa.enabled", defaultValue = "true")
+  boolean authEnabled;
+
+  @Inject OidcClients oidcClients;
+
   private static final int BULK_SIZE = 128;
 
-  @ConfigProperty(name = "api.tpa.token")
-  Optional<String> defaultToken;
+  public static final String TPA_CLIENT_TENANT = "tpa";
+  private static final int TPA_CLIENT_TIMEOUT = 10;
 
   private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
@@ -73,11 +80,20 @@ public class TpaRequestBuilder {
   public void addAuthentication(Exchange exchange) {
     var message = exchange.getMessage();
     var userToken = message.getHeader(Constants.TPA_TOKEN_HEADER, String.class);
-    String token = null;
+    String token;
+    if (!authEnabled) {
+      return;
+    }
     if (userToken != null) {
       token = userToken;
-    } else if (defaultToken.isPresent()) {
-      token = defaultToken.get();
+    } else {
+      token =
+          oidcClients
+              .getClient(TPA_CLIENT_TENANT)
+              .getTokens()
+              .await()
+              .atMost(Duration.ofSeconds(TPA_CLIENT_TIMEOUT))
+              .getAccessToken();
     }
     if (token != null) {
       message.setHeader("Authorization", "Bearer " + token);
