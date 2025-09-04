@@ -13,15 +13,25 @@ export const ReportErrorAlert = ({report}: { report: Report }) => {
 
   return (
     <>
-      {errorReports.map((e, index) => (
-        <Alert
+      {errorReports.map((e, index) => {
+        if(e.name === 'trusted-content') {
+          return <Alert
+          key={index}
+          variant={
+            AlertVariant.info
+          }
+          title={`${uppercaseFirstLetter(e.name)}: Recommendations and remediations are not currently available`}
+        />
+
+        }
+        return <Alert
           key={index}
           variant={
             e.code >= 500 ? AlertVariant.danger : e.code >= 400 ? AlertVariant.warning : undefined
           }
           title={`${uppercaseFirstLetter(e.name)}: ${e.message}`}
         />
-      ))}
+      })}
     </>
   );
 };
