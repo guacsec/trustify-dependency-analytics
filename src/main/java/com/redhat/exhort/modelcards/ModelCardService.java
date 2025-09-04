@@ -161,7 +161,7 @@ public class ModelCardService {
     var dto = new MetricThreshold();
     dto.lower(entity.lower);
     dto.upper(entity.upper);
-    dto.name(entity.name);
+    dto.impact(entity.impact != null ? MetricThreshold.ImpactEnum.fromValue(entity.impact) : null);
     dto.interpretation(entity.interpretation);
     dto.category(entity.category);
     return dto;
@@ -195,7 +195,7 @@ public class ModelCardService {
     }
     for (var t : thresholds) {
       if (score >= t.lower && score <= t.upper) {
-        return t.name;
+        return t.impact;
       }
     }
     return null;

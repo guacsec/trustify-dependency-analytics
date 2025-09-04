@@ -19,6 +19,7 @@
 package com.redhat.exhort.integration.providers.osv;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -34,7 +35,7 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class OsvIntegration extends EndpointRouteBuilder {
 
-  @ConfigProperty(name = "api.onguard.timeout", defaultValue = "30s")
+  @ConfigProperty(name = "api.onguard.timeout", defaultValue = "60s")
   String timeout;
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
@@ -45,17 +46,31 @@ public class OsvIntegration extends EndpointRouteBuilder {
     // fmt:off
     from(direct("osvScan"))
       .routeId("osvScan")
-      .circuitBreaker()
-        .faultToleranceConfiguration()
-          .timeoutEnabled(true)
-          .timeoutDuration(timeout)
-        .end()
-        .transform(method(OsvRequestBuilder.class, "buildRequest"))
-        .to(direct("osvRequest"))
-      .onFallback()
-        .process(responseHandler::processResponseError)
-      .end()
-      .transform().method(responseHandler, "buildReport");
+      .choice()
+      .when(method(OsvRequestBuilder.class, "isEmpty"))
+        .setBody(method(responseHandler, "emptyResponse"))
+        .transform().method(responseHandler, "buildReport")
+      .endChoice()
+      .otherwise()
+        .to(direct("osvSplitRequest"))
+        .transform().method(responseHandler, "buildReport");
+
+    from(direct("osvSplitRequest"))
+      .routeId("osvSplitRequest")
+      .transform(method(OsvRequestBuilder.class, "split"))
+      .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
+        .parallelProcessing()
+          .transform().method(OsvRequestBuilder.class, "buildRequest")
+          .process(this::processRequest)
+        .circuitBreaker()
+          .faultToleranceConfiguration()
+            .timeoutEnabled(true)
+            .timeoutDuration(timeout)
+          .end()
+          .to(vertxHttp("{{api.onguard.host}}"))
+          .transform(method(responseHandler, "responseToIssues"))
+        .onFallback()
+          .process(responseHandler::processResponseError);
 
     from(direct("osvRequest"))
       .routeId("osvRequest")
