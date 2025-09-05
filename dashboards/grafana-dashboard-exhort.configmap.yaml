@@ -3682,8 +3682,8 @@ data:
           {
             "allowCustomValue": false,
             "current": {
-              "text": "exhort-rds-stage",
-              "value": "exhort-rds-stage"
+              "text": "exhort-rds",
+              "value": "exhort-rds"
             },
             "datasource": {
               "type": "cloudwatch",
@@ -3703,7 +3703,7 @@ data:
               "region": "$region"
             },
             "refresh": 1,
-            "regex": "exhort-rds-.*",
+            "regex": "exhort-rds.*",
             "type": "query"
           }
         ]
