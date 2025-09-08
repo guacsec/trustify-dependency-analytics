@@ -91,16 +91,16 @@ objects:
                   value: '${TPA_HOST}'
                 - name: TPA_AUTH_SERVER_URL
                   value: '${TPA_AUTH_SERVER_URL}'
-                - name: TPA_CLIENT_ID
-                  valueFrom:
-                    secretKeyRef:
-                      name: exhort-secret
-                      key: tpa.client.id
-                - name: TPA_CLIENT_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: exhort-secret
-                      key: tpa.client.secret
+                # - name: TPA_CLIENT_ID
+                #   valueFrom:
+                #     secretKeyRef:
+                #       name: exhort-secret
+                #       key: tpa.client.id
+                # - name: TPA_CLIENT_SECRET
+                #   valueFrom:
+                #     secretKeyRef:
+                #       name: exhort-secret
+                #       key: tpa.client.secret
                 - name: API_TPA_DISABLED
                   value: '${TPA_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
