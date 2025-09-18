@@ -24,7 +24,7 @@
 
 ## OpenAPI and SwaggerUI
 
-- OpenAPI Spec: There is an [openapi.yaml](https://github.com/trustification/exhort-api-spec/blob/main/api/v4/openapi.yaml)
+- OpenAPI Spec: There is an [openapi.yaml](https://maven.pkg.github.com/guacsec/trustify-da-api-spec/blob/main/api/v4/openapi.yaml)
 - Swagger UI: Available at http://localhost:8080/q/swagger-ui for development or when enabled with the property `quarkus.swagger-ui.always-include=true`
 
 ## Providers
@@ -63,7 +63,7 @@ The supported Package URL types depends on each external provider.
 
 ## Exhort API
 
-Here you can find the [Exhort API Specification](https://github.com/trustification/exhort-api-spec) together with
+Here you can find the [Exhort API Specification](https://maven.pkg.github.com/guacsec/trustify-da-api-spec) together with
 the Java and Javascript generated data model.
 
 ## Dependency Analysis `/api/v4/analysis`
