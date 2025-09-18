@@ -162,7 +162,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                     profile, for instance by exploring vulnerabilites or analyzing SBOMs.
                   </ListItem>
                   <ListItem>
-                    <a href="https://console.redhat.com/application-services/trusted-content" target="_blank"
+                    <a href="https://developers.redhat.com/products/trusted-profile-analyzer/overview" target="_blank"
                        rel="noopener noreferrer">
                       <Button variant="primary" size="sm">
                         Take me there
