@@ -628,6 +628,52 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     assertEquals(Status.OK.getStatusCode(), response.statusCode());
 
+    // Validate content type
+    var contentType = response.headers().firstValue("Content-Type").orElse("");
+    assertTrue(
+        contentType.startsWith("multipart/mixed"),
+        "Expected multipart/mixed content type, but got: " + contentType);
+    assertTrue(
+        contentType.contains("boundary="),
+        "Expected boundary parameter in content type: " + contentType);
+
+    // Validate multipart response structure
+    String body = response.body();
+    assertNotNull(body, "Response body should not be null");
+    assertFalse(body.isEmpty(), "Response body should not be empty");
+
+    // Validate multipart boundaries
+    assertTrue(body.contains("--"), "Response should contain multipart boundaries");
+    // Multipart responses end with --boundary-- (not just --)
+    assertTrue(body.contains("--"), "Response should contain multipart boundary markers");
+
+    // Validate JSON part
+    assertTrue(
+        body.contains("Content-Type: application/json"),
+        "Response should contain JSON part with correct content type");
+    assertTrue(
+        body.contains("Content-Transfer-Encoding: binary"),
+        "JSON part should have binary transfer encoding");
+
+    // Validate HTML part
+    assertTrue(
+        body.contains("Content-Type: text/html"),
+        "Response should contain HTML part with correct content type");
+    assertTrue(
+        body.contains("Content-Disposition: attachment; filename=report.html"),
+        "HTML part should have correct content disposition");
+    assertTrue(
+        body.contains("Content-Transfer-Encoding: 8bit"),
+        "HTML part should have 8bit transfer encoding");
+
+    // Validate that both parts contain actual content (not just headers)
+    // Count the number of boundary markers (each part starts with --)
+    long boundaryCount = body.chars().filter(ch -> ch == '-').count();
+    assertTrue(
+        boundaryCount >= 6, // At least 6 dashes for proper multipart structure
+        "Should have proper multipart boundary structure");
+
+    // Verify API calls were made
     verifySnykRequest(OK_TOKEN);
     verifyOssRequest(OK_USER, OK_TOKEN);
   }

@@ -83,18 +83,33 @@ public class ReportIntegration extends EndpointRouteBuilder {
         from(direct("multipartReport"))
             .routeId("multipartReport")
             .to(direct("htmlReport"))
-            .bean(ReportTransformer.class, "attachHtmlReport")
+            .setProperty("htmlContent", body())
             .to(direct("jsonReport"))
-            .marshal().mimeMultipart(false, false, true)
-            .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_HTML));
+            .to(direct("createMultipartResponse"));
 
         from(direct("batchMultipartReport"))
             .routeId("batchMultipartReport")
             .to(direct("htmlReport"))
-            .bean(ReportTransformer.class, "attachHtmlReport")
+            .setProperty("htmlContent", body())
             .to(direct("batchJsonReport"))
+            .to(direct("createMultipartResponse"));
+
+        from(direct("createMultipartResponse"))
+            .routeId("createMultipartResponse")
+            .setProperty("jsonContent", body())
+            .setBody(exchangeProperty("htmlContent"))
+            .bean(ReportTransformer.class, "attachHtmlReport")
+            .setBody(exchangeProperty("jsonContent"))
             .marshal().mimeMultipart(false, false, true)
-            .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_HTML));
+            .process(exchange -> {
+                // Clean up the Content-Type header to remove quotes and line breaks
+                String contentType = exchange.getIn().getHeader(Exchange.CONTENT_TYPE, String.class);
+                if (contentType != null) {
+                    // Remove quotes around boundary and fix any line breaks
+                    contentType = contentType.replaceAll("\"", "").replaceAll("\\s+", " ");
+                    exchange.getIn().setHeader(Exchange.CONTENT_TYPE, contentType);
+                }
+            });
 
         from(direct("jsonReport"))
             .routeId("jsonReport")
