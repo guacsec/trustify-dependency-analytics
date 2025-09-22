@@ -20,6 +20,7 @@ package com.redhat.exhort.extensions;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,8 @@ public class OidcWiremockExtension extends WiremockExtension {
 
   protected void stubTpaClientToken() {
     server.stubFor(
-        com.github.tomakehurst.wiremock.client.WireMock.post("/auth/realms/tpa/token")
+        com.github.tomakehurst.wiremock.client.WireMock.post(
+                urlMatching(".*/auth/realms/.*/token.*"))
             .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
             .withHeader(
                 "Content-Type",
