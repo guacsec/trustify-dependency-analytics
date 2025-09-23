@@ -46,6 +46,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.camel.Exchange;
 import org.hamcrest.text.MatchesPattern;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -69,6 +71,24 @@ import jakarta.ws.rs.core.Response.Status;
 @QuarkusTest
 @QuarkusTestResource(OidcWiremockExtension.class)
 public class AnalysisTest extends AbstractAnalysisTest {
+
+  @Override
+  @AfterEach
+  void resetMock() {
+    if (server != null) {
+      server.resetAll();
+      // Re-stub OIDC endpoints after reset using the extension
+      OidcWiremockExtension.restubOidcEndpoints(server);
+    }
+  }
+
+  @BeforeEach
+  void setupOidcStubs() {
+    if (server != null) {
+      // Ensure OIDC endpoints are stubbed at the beginning of each test
+      OidcWiremockExtension.restubOidcEndpoints(server);
+    }
+  }
 
   private static final String CYCLONEDX = "cyclonedx";
   private static final String SPDX = "spdx";
