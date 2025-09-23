@@ -57,19 +57,26 @@ public class MonitoringProcessor {
         Stream.of(LOGGED_REQUEST_HEADERS)
             .filter(e -> exchange.getIn().getHeaders().containsKey(e))
             .collect(Collectors.toMap(h -> h, h -> exchange.getIn().getHeader(h, String.class)));
-    var context = exchange.getProperty(MONITORING_CONTEXT, MonitoringContext.class);
-    metadata.put(
-        Constants.EXHORT_REQUEST_ID_HEADER,
-        exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER, String.class));
-    if (context == null) {
-      context =
-          new MonitoringContext(
-              null,
-              exchange.getIn().getHeader(Constants.RHDA_TOKEN_HEADER, String.class),
-              metadata,
-              null);
-    }
-    context.breadcrumbs().add(exchange.getIn().getBody(String.class));
+
+    var requestId = exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER, String.class);
+    metadata.put(Constants.EXHORT_REQUEST_ID_HEADER, requestId);
+
+    var context =
+        new MonitoringContext(
+            null, // Start with empty breadcrumbs
+            exchange.getIn().getHeader(Constants.RHDA_TOKEN_HEADER, String.class),
+            metadata,
+            null);
+
+    String requestBody = exchange.getIn().getBody(String.class);
+    context.breadcrumbs().add("Request received - " + requestId);
+    context
+        .breadcrumbs()
+        .add("Content-Type: " + exchange.getIn().getHeader(Exchange.CONTENT_TYPE, String.class));
+
+    context.metadata().put("request_body", requestBody);
+    context.metadata().put("request_id", requestId);
+
     exchange.setProperty(MONITORING_CONTEXT, context);
   }
 
@@ -79,7 +86,12 @@ public class MonitoringProcessor {
       return;
     }
     var errorContext = MonitoringContext.copyOf(context);
-    errorContext.breadcrumbs().add(exchange.getIn().getBody(String.class));
+
+    // Add meaningful breadcrumbs for provider errors
+    var requestId = exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER, String.class);
+    errorContext.breadcrumbs().add("Provider error in " + providerName + " - " + requestId);
+    errorContext.breadcrumbs().add("Error type: " + exception.getClass().getSimpleName());
+
     errorContext.tags().put(PROVIDER_TAG, providerName);
     errorContext.tags().put(ERROR_TYPE_TAG, PROVIDER_ERROR_TYPE);
     Stream.of(LOGGED_PROPERTIES)
@@ -105,11 +117,29 @@ public class MonitoringProcessor {
     if (context == null) {
       return;
     }
+
+    // Add meaningful breadcrumbs for errors
+    var requestId = exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER, String.class);
+    var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+
+    context.breadcrumbs().add(errorType + " error occurred - " + requestId);
+    context.breadcrumbs().add("Exception: " + exception.getClass().getSimpleName());
+    if (exception.getMessage() != null && !exception.getMessage().isEmpty()) {
+      context.breadcrumbs().add("Error message: " + exception.getMessage());
+    }
+
     context.tags().put(ERROR_TYPE_TAG, errorType);
     Stream.of(LOGGED_PROPERTIES)
         .forEach(p -> context.metadata().put(p, exchange.getProperty(p, String.class)));
 
-    var exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
     client.reportException(exception, context);
+  }
+
+  /**
+   * Clean up monitoring context after request completion to prevent contamination between requests.
+   * This should be called at the end of each request.
+   */
+  public void cleanupContext(Exchange exchange) {
+    exchange.removeProperty(MONITORING_CONTEXT);
   }
 }

@@ -370,6 +370,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     msg.removeHeaders("ex-.*-token");
     msg.removeHeader(Constants.AUTHORIZATION_HEADER);
     msg.removeHeaders("rhda-.*");
+
+    // Clean up monitoring context to prevent contamination between requests
+    monitoringProcessor.cleanupContext(exchange);
   }
 
   private void processSbomEntry(Exchange exchange) {
