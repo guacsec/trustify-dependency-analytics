@@ -35,6 +35,7 @@ import org.cyclonedx.model.Component;
 import org.cyclonedx.parsers.JsonParser;
 import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
@@ -187,8 +188,11 @@ public class CycloneDxParser extends SbomParser {
   }
 
   private Bom parseBom(InputStream input) {
+    byte[] inputBytes = null;
     try {
-      JsonNode node = MAPPER.readTree(input);
+      // Read the input stream content for potential error logging
+      inputBytes = input.readAllBytes();
+      JsonNode node = MAPPER.readTree(inputBytes);
       var bom = MAPPER.treeToValue(node, Bom.class);
       var version = parseSchemaVersion(bom.getSpecVersion());
       var schema = JSON_PARSER.getJsonSchema(version, MAPPER);
@@ -200,6 +204,18 @@ public class CycloneDxParser extends SbomParser {
       return bom;
     } catch (ParseException e) {
       LOGGER.debug("CycloneDX Validation error: ", e);
+      throw new CycloneDXValidationException(e);
+    } catch (JsonMappingException e) {
+      LOGGER.error("CycloneDX JSON parsing error: ", e);
+      // Log the problematic JSON for debugging
+      if (inputBytes != null) {
+        try {
+          String sbomContent = new String(inputBytes);
+          LOGGER.errorf("Problematic SBOM content: %s", sbomContent);
+        } catch (Exception logException) {
+          LOGGER.warn("Could not read SBOM content for logging", logException);
+        }
+      }
       throw new CycloneDXValidationException(e);
     } catch (IOException e) {
       LOGGER.error("CycloneDX Validation error: ", e);
