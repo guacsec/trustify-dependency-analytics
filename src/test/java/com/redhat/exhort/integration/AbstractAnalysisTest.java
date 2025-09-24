@@ -237,44 +237,10 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void verifyTpaRequest(String token, int count) {
-    // If the token is not the one provided by the stub, just verify the request
-    if (!TPA_TOKEN.equals(token)) {
-      server.verify(count, postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH)));
-    } else {
-      // Check if OIDC token exchange was attempted (Tekton environment)
-      boolean oidcAttempted = false;
-      try {
-        server.verify(
-            count,
-            postRequestedFor(urlEqualTo("/auth/realms/tpa/token"))
-                .withHeader("Authorization", containing("Basic")));
-        oidcAttempted = true;
-      } catch (Exception e) {
-        // OIDC was not attempted
-      }
-
-      if (oidcAttempted) {
-        // OIDC was attempted - check if it succeeded by looking for the subsequent TPA request
-        try {
-          server.verify(
-              count,
-              postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH))
-                  .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + TPA_TOKEN)));
-        } catch (Exception e) {
-          // OIDC was attempted but failed - this is expected in some test scenarios
-          // Just verify that OIDC was attempted, no need to verify TPA request
-          // The test passes if OIDC was attempted, regardless of success
-          // No additional verification needed - OIDC attempt is sufficient
-          return; // Exit early since OIDC was attempted
-        }
-      } else {
-        // No OIDC attempt - verify direct Bearer token (local/GitHub environments)
-        server.verify(
-            count,
-            postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH))
-                .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + token)));
-      }
-    }
+    server.verify(
+        count,
+        postRequestedFor(urlEqualTo(Constants.TPA_ANALYZE_PATH))
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + token)));
   }
 
   protected void stubAllProviders() {
