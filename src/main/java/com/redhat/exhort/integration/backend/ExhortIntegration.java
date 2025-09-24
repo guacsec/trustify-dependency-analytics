@@ -44,13 +44,14 @@ import org.apache.camel.component.micrometer.MicrometerConstants;
 import org.apache.camel.component.micrometer.routepolicy.MicrometerRoutePolicyFactory;
 import org.apache.camel.model.rest.RestParamType;
 import org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy;
+import org.jboss.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.analytics.AnalyticsService;
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.config.exception.DetailedException;
+import com.redhat.exhort.config.exception.SbomValidationException;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.ProviderAggregationStrategy;
 import com.redhat.exhort.integration.providers.ProvidersBodyPlusResponseCodeAggregationStrategy;
@@ -76,6 +77,7 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class ExhortIntegration extends EndpointRouteBuilder {
 
+  private static final Logger LOGGER = Logger.getLogger(ExhortIntegration.class);
   private static final String GZIP_ENCODING = "gzip";
 
   private final MeterRegistry registry;
@@ -332,8 +334,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
                         try {
                           return parser.parse(
                               new ByteArrayInputStream(mapper.writeValueAsBytes(e.getValue())));
-                        } catch (JsonProcessingException ex) {
-                          throw new RuntimeException(ex);
+                        } catch (Exception parseEx) {
+                          throw new SbomValidationException(
+                              "Failed to parse SBOM " + parseEx.getMessage(), parseEx);
                         }
                       }));
       exchange.getIn().setBody(trees);

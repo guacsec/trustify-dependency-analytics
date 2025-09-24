@@ -132,7 +132,9 @@ public class MonitoringProcessor {
     Stream.of(LOGGED_PROPERTIES)
         .forEach(p -> context.metadata().put(p, exchange.getProperty(p, String.class)));
 
-    client.reportException(exception, context);
+    // Create a sanitized exception without Exchange IDs for better GlitchTip grouping
+    Exception sanitizedException = sanitizeException(exception);
+    client.reportException(sanitizedException, context);
   }
 
   /**
@@ -141,5 +143,27 @@ public class MonitoringProcessor {
    */
   public void cleanupContext(Exchange exchange) {
     exchange.removeProperty(MONITORING_CONTEXT);
+  }
+
+  private Exception sanitizeException(Exception originalException) {
+    if (originalException == null) {
+      return originalException;
+    }
+
+    // Use the root cause exception for more informative error messages
+    Throwable rootCause = getRootCause(originalException);
+    if (rootCause != originalException && rootCause.getMessage() != null) {
+      return new RuntimeException(rootCause.getMessage(), originalException.getCause());
+    }
+
+    return originalException;
+  }
+
+  private Throwable getRootCause(Throwable throwable) {
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
   }
 }

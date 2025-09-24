@@ -18,7 +18,7 @@
 
 package com.redhat.exhort.config.exception;
 
-public abstract class SbomValidationException extends ClientDetailedException {
+public class SbomValidationException extends ClientDetailedException {
 
   public SbomValidationException(String message, String detail) {
     super(message, detail);
