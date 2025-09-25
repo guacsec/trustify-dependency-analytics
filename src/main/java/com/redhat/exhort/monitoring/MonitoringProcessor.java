@@ -43,7 +43,8 @@ public class MonitoringProcessor {
     Constants.ACCEPT_HEADER,
     Constants.USER_AGENT_HEADER,
     Constants.RHDA_SOURCE_HEADER,
-    Constants.RHDA_OPERATION_TYPE_HEADER
+    Constants.RHDA_OPERATION_TYPE_HEADER,
+    Constants.RHDA_PKG_MANAGER_HEADER
   };
 
   private static final String[] LOGGED_PROPERTIES = {

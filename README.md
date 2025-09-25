@@ -293,6 +293,7 @@ API Clients are expected to send the following HTTP Headers in order to help obs
 is not provided an anonymous event with a generated UUID will be sent instead.
 - `rhda-source` The client consuming the Exhort API. It will default to the `User-Agent` HTTP Header
 - `rhda-operation-type` When performing an analysis, clients might specify whether it is a component-analysis or a stack-analysis
+- `rhda-pkg-manager` The Package manager that the SBOM was generated from (examples: `maven`, `gradle-kotlin`)
 
 Telemetry connects to [Segment](https://segment.com/) for sending events.
 The connection can be configured with the following properties.
