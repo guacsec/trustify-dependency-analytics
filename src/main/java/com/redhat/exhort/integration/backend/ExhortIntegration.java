@@ -201,6 +201,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("analyzeSboms"))
       .routeId("analyzeSboms")
+      .process(this::validateSbomsInput)
       .split(body(), new GroupedBodyAggregationStrategy())
         .parallelProcessing()
           .process(this::processSbomEntry)
@@ -382,6 +383,16 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     Map.Entry<?, ?> entry = exchange.getIn().getBody(Map.Entry.class);
     exchange.setProperty(Constants.SBOM_ID_PROPERTY, entry.getKey());
     exchange.getIn().setBody(entry.getValue());
+  }
+
+  private void validateSbomsInput(Exchange exchange) {
+    @SuppressWarnings("unchecked")
+    Map<String, DependencyTree> map = exchange.getIn().getBody(Map.class);
+    if (map == null || map.isEmpty()) {
+      throw new SbomValidationException(
+          "SBOM Batch cannot be empty",
+          new IllegalArgumentException("Empty or null SBOM map provided"));
+    }
   }
 
   public DependencyTree addSbomIdToDependencyTree(
