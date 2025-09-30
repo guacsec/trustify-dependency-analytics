@@ -43,7 +43,7 @@ public final class Constants {
   public static final String ACCEPT_HEADER = "Accept";
   public static final String ACCEPT_ENCODING_HEADER = "Accept-Encoding";
   public static final String AUTHORIZATION_HEADER = "Authorization";
-  public static final String TPA_TOKEN_HEADER = "ex-tpa-token";
+  public static final String TRUSTIFY_TOKEN_HEADER = "ex-trustify-token";
 
   public static final String VERBOSE_MODE_HEADER = "verbose";
 
@@ -60,7 +60,7 @@ public final class Constants {
 
   public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
   public static final String OSV_PROVIDER = "osv";
-  public static final String TPA_PROVIDER = "tpa";
+  public static final String TRUSTIFY_PROVIDER = "trustify";
   public static final String UNKNOWN_PROVIDER = "unknown";
 
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
@@ -82,9 +82,9 @@ public final class Constants {
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
   public static final String TRUSTED_CONTENT_PATH = "/recommend";
-  public static final String TPA_ANALYZE_PATH = "/vulnerability/analyze";
-  public static final String TPA_HEALTH_PATH = "/health/live";
-  public static final String TPA_TOKEN_PATH = "/vulnerability";
+  public static final String TRUSTIFY_ANALYZE_PATH = "/vulnerability/analyze";
+  public static final String TRUSTIFY_HEALTH_PATH = "/health/live";
+  public static final String TRUSTIFY_TOKEN_PATH = "/vulnerability";
 
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
   public static final boolean DEFAULT_VERBOSE_MODE = false;
@@ -100,7 +100,7 @@ public final class Constants {
           new ArrayList<>() {
             {
               add(OSV_PROVIDER);
-              add(TPA_PROVIDER);
+              add(TRUSTIFY_PROVIDER);
             }
           });
 

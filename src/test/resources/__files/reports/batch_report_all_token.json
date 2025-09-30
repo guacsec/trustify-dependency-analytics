@@ -372,10 +372,10 @@
           }
         }
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": true,
-          "name": "tpa",
+          "name": "trustify",
           "code": 200,
           "message": "OK"
         },
@@ -722,10 +722,10 @@
         },
         "sources": {}
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": true,
-          "name": "tpa",
+          "name": "trustify",
           "code": 200,
           "message": "OK"
         },
@@ -782,15 +782,15 @@
           }
         }
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": true,
-          "name": "tpa",
+          "name": "trustify",
           "code": 200,
           "message": "OK"
         },
         "sources": {
-          "tpa": {
+          "trustify": {
             "summary": {
               "direct": 0,
               "transitive": 0,

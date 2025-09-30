@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.redhat.exhort.integration.providers.tpa;
+package com.redhat.exhort.integration.providers.trustify;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,14 +37,14 @@ import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.DirectDependency;
 import com.redhat.exhort.model.ProviderResponse;
 
-public class TpaResponseHandlerTest {
+public class TrustifyResponseHandlerTest {
 
-  private TpaResponseHandler handler;
+  private TrustifyResponseHandler handler;
   private DependencyTree dependencyTree;
 
   @BeforeEach
   void setUp() {
-    handler = new TpaResponseHandler();
+    handler = new TrustifyResponseHandler();
     handler.mapper = new ObjectMapper();
 
     // Build a simple dependency tree for testing

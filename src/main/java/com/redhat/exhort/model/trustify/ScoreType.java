@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.redhat.exhort.model.tpa;
+package com.redhat.exhort.model.trustify;
 
 import java.util.Arrays;
 

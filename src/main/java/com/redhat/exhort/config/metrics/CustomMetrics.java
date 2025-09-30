@@ -40,7 +40,7 @@ public class CustomMetrics {
   private static final Collection<String> MONITORED_ROUTES =
       List.of(
           "getTrustedContent",
-          "tpaRequest",
+          "trustifyRequest",
           "analyticsIdentify",
           "analyticsTrackAnalysis",
           "analyticsTrackToken",

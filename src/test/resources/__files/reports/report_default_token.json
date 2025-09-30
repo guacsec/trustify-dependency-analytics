@@ -377,10 +377,10 @@
                 }
             }
         },
-        "tpa": {
+        "trustify": {
             "status": {
                 "ok": true,
-                "name": "tpa",
+                "name": "trustify",
                 "code": 200,
                 "message": "OK"
             },

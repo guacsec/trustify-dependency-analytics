@@ -87,22 +87,22 @@ objects:
                   containerPort: '${{MANAGEMENT_PORT}}'
                   protocol: TCP
               env:
-                - name: TPA_HOST
-                  value: '${TPA_HOST}'
-                - name: TPA_AUTH_SERVER_URL
-                  value: '${TPA_AUTH_SERVER_URL}'
-                # - name: TPA_CLIENT_ID
+                - name: TRUSTIFY_HOST
+                  value: '${TRUSTIFY_HOST}'
+                - name: TRUSTIFY_AUTH_SERVER_URL
+                  value: '${TRUSTIFY_AUTH_SERVER_URL}'
+                # - name: TRUSTIFY_CLIENT_ID
                 #   valueFrom:
                 #     secretKeyRef:
                 #       name: exhort-secret
-                #       key: tpa.client.id
-                # - name: TPA_CLIENT_SECRET
+                #       key: trustify.client.id
+                # - name: TRUSTIFY_CLIENT_SECRET
                 #   valueFrom:
                 #     secretKeyRef:
                 #       name: exhort-secret
-                #       key: tpa.client.secret
-                - name: API_TPA_DISABLED
-                  value: '${TPA_DISABLED}'
+                #       key: trustify.client.secret
+                - name: API_TRUSTIFY_DISABLED
+                  value: '${TRUSTIFY_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:
                     secretKeyRef:
@@ -230,19 +230,19 @@ parameters:
     description: SSL Mode for Postgres
     value: 'prefer'
     required: true
-  - name: TPA_DISABLED
-    displayName: Disable TPA
-    description: Disable TPA integration
+  - name: TRUSTIFY_DISABLED
+    displayName: Disable Trustify
+    description: Disable Trustify integration
     value: "true"
     required: true
-  - name: TPA_HOST
-    displayName: TPA Host
-    description: Trusted Profile Analyzer REST API
+  - name: TRUSTIFY_HOST
+    displayName: Trustify Host
+    description: Trustify REST API
     value: https://trust.rhcloud.com/api/v2/
     required: true
-  - name: TPA_AUTH_SERVER_URL
-    displayName: TPA Auth Server URL
-    description: Trusted Profile Analyzer Auth Server URL
+  - name: TRUSTIFY_AUTH_SERVER_URL
+    displayName: Trustify Auth Server URL
+    description: Trustify Auth Server URL
     value: https://sso.redhat.com/auth/realms/redhat-external
     required: true
   - name: SERVICE_PORT

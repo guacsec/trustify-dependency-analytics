@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.redhat.exhort.integration.providers.tpa;
+package com.redhat.exhort.integration.providers.trustify;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,17 +39,17 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 @RegisterForReflection
-public class TpaRequestBuilder {
+public class TrustifyRequestBuilder {
 
-  @ConfigProperty(name = "quarkus.oidc-client.tpa.enabled", defaultValue = "true")
+  @ConfigProperty(name = "quarkus.oidc-client.trustify.enabled", defaultValue = "true")
   boolean authEnabled;
 
   @Inject OidcClients oidcClients;
 
   private static final int BULK_SIZE = 128;
 
-  public static final String TPA_CLIENT_TENANT = "tpa";
-  private static final int TPA_CLIENT_TIMEOUT = 10;
+  public static final String TRUSTIFY_CLIENT_TENANT = "trustify";
+  private static final int TRUSTIFY_CLIENT_TIMEOUT = 10;
 
   private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
@@ -79,7 +79,7 @@ public class TpaRequestBuilder {
 
   public void addAuthentication(Exchange exchange) {
     var message = exchange.getMessage();
-    var userToken = message.getHeader(Constants.TPA_TOKEN_HEADER, String.class);
+    var userToken = message.getHeader(Constants.TRUSTIFY_TOKEN_HEADER, String.class);
     String token;
     if (!authEnabled) {
       return;
@@ -89,10 +89,10 @@ public class TpaRequestBuilder {
     } else {
       token =
           oidcClients
-              .getClient(TPA_CLIENT_TENANT)
+              .getClient(TRUSTIFY_CLIENT_TENANT)
               .getTokens()
               .await()
-              .atMost(Duration.ofSeconds(TPA_CLIENT_TIMEOUT))
+              .atMost(Duration.ofSeconds(TRUSTIFY_CLIENT_TIMEOUT))
               .getAccessToken();
     }
     if (token != null) {

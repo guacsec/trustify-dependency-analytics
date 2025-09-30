@@ -18,7 +18,7 @@
 
 package com.redhat.exhort.integration;
 
-import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
+import static com.redhat.exhort.extensions.WiremockExtension.TRUSTIFY_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -185,15 +185,16 @@ public class AnalysisTest extends AbstractAnalysisTest {
               assertTrue(provider.get().getSources().isEmpty());
             });
 
-    verifyNoInteractionsWithTpa();
+    verifyNoInteractionsWithTrustify();
     verifyNoInteractionsWithTrustedContent();
   }
 
   private static Stream<Arguments> emptySbomArguments() {
     return Stream.of(
-        Arguments.of(Map.of(Constants.TPA_PROVIDER, 200), Collections.emptyMap()),
+        Arguments.of(Map.of(Constants.TRUSTIFY_PROVIDER, 200), Collections.emptyMap()),
         Arguments.of(
-            Map.of(Constants.TPA_PROVIDER, 200), Map.of(Constants.TPA_TOKEN_HEADER, OK_TOKEN)));
+            Map.of(Constants.TRUSTIFY_PROVIDER, 200),
+            Map.of(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)));
   }
 
   @Test
@@ -218,7 +219,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/report_default_token.json", body);
-    verifyTpaRequest(TPA_TOKEN);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyOsvRequest();
     verifyTrustedContentRequest();
   }
@@ -245,9 +246,9 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertRecommendations(body, Constants.TPA_PROVIDER, CSAF_SOURCE, 0);
-    assertRecommendations(body, Constants.TPA_PROVIDER, OSV_SOURCE, 0);
-    verifyTpaRequest(TPA_TOKEN);
+    assertRecommendations(body, Constants.TRUSTIFY_PROVIDER, CSAF_SOURCE, 0);
+    assertRecommendations(body, Constants.TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyOsvRequest();
     verifyNoInteractionsWithTrustedContent();
   }
@@ -260,7 +261,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
         given()
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
             .body(loadSBOMFile(CYCLONEDX))
             .when()
             .post("/api/v4/analysis")
@@ -275,7 +276,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/report_all_token.json", body);
-    verifyTpaRequest(OK_TOKEN);
+    verifyTrustifyRequest(OK_TOKEN);
     verifyOsvRequest();
   }
 
@@ -288,7 +289,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -305,9 +306,9 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertEquals(3, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
-        report.getProviders().get(Constants.TPA_PROVIDER).getStatus().getCode());
+        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getStatus().getCode());
 
-    verifyTpaRequest(INVALID_TOKEN);
+    verifyTrustifyRequest(INVALID_TOKEN);
   }
 
   @Test
@@ -319,7 +320,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -334,10 +335,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertEquals(3, report.getProviders().size());
-    assertEquals(401, report.getProviders().get(Constants.TPA_PROVIDER).getStatus().getCode());
-    assertTrue(report.getProviders().get(Constants.TPA_PROVIDER).getSources().isEmpty());
+    assertEquals(401, report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getStatus().getCode());
+    assertTrue(report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().isEmpty());
 
-    verifyTpaRequest(INVALID_TOKEN);
+    verifyTrustifyRequest(INVALID_TOKEN);
   }
 
   @Test
@@ -349,7 +350,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -364,11 +365,12 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var osvSource = report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(OSV_SOURCE);
+    var osvSource =
+        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
     assertOsvSummary(osvSource);
     assertOsvDependenciesReport(osvSource.getDependencies());
 
-    verifyTpaRequest(OK_TOKEN);
+    verifyTrustifyRequest(OK_TOKEN);
   }
 
   @Test
@@ -395,16 +397,17 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var osvSource = report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(OSV_SOURCE);
+    var osvSource =
+        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
     var csafSource =
-        report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(CSAF_SOURCE);
+        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(CSAF_SOURCE);
     assertOsvSummary(osvSource);
     assertCsafSummary(csafSource);
 
     assertNull(osvSource.getDependencies());
     assertNull(csafSource.getDependencies());
 
-    verifyTpaRequest(TPA_TOKEN);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
   }
 
   @ParameterizedTest
@@ -472,7 +475,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
         "Should have proper multipart boundary structure");
 
     // Verify API calls were made
-    verifyTpaRequest(TPA_TOKEN);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
   }
 
   @Test
@@ -573,7 +576,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
         given()
             .header(CONTENT_TYPE, getContentType(sbom))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
             .body(loadBatchSBOMFile(sbom))
             .when()
             .post("/api/v4/batch-analysis")
@@ -588,7 +591,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/batch_report_all_token.json", body);
-    verifyTpaRequest(OK_TOKEN, 3);
+    verifyTrustifyRequest(OK_TOKEN, 3);
     verifyOsvRequest(3);
   }
 

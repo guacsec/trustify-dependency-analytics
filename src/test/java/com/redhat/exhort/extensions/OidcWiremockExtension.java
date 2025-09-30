@@ -32,14 +32,14 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 public class OidcWiremockExtension extends WiremockExtension {
 
-  private static final String CLIENT_ID = "test-tpa-client";
-  private static final String CLIENT_SECRET = "test-tpa-secret";
+  private static final String CLIENT_ID = "test-trustify-client";
+  private static final String CLIENT_SECRET = "test-trustify-secret";
 
   @Override
   public Map<String, String> start() {
     var base = super.start();
 
-    stubTpaClientToken();
+    stubTrustifyClientToken();
     var oidcConfig = new HashMap<>(base);
 
     oidcConfig.put("keycloak.url", server.baseUrl());
@@ -64,27 +64,27 @@ public class OidcWiremockExtension extends WiremockExtension {
                     .withBody(
                         String.format(
                             "{\"access_token\":\"%s\",\"token_type\":\"Bearer\",\"expires_in\":300}",
-                            TPA_TOKEN))));
+                            TRUSTIFY_TOKEN))));
 
     // Re-stub OpenID configuration endpoint
     String openIdConfigJson =
         String.format(
             """
             {
-              "jwks_uri": "%1$s/auth/realms/tpa/protocol/openid-connect/certs",
-              "token_introspection_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/token/introspect",
-              "authorization_endpoint": "%1$s/auth/realms/tpa",
-              "userinfo_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/userinfo",
-              "token_endpoint": "%1$s/auth/realms/tpa/token",
+              "jwks_uri": "%1$s/auth/realms/trustify/protocol/openid-connect/certs",
+              "token_introspection_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/token/introspect",
+              "authorization_endpoint": "%1$s/auth/realms/trustify",
+              "userinfo_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/userinfo",
+              "token_endpoint": "%1$s/auth/realms/trustify/token",
               "issuer" : "https://server.example.com",
-              "introspection_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/token/introspect",
-              "end_session_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/end-session"
+              "introspection_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/token/introspect",
+              "end_session_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/end-session"
             }
             """,
             server.baseUrl());
 
     server.stubFor(
-        get("/realms/tpa/.well-known/openid-configuration")
+        get("/realms/trustify/.well-known/openid-configuration")
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -92,7 +92,7 @@ public class OidcWiremockExtension extends WiremockExtension {
                     .withBody(openIdConfigJson)));
   }
 
-  protected void stubTpaClientToken() {
+  protected void stubTrustifyClientToken() {
     server.stubFor(
         post(urlMatching(".*/auth/realms/.*/token.*"))
             .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
@@ -105,26 +105,26 @@ public class OidcWiremockExtension extends WiremockExtension {
                     .withBody(
                         String.format(
                             "{\"access_token\":\"%s\",\"token_type\":\"Bearer\",\"expires_in\":300}",
-                            TPA_TOKEN))));
+                            TRUSTIFY_TOKEN))));
 
     String openIdConfigJson =
         String.format(
             """
             {
-              "jwks_uri": "%1$s/auth/realms/tpa/protocol/openid-connect/certs",
-              "token_introspection_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/token/introspect",
-              "authorization_endpoint": "%1$s/auth/realms/tpa",
-              "userinfo_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/userinfo",
-              "token_endpoint": "%1$s/auth/realms/tpa/token",
+              "jwks_uri": "%1$s/auth/realms/trustify/protocol/openid-connect/certs",
+              "token_introspection_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/token/introspect",
+              "authorization_endpoint": "%1$s/auth/realms/trustify",
+              "userinfo_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/userinfo",
+              "token_endpoint": "%1$s/auth/realms/trustify/token",
               "issuer" : "https://server.example.com",
-              "introspection_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/token/introspect",
-              "end_session_endpoint": "%1$s/auth/realms/tpa/protocol/openid-connect/end-session"
+              "introspection_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/token/introspect",
+              "end_session_endpoint": "%1$s/auth/realms/trustify/protocol/openid-connect/end-session"
             }
             """,
             server.baseUrl());
 
     server.stubFor(
-        get("/realms/tpa/.well-known/openid-configuration")
+        get("/realms/trustify/.well-known/openid-configuration")
             .willReturn(
                 aResponse()
                     .withStatus(200)

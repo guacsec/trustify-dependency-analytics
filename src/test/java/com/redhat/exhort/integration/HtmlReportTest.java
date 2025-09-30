@@ -18,7 +18,7 @@
 
 package com.redhat.exhort.integration;
 
-import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
+import static com.redhat.exhort.extensions.WiremockExtension.TRUSTIFY_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,21 +76,21 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     var webClient = initWebClient();
     HtmlPage page = extractPage(webClient, body);
-    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa/csaf source']");
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify/csaf source']");
     assertNotNull(srcBtn);
 
     page = click(webClient, srcBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size()); // osv | tpa/osv | tpa/csaf
-    DomElement table = tables.get(tables.size() - 1); // tpa/csaf
+    assertEquals(3, tables.size()); // osv | trustify/osv | trustify/csaf
+    DomElement table = tables.get(tables.size() - 1); // trustify/csaf
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
     assertNotNull(tbody);
     page = expandTransitiveTableDataCell(webClient, tbody);
 
     table =
         page.getFirstByXPath(
-            "//table[contains(@aria-label, 'tpa/csaf transitive vulnerabilities')]");
+            "//table[contains(@aria-label, 'trustify/csaf transitive vulnerabilities')]");
     List<HtmlTableBody> tbodies = table.getByXPath(".//tbody");
     HtmlTableBody issue =
         tbodies.stream()
@@ -103,7 +103,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .get();
     assertNotNull(issue);
 
-    verifyTpaRequest(TPA_TOKEN);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
   }
 
   @Test
@@ -115,7 +115,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -133,17 +133,17 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
-        "Warning alert:Tpa: Unauthorized: Verify the provided credentials are valid.",
+        "Warning alert:Trustify: Unauthorized: Verify the provided credentials are valid.",
         heading.getTextContent());
 
-    // Select the Tpa Source
-    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    // Select the Trustify Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify source']");
     assertNotNull(srcBtn);
     page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifyTpaRequest(INVALID_TOKEN);
+    verifyTrustifyRequest(INVALID_TOKEN);
   }
 
   @Test
@@ -155,7 +155,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.TPA_TOKEN_HEADER, UNAUTH_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, UNAUTH_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -172,18 +172,18 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
-        "Warning alert:Tpa: Forbidden: The provided credentials don't have the required"
+        "Warning alert:Trustify: Forbidden: The provided credentials don't have the required"
             + " permissions.",
         heading.getTextContent());
 
-    // Select the TPA Source
-    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    // Select the TRUSTIFY Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify source']");
     assertNotNull(srcBtn);
     page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifyTpaRequest(UNAUTH_TOKEN);
+    verifyTrustifyRequest(UNAUTH_TOKEN);
   }
 
   @Test
@@ -195,7 +195,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.TPA_TOKEN_HEADER, ERROR_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, ERROR_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -215,21 +215,21 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     boolean foundHeading = false;
     for (HtmlHeading4 heading : headings) {
       String headingText = heading.getTextContent();
-      if (headingText.contains("Tpa")) {
+      if (headingText.contains("Trustify")) {
         foundHeading = true;
-        assertEquals("Danger alert:Tpa: Server Error: Unexpected error", headingText);
+        assertEquals("Danger alert:Trustify: Server Error: Unexpected error", headingText);
         break;
       }
     }
-    assertTrue(foundHeading, "No heading with 'TPA' found for hmtl error");
-    // Select the Tpa Source
-    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    assertTrue(foundHeading, "No heading with 'TRUSTIFY' found for hmtl error");
+    // Select the Trustify Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify source']");
     assertNotNull(srcBtn);
     page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifyTpaRequest(ERROR_TOKEN);
+    verifyTrustifyRequest(ERROR_TOKEN);
   }
 
   @Test
@@ -241,7 +241,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadBatchSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
             .when()
             .post("/api/v4/batch-analysis")
             .then()
@@ -268,7 +268,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             "//a[contains(@href, 'https://catalog.redhat.com/software/containers/ubi9/')]");
     assertTrue(!anchorElements.isEmpty(), "At least one href contains the desired substring");
 
-    verifyTpaRequest(OK_TOKEN, 3);
+    verifyTrustifyRequest(OK_TOKEN, 3);
   }
 
   private HtmlTableBody getTableBodyForDependency(String depRef, DomElement table) {

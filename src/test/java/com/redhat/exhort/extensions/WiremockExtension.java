@@ -28,7 +28,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
 
-  public static final String TPA_TOKEN = "tpa-token-abc";
+  public static final String TRUSTIFY_TOKEN = "trustify-token-abc";
 
   final WireMockServer server = new WireMockServer(options().dynamicPort());
 
@@ -39,7 +39,7 @@ public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
     return Map.of(
         "api.trustedcontent.host", server.baseUrl(),
         "api.onguard.host", server.baseUrl(),
-        "api.tpa.host", server.baseUrl());
+        "api.trustify.host", server.baseUrl());
   }
 
   @Override

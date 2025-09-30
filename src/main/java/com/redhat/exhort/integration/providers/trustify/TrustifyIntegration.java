@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.redhat.exhort.integration.providers.tpa;
+package com.redhat.exhort.integration.providers.trustify;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -34,32 +34,32 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
-public class TpaIntegration extends EndpointRouteBuilder {
+public class TrustifyIntegration extends EndpointRouteBuilder {
 
-  @ConfigProperty(name = "api.tpa.timeout", defaultValue = "60s")
+  @ConfigProperty(name = "api.trustify.timeout", defaultValue = "60s")
   String timeout;
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
-  @Inject TpaResponseHandler responseHandler;
-  @Inject TpaRequestBuilder requestBuilder;
+  @Inject TrustifyResponseHandler responseHandler;
+  @Inject TrustifyRequestBuilder requestBuilder;
 
   @Override
   public void configure() throws Exception {
     // fmt:off
-    from(direct("tpaScan"))
-      .routeId("tpaScan")
+    from(direct("trustifyScan"))
+      .routeId("trustifyScan")
       .choice()
-      .when(method(TpaRequestBuilder.class, "isEmpty"))
+      .when(method(TrustifyRequestBuilder.class, "isEmpty"))
         .setBody(method(responseHandler, "emptyResponse"))
         .transform().method(responseHandler, "buildReport")
       .endChoice()
       .otherwise()
-        .to(direct("tpaSplitRequest"))
+        .to(direct("trustifySplitRequest"))
         .transform().method(responseHandler, "buildReport");
 
-    from(direct("tpaSplitRequest"))
-      .routeId("tpaSplitRequest")
-      .transform(method(TpaRequestBuilder.class, "split"))
+    from(direct("trustifySplitRequest"))
+      .routeId("trustifySplitRequest")
+      .transform(method(TrustifyRequestBuilder.class, "split"))
       .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
         .parallelProcessing()
           .transform().method(requestBuilder, "buildRequest")
@@ -70,23 +70,23 @@ public class TpaIntegration extends EndpointRouteBuilder {
           .end()
           .process(this::processRequest)
           .process(requestBuilder::addAuthentication)
-          .to(http("{{api.tpa.host}}"))
+          .to(http("{{api.trustify.host}}"))
           .transform(method(responseHandler, "responseToIssues"))
         .onFallback()
           .process(responseHandler::processResponseError);
   
 
-    from(direct("tpaHealthCheck"))
-      .routeId("tpaHealthCheck")
-      .setProperty(Constants.PROVIDER_NAME, constant(Constants.TPA_PROVIDER))
+    from(direct("trustifyHealthCheck"))
+      .routeId("trustifyHealthCheck")
+      .setProperty(Constants.PROVIDER_NAME, constant(Constants.TRUSTIFY_PROVIDER))
       .choice()
-         .when(method(vulnerabilityProvider, "getEnabled").contains(Constants.TPA_PROVIDER))
-            .to(direct("tpaHealthCheckEndpoint"))
+         .when(method(vulnerabilityProvider, "getEnabled").contains(Constants.TRUSTIFY_PROVIDER))
+            .to(direct("trustifyHealthCheckEndpoint"))
          .otherwise()
             .to(direct("healthCheckProviderDisabled"));
 
-    from(direct("tpaHealthCheckEndpoint"))
-      .routeId("tpaHealthCheckEndpoint")
+    from(direct("trustifyHealthCheckEndpoint"))
+      .routeId("trustifyHealthCheckEndpoint")
       .process(this::processHealthRequest)
       .circuitBreaker()
          .faultToleranceConfiguration()
@@ -94,16 +94,16 @@ public class TpaIntegration extends EndpointRouteBuilder {
             .timeoutDuration(timeout)
          .end()
          .process(requestBuilder::addAuthentication)
-         .to(http("{{api.tpa.management.host}}"))
+         .to(http("{{api.trustify.management.host}}"))
          .setHeader(Exchange.HTTP_RESPONSE_TEXT,constant("Service is up and running"))
          .setBody(constant("Service is up and running"))
       .onFallback()
-         .setBody(constant(Constants.TPA_PROVIDER + "Service is down"))
+         .setBody(constant(Constants.TRUSTIFY_PROVIDER + "Service is down"))
          .setHeader(Exchange.HTTP_RESPONSE_CODE,constant(Response.Status.SERVICE_UNAVAILABLE))
       .end();
 
-    from(direct("tpaValidateCredentials"))
-      .routeId("tpaValidateCredentials")
+    from(direct("trustifyValidateCredentials"))
+      .routeId("trustifyValidateCredentials")
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
@@ -111,7 +111,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
         .end()
         .process(this::processTokenRequest)
         .process(requestBuilder::addAuthentication)
-        .to(http("{{api.tpa.host}}"))
+        .to(http("{{api.trustify.host}}"))
         .setBody(constant("Token validated successfully"))
       .onFallback()
         .process(responseHandler::processTokenFallBack);
@@ -126,7 +126,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
 
     message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    message.setHeader(Exchange.HTTP_PATH, Constants.TPA_ANALYZE_PATH);
+    message.setHeader(Exchange.HTTP_PATH, Constants.TRUSTIFY_ANALYZE_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
   }
 
@@ -137,7 +137,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.HTTP_HOST);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
     message.removeHeader(Exchange.CONTENT_TYPE);
-    message.setHeader(Exchange.HTTP_PATH, Constants.TPA_HEALTH_PATH);
+    message.setHeader(Exchange.HTTP_PATH, Constants.TRUSTIFY_HEALTH_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
   }
 
@@ -147,7 +147,7 @@ public class TpaIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.HTTP_HOST);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
     message.removeHeader(Exchange.CONTENT_TYPE);
-    message.setHeader(Exchange.HTTP_PATH, Constants.TPA_TOKEN_PATH);
+    message.setHeader(Exchange.HTTP_PATH, Constants.TRUSTIFY_TOKEN_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
     message.setHeader(Exchange.HTTP_QUERY, "limit=0");
   }

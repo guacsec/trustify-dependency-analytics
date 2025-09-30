@@ -58,23 +58,23 @@ spec:
             secretKeyRef:
               name: exhort-secret
               key: db.port
-        - name: TPA_HOST
+        - name: TRUSTIFY_HOST
           value: https://trust.rhcloud.com/api/v2/
-        - name: TPA_CLIENT_ID
+        - name: TRUSTIFY_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name: exhort-secret
-              key: tpa.client.id
-        - name: TPA_CLIENT_SECRET
+              key: trustify.client.id
+        - name: TRUSTIFY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: exhort-secret
-              key: tpa.client.secret
-        - name: TPA_AUTH_SERVER_URL
+              key: trustify.client.secret
+        - name: TRUSTIFY_AUTH_SERVER_URL
           valueFrom:
             secretKeyRef:
               name: exhort-secret
-              key: tpa.auth.server.url
+              key: trustify.auth.server.url
         livenessProbe:
           httpGet:
             path: /q/health/live

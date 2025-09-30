@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.redhat.exhort.integration.providers.tpa;
+package com.redhat.exhort.integration.providers.trustify;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.ProviderResponseHandler;
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.ProviderResponse;
-import com.redhat.exhort.model.tpa.AdvisoryScore;
-import com.redhat.exhort.model.tpa.ScoreType;
+import com.redhat.exhort.model.trustify.AdvisoryScore;
+import com.redhat.exhort.model.trustify.ScoreType;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -52,7 +52,7 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 @RegisterForReflection
-public class TpaResponseHandler extends ProviderResponseHandler {
+public class TrustifyResponseHandler extends ProviderResponseHandler {
 
   private static final Map<ScoreType, Integer> SCORE_TYPE_ORDER =
       Map.of(
@@ -65,7 +65,7 @@ public class TpaResponseHandler extends ProviderResponseHandler {
 
   @Override
   protected String getProviderName() {
-    return Constants.TPA_PROVIDER;
+    return Constants.TRUSTIFY_PROVIDER;
   }
 
   @Override

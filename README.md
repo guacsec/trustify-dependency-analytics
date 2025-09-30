@@ -12,14 +12,14 @@
 
 ## Required parameters
 
-- `api.tpa.host` The host of the Trusted Profile Analyzer service. Used as a Vulnerability Provider.
+- `api.trustify.host` The host of the Trustify service. Used as a Vulnerability Provider.
 
-### TPA Client Authentication
+### Trustify Client Authentication
 
-- `quarkus.oidc-client.tpa.enabled`: Defaults to `true`. Set to `false` to disable `tpa` authentication
-- `quarkus.oidc-client.tpa.auth-server-url`: Authentication server. Example: https://sso-tpa.example.com/auth/realms/myrealm
-- `quarkus.oidc-client.tpa.client-id`: OIDC Client ID
-- `quarkus.oidc-client.tpa.credentials.secret`: OIDC Client secret
+- `quarkus.oidc-client.trustify.enabled`: Defaults to `true`. Set to `false` to disable `trustify` authentication
+- `quarkus.oidc-client.trustify.auth-server-url`: Authentication server. Example: https://sso.example.com/auth/realms/myrealm
+- `quarkus.oidc-client.trustify.client-id`: OIDC Client ID
+- `quarkus.oidc-client.trustify.credentials.secret`: OIDC Client secret
 
 ## OpenAPI and SwaggerUI
 
@@ -34,7 +34,7 @@ Exhort can integrate with Trusted Profile Analyzer to retrieve vulnerability dat
 
 You can disable a given provider for the dependency graph analysis by using `api.<provider>.disabled=true` property at startup.
 
-Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=tpa`
+Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=trustify`
 
 ## Recommendations
 
@@ -120,10 +120,10 @@ $ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accep
 If clients don't provide the token to authenticate against the Vulnerability Provider the default one will be used instead but vulnerabilities unique to
 that specific provider will not show all the details.
 
-To provide the client authentication tokens use HTTP Headers in the request. The format for the tokens Headers is `ex-provider-token`. e.g. `ex-tpa-token`:
+To provide the client authentication tokens use HTTP Headers in the request. The format for the tokens Headers is `ex-provider-token`. e.g. `ex-trustify-token`:
 
 ```bash
-http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-tpa-token:the-client-token
+http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-trustify-token:the-client-token
 ```
 
 In case the vulnerability provider requires of Basic Authentication the headers will be `ex-provider-user` and `ex-provider-token`.
@@ -244,7 +244,7 @@ The request will be a GET to the `/token` path containing the HTTP header with t
 other HTTP requests. i.e. `ex-<provider>-token`
 
 ```bash
-http -v :8080/api/v4/token ex-tpa-token==example-token
+http -v :8080/api/v4/token ex-trustify-token==example-token
 ```
 
 The possible responses are:
@@ -315,7 +315,7 @@ In all cases, the original request and headers are logged for the SRE Team to re
 The required parameters can be injected as environment variables through a secret. Create the `exhort-secret` Secret before deploying the application.
 
 ```bash
-oc create secret generic -n exhort --from-literal=api-tpa-token=<tpa_api_token> exhort-secret
+oc create secret generic -n exhort --from-literal=api-trustify-token=<api_token> exhort-secret
 ```
 
 After that you can use the [exhort.yaml](./deploy/exhort.yaml)
