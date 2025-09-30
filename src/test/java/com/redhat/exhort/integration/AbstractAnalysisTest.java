@@ -24,12 +24,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
 import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,11 +48,9 @@ import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.redhat.exhort.extensions.InjectWireMock;
 import com.redhat.exhort.extensions.OidcWiremockExtension;
 import com.redhat.exhort.extensions.WiremockExtension;
-import com.redhat.exhort.integration.providers.snyk.SnykRequestBuilder;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -68,13 +64,10 @@ import jakarta.ws.rs.core.MediaType;
 @QuarkusTestResource(WiremockExtension.class)
 public abstract class AbstractAnalysisTest {
 
-  private static final String SNYK_UA_PATTERN = "redhat-snyk-exhort-.*";
-  static final String OK_USER = "test-user";
   static final String OK_TOKEN = "test-token";
   static final String ERROR_TOKEN = "fail";
   static final String INVALID_TOKEN = "invalid-token";
   static final String UNAUTH_TOKEN = "test-not-authorized";
-  static final String RATE_LIMIT_TOKEN = "too-many-requests-token";
 
   static final String WIREMOCK_URL_TEMPLATE = "__WIREMOCK_URL__";
 
@@ -169,52 +162,9 @@ public abstract class AbstractAnalysisTest {
     }
   }
 
-  protected void verifyRequest(String provider, Map<String, String> headers) {
-    switch (provider) {
-      case Constants.SNYK_PROVIDER -> verifySnykRequest(headers.get(Constants.SNYK_TOKEN_HEADER));
-      case Constants.OSS_INDEX_PROVIDER -> verifyOssRequest(
-          headers.get(Constants.OSS_INDEX_USER_HEADER),
-          headers.get(Constants.OSS_INDEX_TOKEN_HEADER));
-    }
-  }
-
-  protected void verifySnykRequest(String token) {
-    verifySnykRequest(token, 1);
-  }
-
-  protected void verifySnykRequest(String token, int count) {
-    if (token == null) {
-      server.verify(count, postRequestedFor(urlEqualTo(Constants.SNYK_DEP_GRAPH_API_PATH)));
-    } else {
-      server.verify(
-          count,
-          postRequestedFor(urlEqualTo(Constants.SNYK_DEP_GRAPH_API_PATH))
-              .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + token))
-              .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN)));
-    }
-  }
-
   protected void verifyTokenRequest(String provider, Map<String, String> headers) {
-    switch (provider) {
-      case Constants.SNYK_PROVIDER -> verifySnykTokenRequest(
-          headers.get(Constants.SNYK_TOKEN_HEADER));
-      case Constants.OSS_INDEX_PROVIDER -> verifyOssRequest(
-          headers.get(Constants.OSS_INDEX_USER_HEADER),
-          headers.get(Constants.OSS_INDEX_TOKEN_HEADER));
-      case Constants.TPA_PROVIDER -> verifyTpaTokenRequest(headers.get(Constants.TPA_TOKEN_HEADER));
-    }
-  }
 
-  protected void verifySnykTokenRequest(String token) {
-    if (token == null) {
-      server.verify(1, getRequestedFor(urlEqualTo(Constants.SNYK_TOKEN_API_PATH)));
-    } else {
-      server.verify(
-          1,
-          getRequestedFor(urlEqualTo(Constants.SNYK_TOKEN_API_PATH))
-              .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + token))
-              .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN)));
-    }
+    verifyTpaTokenRequest(headers.get(Constants.TPA_TOKEN_HEADER));
   }
 
   protected void verifyTpaTokenRequest(String token) {
@@ -244,8 +194,6 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubAllProviders() {
-    stubSnykRequests();
-    stubOssToken();
     stubOsvRequests();
     stubTpaRequests();
     stubTrustedContentRequests();
@@ -256,64 +204,11 @@ public abstract class AbstractAnalysisTest {
         .forEach(
             p -> {
               switch (p) {
-                case Constants.SNYK_PROVIDER -> verifySnykRequest(
-                    credentials.get(Constants.SNYK_TOKEN_HEADER));
-                case Constants.OSS_INDEX_PROVIDER -> verifyOssRequest(
-                    credentials.get(Constants.OSS_INDEX_USER_HEADER),
-                    credentials.get(Constants.OSS_INDEX_TOKEN_HEADER));
                 case Constants.TPA_PROVIDER -> verifyTpaRequest(
                     credentials.get(Constants.TPA_TOKEN_HEADER));
               }
             });
     verifyTrustedContentRequest();
-  }
-
-  protected void stubSnykTokenRequests() {
-    // Missing token
-    server.stubFor(
-        get(Constants.SNYK_TOKEN_API_PATH)
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"code\": 401, \"error\": \"Not authorised\""
-                            + ", \"message\": \"Not authorised\"}")));
-    // Default request
-    server.stubFor(
-        get(Constants.SNYK_TOKEN_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + OK_TOKEN))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/user_validation.json")));
-    // Internal Error
-    server.stubFor(
-        get(Constants.SNYK_TOKEN_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + ERROR_TOKEN))
-            .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
-    // Invalid token
-    server.stubFor(
-        get(Constants.SNYK_TOKEN_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + INVALID_TOKEN))
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"code\": 401, \"error\": \"Invalid auth token"
-                            + " provided\", \"message\": \"Invalid auth"
-                            + " token provided\"}")));
-    // Too many requests
-    server.stubFor(
-        get(Constants.SNYK_TOKEN_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + RATE_LIMIT_TOKEN))
-            .willReturn(
-                aResponse()
-                    .withStatus(429)
-                    .withBody(
-                        "{\"message\": \"The org acme (82be6926-dff6-4c22-a54a-8fb25ed4ee43)"
-                            + " has exceeded the rate limit.\""
-                            + ", \"error\": \"true\"}")));
   }
 
   protected void stubTrustedContentRequests() {
@@ -394,8 +289,25 @@ public abstract class AbstractAnalysisTest {
                 aResponse()
                     .withStatus(401)
                     .withBody(
-                        "{\"error\": \"Unauthorized\", \"message\": \"Authentication failed\"}")));
-
+                        "{\"error\": \"Unauthorized\", \"message\": \"Verify the provided"
+                            + " credentials are valid.\"}}")));
+    // Internal Error
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(aResponse().withStatus(500).withBody("Unexpected error")));
+    // Forbidden
+    server.stubFor(
+        post(Constants.TPA_ANALYZE_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + UNAUTH_TOKEN))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(403)
+                    .withBody(
+                        "{\"error\": \"Forbidden\", \"message\": \"The provided credentials don't"
+                            + " have the required permissions.\"}}")));
     server.stubFor(
         post(Constants.TPA_ANALYZE_PATH)
             .withHeader(
@@ -482,223 +394,6 @@ public abstract class AbstractAnalysisTest {
     server.verify(1, postRequestedFor(urlEqualTo(Constants.TRUSTED_CONTENT_PATH)));
   }
 
-  protected void stubSnykRequests() {
-    // Missing token
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"code\": 401, \"error\": \"Not authorised\""
-                            + ", \"message\": \"Not authorised\"}")));
-    // Other requests
-    SnykRequestBuilder.SUPPORTED_PURL_TYPES.forEach(this::stubSnykEmptyRequest);
-    // Dependency request
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/snyk/maven_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/maven_report.json")));
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/snyk/maven_batch_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/maven_report.json")));
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/snyk/pypi_small_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/empty_report.json")));
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/snyk/npm_small_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/empty_report.json")));
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/snyk/npm_batch_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("snyk/empty_report.json")));
-    // Internal Error
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + ERROR_TOKEN))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
-    // Invalid token
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + INVALID_TOKEN))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"code\": 401, \"error\": \"Invalid auth token"
-                            + " provided\", \"message\": \"Invalid auth"
-                            + " token provided\"}")));
-    // Forbidden (i.e. token does not have access to the API)
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + UNAUTH_TOKEN))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .willReturn(
-                aResponse()
-                    .withStatus(403)
-                    .withBody(
-                        "{\"message\": \"The org acme (82be6926-dff6-4c22-a54a-8fb25ed4ee43) is not"
-                            + " entitled for api access. Please upgrade your plan to access this"
-                            + " capability\", \"error\": \"true\"}")));
-    // Too many requests
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("token " + RATE_LIMIT_TOKEN))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .willReturn(
-                aResponse()
-                    .withStatus(429)
-                    .withBody(
-                        "{\"message\": \"The org acme (82be6926-dff6-4c22-a54a-8fb25ed4ee43)"
-                            + " has exceeded the rate limit.\""
-                            + ", \"error\": \"true\"}")));
-  }
-
-  private void stubSnykEmptyRequest(String provider) {
-    // Empty request
-    server.stubFor(
-        post(Constants.SNYK_DEP_GRAPH_API_PATH)
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("token " + OK_TOKEN).or(equalTo("token " + SNYK_TOKEN)))
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withHeader(Constants.USER_AGENT_HEADER, matching(SNYK_UA_PATTERN))
-            .withRequestBody(
-                equalToJson(
-                    loadFileAsString("__files/snyk/empty_request.json")
-                        .replaceAll("__PKG_MANAGER__", provider),
-                    true,
-                    false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBody(
-                        loadFileAsString("__files/snyk/empty_report.json")
-                            .replaceAll("__PKG_MANAGER__", provider))));
-  }
-
-  protected void stubOssToken() {
-
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"code\": 401, \"error\": \"Not authorised\""
-                            + ", \"message\": \"Not authorised\"}")));
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withBasicAuth(OK_USER, OK_TOKEN)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/ossindex/empty_request.json"), true, false))
-            .willReturn(aResponse().withStatus(200).withBodyFile("ossindex/empty_report.json")));
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withBasicAuth(OK_USER, OK_TOKEN)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/ossindex/maven_request.json"), true, false))
-            .willReturn(aResponse().withStatus(200).withBodyFile("ossindex/maven_report.json")));
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withBasicAuth(OK_USER, OK_TOKEN)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/ossindex/batch_request.json"), true, false))
-            .willReturn(aResponse().withStatus(200).withBodyFile("ossindex/maven_report.json")));
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withBasicAuth(OK_USER, RATE_LIMIT_TOKEN)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .willReturn(
-                aResponse()
-                    .withStatus(429)
-                    .withBody(
-                        "{\"message\": \"The org acme (82be6926-dff6-4c22-a54a-8fb25ed4ee43)"
-                            + " has exceeded the rate limit.\""
-                            + ", \"error\": \"true\"}")));
-    server.stubFor(
-        post(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)
-            .withBasicAuth(OK_USER, ERROR_TOKEN)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
-  }
-
-  protected void verifyOssRequest(String user, String pass) {
-    verifyOssRequest(user, pass, 1);
-  }
-
-  protected void verifyOssRequest(String user, String pass, int count) {
-    if (user == null || pass == null) {
-      server.verify(
-          count, postRequestedFor(urlEqualTo(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)));
-    } else {
-      server.verify(
-          count,
-          postRequestedFor(urlEqualTo(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH))
-              .withBasicAuth(new BasicCredentials(user, pass)));
-    }
-  }
-
   protected void verifyOsvRequest() {
     verifyOsvRequest(1);
   }
@@ -708,19 +403,8 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void verifyNoInteractions() {
-    verifyNoInteractionsWithSnyk();
-    verifyNoInteractionsWithOSS();
     verifyNoInteractionsWithOsv();
     verifyNoInteractionsWithTpa();
-  }
-
-  protected void verifyNoInteractionsWithSnyk() {
-    server.verify(0, postRequestedFor(urlEqualTo(Constants.SNYK_DEP_GRAPH_API_PATH)));
-    server.verify(0, getRequestedFor(urlEqualTo(Constants.SNYK_TOKEN_API_PATH)));
-  }
-
-  protected void verifyNoInteractionsWithOSS() {
-    server.verify(0, postRequestedFor(urlEqualTo(Constants.OSS_INDEX_AUTH_COMPONENT_API_PATH)));
   }
 
   protected void verifyNoInteractionsWithTrustedContent() {

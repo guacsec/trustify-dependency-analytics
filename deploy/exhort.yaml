@@ -30,10 +30,6 @@ spec:
             memory: "5120Mi"
             cpu: "500m"
         env:
-        - name: API_SNYK_DISABLED
-          value: "true"
-        - name: API_OSSINDEX_DISABLED
-          value: "true"
         - name: MONITORING_ENABLED
           value: "true"
         - name: MONITORING_SENTRY_DSN

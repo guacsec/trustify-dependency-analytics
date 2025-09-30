@@ -44,7 +44,6 @@ import com.redhat.exhort.api.v4.Source;
 import com.redhat.exhort.api.v4.SourceSummary;
 import com.redhat.exhort.api.v4.TransitiveDependencyReport;
 import com.redhat.exhort.api.v4.UnscannedDependency;
-import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.model.DependencyTree;
 import com.redhat.exhort.model.DirectDependency;
 import com.redhat.exhort.model.ProviderResponse;
@@ -56,6 +55,7 @@ import jakarta.ws.rs.core.Response;
 
 public class ProviderResponseHandlerTest {
 
+  private static final String NPM_PURL_TYPE = "npm";
   private static final String TEST_PROVIDER = "example";
   private static final String TEST_SOURCE = "test-source";
   private static final TrustedContentResponse EMPTY_TRUSTED_CONTENT_RESPONSE =
@@ -496,73 +496,50 @@ public class ProviderResponseHandlerTest {
   private static DependencyTree buildTree() {
     Map<PackageRef, DirectDependency> direct =
         Map.of(
-            PackageRef.builder()
-                .name("aa")
-                .version("1")
-                .pkgManager(Constants.NPM_PURL_TYPE)
-                .build(),
+            PackageRef.builder().name("aa").version("1").pkgManager(NPM_PURL_TYPE).build(),
             DirectDependency.builder()
-                .ref(
-                    PackageRef.builder()
-                        .name("aa")
-                        .version("1")
-                        .pkgManager(Constants.NPM_PURL_TYPE)
-                        .build())
+                .ref(PackageRef.builder().name("aa").version("1").pkgManager(NPM_PURL_TYPE).build())
                 .transitive(
                     Set.of(
                         PackageRef.builder()
                             .name("aaa")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build(),
                         PackageRef.builder()
                             .name("aab")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build()))
                 .build(),
-            PackageRef.builder()
-                .name("ab")
-                .version("1")
-                .pkgManager(Constants.NPM_PURL_TYPE)
-                .build(),
+            PackageRef.builder().name("ab").version("1").pkgManager(NPM_PURL_TYPE).build(),
             DirectDependency.builder()
-                .ref(
-                    PackageRef.builder()
-                        .name("ab")
-                        .version("1")
-                        .pkgManager(Constants.NPM_PURL_TYPE)
-                        .build())
+                .ref(PackageRef.builder().name("ab").version("1").pkgManager(NPM_PURL_TYPE).build())
                 .transitive(
                     Set.of(
                         PackageRef.builder()
                             .name("aba")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build(),
                         PackageRef.builder()
                             .name("abb")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build(),
                         PackageRef.builder()
                             .name("abc")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build()))
                 .build(),
             PackageRef.builder()
                 .name("ac")
                 .version("1-redhat-00006")
-                .pkgManager(Constants.NPM_PURL_TYPE)
+                .pkgManager(NPM_PURL_TYPE)
                 .build(),
             DirectDependency.builder()
-                .ref(
-                    PackageRef.builder()
-                        .name("ac")
-                        .version("1")
-                        .pkgManager(Constants.NPM_PURL_TYPE)
-                        .build())
+                .ref(PackageRef.builder().name("ac").version("1").pkgManager(NPM_PURL_TYPE).build())
                 .build());
     return DependencyTree.builder().dependencies(direct).build();
   }
@@ -570,54 +547,36 @@ public class ProviderResponseHandlerTest {
   private static DependencyTree buildTreeWithDuplicates() {
     Map<PackageRef, DirectDependency> direct =
         Map.of(
-            PackageRef.builder()
-                .name("aa")
-                .version("1")
-                .pkgManager(Constants.NPM_PURL_TYPE)
-                .build(),
+            PackageRef.builder().name("aa").version("1").pkgManager(NPM_PURL_TYPE).build(),
             DirectDependency.builder()
-                .ref(
-                    PackageRef.builder()
-                        .name("aa")
-                        .version("1")
-                        .pkgManager(Constants.NPM_PURL_TYPE)
-                        .build())
+                .ref(PackageRef.builder().name("aa").version("1").pkgManager(NPM_PURL_TYPE).build())
                 .transitive(
                     Set.of(
                         PackageRef.builder()
                             .name("aaa")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build(),
                         PackageRef.builder()
                             .name("aab")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build()))
                 .build(),
-            PackageRef.builder()
-                .name("ab")
-                .version("1")
-                .pkgManager(Constants.NPM_PURL_TYPE)
-                .build(),
+            PackageRef.builder().name("ab").version("1").pkgManager(NPM_PURL_TYPE).build(),
             DirectDependency.builder()
-                .ref(
-                    PackageRef.builder()
-                        .name("ab")
-                        .version("1")
-                        .pkgManager(Constants.NPM_PURL_TYPE)
-                        .build())
+                .ref(PackageRef.builder().name("ab").version("1").pkgManager(NPM_PURL_TYPE).build())
                 .transitive(
                     Set.of(
                         PackageRef.builder()
                             .name("aaa")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build(),
                         PackageRef.builder()
                             .name("abb")
                             .version("1")
-                            .pkgManager(Constants.NPM_PURL_TYPE)
+                            .pkgManager(NPM_PURL_TYPE)
                             .build()))
                 .build());
     return DependencyTree.builder().dependencies(direct).build();

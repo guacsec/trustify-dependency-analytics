@@ -58,6 +58,8 @@ public class TcResponseHandler extends ProviderResponseHandler {
   // see https://www.cisa.gov/sites/default/files/2023-01/VEX_Status_Justification_Jun22.pdf
   private static final List<String> FIXED_STATUSES = List.of("NotAffected", "Fixed");
 
+  private static final String OCI_PURL_TYPE = "oci";
+
   @Inject ObjectMapper mapper;
 
   @Inject UBIRecommendation ubiRecommendation;
@@ -130,7 +132,7 @@ public class TcResponseHandler extends ProviderResponseHandler {
     }
 
     var pkgRef = new PackageRef(sbomId);
-    if (!Constants.OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
+    if (!OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
       return Collections.emptyMap();
     }
 

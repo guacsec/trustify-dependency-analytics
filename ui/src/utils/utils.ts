@@ -114,14 +114,7 @@ export const extractDependencyVersion = (name: string): string => {
 };
 
 export const issueLink = (provider: string, issueId: string, appData: AppData) => {
-  switch (provider) {
-    case 'snyk':
-      return appData.snykIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
-    case 'oss-index':
-      return appData.ossIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
-    case 'tpa':
-      return appData.nvdIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
-  }
+  return appData.nvdIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
 };
 
 export const cveLink = (issueId: string, appData: AppData) => {

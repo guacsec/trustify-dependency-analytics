@@ -10,7 +10,7 @@ import {TabbedLayout} from "./components/TabbedLayout";
 import {DockerTabbedLayout } from './components/DockerTabbedLayout'
 
 const data: AppData =
-  process.env.NODE_ENV === 'production' ? ((window as any)['appData'] as AppData) : MOCK_REPORT.mixed;
+  process.env.NODE_ENV === 'production' ? ((window as any)['appData'] as AppData) : MOCK_REPORT.basic;
 
 export const AppContext = createContext<AppData>(data);
 export const useAppContext = (): AppData => useContext(AppContext);

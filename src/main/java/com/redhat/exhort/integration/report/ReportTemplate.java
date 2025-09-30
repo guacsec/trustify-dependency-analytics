@@ -45,15 +45,6 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class ReportTemplate {
 
-  @ConfigProperty(name = "report.snyk.issue.regex")
-  String snykIssuePathRegex;
-
-  @ConfigProperty(name = "report.snyk.signup.link")
-  String snykSignup;
-
-  @ConfigProperty(name = "report.ossindex.issue.regex")
-  String ossIssuePathRegex;
-
   @ConfigProperty(name = "report.nvd.issue.regex")
   String nvdIssuePathRegex;
 
@@ -81,11 +72,8 @@ public class ReportTemplate {
 
     Map<String, Object> params = new HashMap<>();
     params.put("report", report);
-    params.put("snykIssueTemplate", snykIssuePathRegex);
-    params.put("ossIssueTemplate", ossIssuePathRegex);
     params.put("nvdIssueTemplate", nvdIssuePathRegex);
     params.put("providerPrivateData", providerPrivateData);
-    params.put("snykSignup", snykSignup);
     params.put("cveIssueTemplate", cveIssuePathRegex);
     params.put("imageMapping", getImageMapping());
     params.put("rhdaSource", rhdaSource);

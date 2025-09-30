@@ -1,7 +1,0 @@
-[
-    {
-        "coordinates": "pkg:maven/com.redhat.exhort/default-app@0.0.1",
-        "reference": "https://ossindex.sonatype.org/component/pkg:maven/com.redhat.exhort/default-app@0.0.1?utm_source=postmanruntime&utm_medium=integration&utm_content=7.32.3",
-        "vulnerabilities": []
-    }
-]

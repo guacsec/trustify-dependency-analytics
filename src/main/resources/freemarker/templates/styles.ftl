@@ -96,5 +96,4 @@
     }
 
     /*#redhat {background-color: red;}*/
-    /*#snyk {background-color: lightgreen;}*/
 </style>

@@ -18,9 +18,6 @@
 
 package com.redhat.exhort.integration;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.redhat.exhort.extensions.WiremockExtension.SNYK_TOKEN;
 import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
@@ -30,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -54,11 +52,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.api.v4.DependencyReport;
 import com.redhat.exhort.api.v4.Scanned;
-import com.redhat.exhort.api.v4.SourceSummary;
+import com.redhat.exhort.api.v4.Source;
 import com.redhat.exhort.extensions.OidcWiremockExtension;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -71,6 +70,14 @@ import jakarta.ws.rs.core.Response.Status;
 @QuarkusTest
 @QuarkusTestResource(OidcWiremockExtension.class)
 public class AnalysisTest extends AbstractAnalysisTest {
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  private static final String CYCLONEDX = "cyclonedx";
+  private static final String SPDX = "spdx";
+  private static final String DEFAULT_RHDA_TOKEN = "example-rhda-token";
+  private static final String OSV_SOURCE = "osv";
+  private static final String CSAF_SOURCE = "csaf";
 
   @Override
   @AfterEach
@@ -89,10 +96,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
       OidcWiremockExtension.restubOidcEndpoints(server);
     }
   }
-
-  private static final String CYCLONEDX = "cyclonedx";
-  private static final String SPDX = "spdx";
-  private static final String DEFAULT_RHDA_TOKEN = "example-rhda-token";
 
   @ParameterizedTest
   @ValueSource(strings = {CYCLONEDX, SPDX})
@@ -145,79 +148,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {CYCLONEDX, SPDX})
-  public void testWithInvalidPkgManagers(String sbom) {
-    var report =
-        given()
-            .header(CONTENT_TYPE, getContentType(sbom))
-            .body(loadFileAsString(String.format("%s/unsupported-invalid-sbom.json", sbom)))
-            .when()
-            .post("/api/v4/analysis")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract()
-            .body()
-            .as(AnalysisReport.class);
-
-    assertEquals(5, report.getProviders().size());
-    assertEquals(
-        401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
-    var snykProvider = report.getProviders().get(Constants.SNYK_PROVIDER);
-    var status = snykProvider.getStatus();
-    assertEquals(200, status.getCode());
-    assertEquals(Constants.SNYK_PROVIDER, status.getName());
-    assertTrue(status.getOk());
-    assertEquals(1, snykProvider.getSources().size());
-    var unscanned = snykProvider.getSources().get(Constants.SNYK_PROVIDER).getUnscanned();
-    assertEquals(1, unscanned.size());
-
-    verifyNoInteractionsWithOSS();
-    verifyNoInteractionsWithSnyk();
-    verifyTpaRequest(TPA_TOKEN);
-    verifyTrustedContentRequest();
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {CYCLONEDX, SPDX})
-  public void testWithMixedPkgManagers(String sbom) {
-    stubAllProviders();
-    var report =
-        given()
-            .header(CONTENT_TYPE, getContentType(sbom))
-            .body(loadFileAsString(String.format("%s/mixed-sbom.json", sbom)))
-            .when()
-            .post("/api/v4/analysis")
-            .then()
-            .assertThat()
-            .statusCode(Status.OK.getStatusCode())
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .contentType(MediaType.APPLICATION_JSON)
-            .extract()
-            .body()
-            .as(AnalysisReport.class);
-
-    assertEquals(5, report.getProviders().size());
-    assertEquals(
-        Status.UNAUTHORIZED.getStatusCode(),
-        report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
-    var status = report.getProviders().get(Constants.SNYK_PROVIDER).getStatus();
-    assertEquals(Status.OK.getStatusCode(), status.getCode());
-    assertEquals(Constants.SNYK_PROVIDER, status.getName());
-    assertEquals(
-        Status.OK.getStatusCode(),
-        report.getProviders().get(Constants.TRUSTED_CONTENT_PROVIDER).getStatus().getCode());
-
-    server.verify(2, postRequestedFor(urlPathEqualTo(Constants.SNYK_DEP_GRAPH_API_PATH)));
-  }
-
-  @ParameterizedTest
   @MethodSource("emptySbomArguments")
   public void testEmptySbom(Map<String, Integer> providers, Map<String, String> authHeaders) {
     stubAllProviders();
@@ -255,76 +185,15 @@ public class AnalysisTest extends AbstractAnalysisTest {
               assertTrue(provider.get().getSources().isEmpty());
             });
 
-    verifyNoInteractionsWithSnyk();
-    verifyNoInteractionsWithOSS();
     verifyNoInteractionsWithTpa();
     verifyNoInteractionsWithTrustedContent();
   }
 
   private static Stream<Arguments> emptySbomArguments() {
     return Stream.of(
-        Arguments.of(Map.of(Constants.SNYK_PROVIDER, 200), Collections.emptyMap()),
-        Arguments.of(Map.of(Constants.OSS_INDEX_PROVIDER, 401), Collections.emptyMap()),
         Arguments.of(Map.of(Constants.TPA_PROVIDER, 200), Collections.emptyMap()),
         Arguments.of(
-            Map.of(Constants.SNYK_PROVIDER, 200, Constants.OSS_INDEX_PROVIDER, 401),
-            Collections.emptyMap()),
-        Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                401,
-                Constants.TPA_PROVIDER,
-                200),
-            Map.of(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)),
-        Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                200,
-                Constants.TPA_PROVIDER,
-                200),
-            Map.of(
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                OK_TOKEN)),
-        Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                200,
-                Constants.TPA_PROVIDER,
-                200),
-            Map.of(
-                Constants.SNYK_TOKEN_HEADER,
-                OK_TOKEN,
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                OK_TOKEN,
-                Constants.TPA_TOKEN_HEADER,
-                OK_TOKEN)),
-        Arguments.of(
-            Map.of(
-                Constants.SNYK_PROVIDER,
-                200,
-                Constants.OSS_INDEX_PROVIDER,
-                200,
-                Constants.TPA_PROVIDER,
-                200),
-            Map.of(
-                Constants.SNYK_TOKEN_HEADER,
-                OK_TOKEN,
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                OK_TOKEN,
-                Constants.TPA_TOKEN_HEADER,
-                OK_TOKEN)));
+            Map.of(Constants.TPA_PROVIDER, 200), Map.of(Constants.TPA_TOKEN_HEADER, OK_TOKEN)));
   }
 
   @Test
@@ -349,7 +218,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/report_default_token.json", body);
-    verifySnykRequest(SNYK_TOKEN);
     verifyTpaRequest(TPA_TOKEN);
     verifyOsvRequest();
     verifyTrustedContentRequest();
@@ -377,8 +245,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertJson("reports/report_default_token_no_recommend.json", body);
-    verifySnykRequest(SNYK_TOKEN);
+    assertRecommendations(body, Constants.TPA_PROVIDER, CSAF_SOURCE, 0);
+    assertRecommendations(body, Constants.TPA_PROVIDER, OSV_SOURCE, 0);
     verifyTpaRequest(TPA_TOKEN);
     verifyOsvRequest();
     verifyNoInteractionsWithTrustedContent();
@@ -392,9 +260,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
         given()
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
-            .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
             .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .body(loadSBOMFile(CYCLONEDX))
             .when()
@@ -410,36 +275,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/report_all_token.json", body);
-    verifySnykRequest(OK_TOKEN);
-    verifyOssRequest(OK_USER, OK_TOKEN);
     verifyTpaRequest(OK_TOKEN);
     verifyOsvRequest();
-  }
-
-  @Test
-  public void testSnykWithNoToken() {
-    stubAllProviders();
-
-    var body =
-        given()
-            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
-            .header("Accept", MediaType.APPLICATION_JSON)
-            .queryParam(Constants.PROVIDERS_PARAM, Constants.SNYK_PROVIDER)
-            .body(loadSBOMFile(CYCLONEDX))
-            .when()
-            .post("/api/v4/analysis")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .extract()
-            .body()
-            .asPrettyString();
-    assertJson("reports/report_all_no_snyk_token.json", body);
-    verifySnykRequest(null);
   }
 
   @Test
@@ -451,7 +288,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)
             .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
@@ -466,18 +302,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(5, report.getProviders().size());
-    assertEquals(
-        Response.Status.UNAUTHORIZED.getStatusCode(),
-        report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
+    assertEquals(3, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
         report.getProviders().get(Constants.TPA_PROVIDER).getStatus().getCode());
-    assertTrue(report.getProviders().get(Constants.SNYK_PROVIDER).getSources().isEmpty());
-    var status = report.getProviders().get(Constants.SNYK_PROVIDER).getStatus();
-    assertFalse(status.getOk());
-    assertEquals(Constants.SNYK_PROVIDER, status.getName());
-    assertEquals(Status.UNAUTHORIZED.getStatusCode(), status.getCode());
 
     verifyTpaRequest(INVALID_TOKEN);
   }
@@ -491,7 +319,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadFileAsString(String.format("%s/maven-sbom.json", CYCLONEDX)))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, UNAUTH_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -505,16 +333,11 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(5, report.getProviders().size());
-    assertEquals(
-        401, report.getProviders().get(Constants.OSS_INDEX_PROVIDER).getStatus().getCode());
-    assertTrue(report.getProviders().get(Constants.SNYK_PROVIDER).getSources().isEmpty());
-    var status = report.getProviders().get(Constants.SNYK_PROVIDER).getStatus();
-    assertFalse(status.getOk());
-    assertEquals(Constants.SNYK_PROVIDER, status.getName());
-    assertEquals(Status.FORBIDDEN.getStatusCode(), status.getCode());
+    assertEquals(3, report.getProviders().size());
+    assertEquals(401, report.getProviders().get(Constants.TPA_PROVIDER).getStatus().getCode());
+    assertTrue(report.getProviders().get(Constants.TPA_PROVIDER).getSources().isEmpty());
 
-    verifySnykRequest(UNAUTH_TOKEN);
+    verifyTpaRequest(INVALID_TOKEN);
   }
 
   @Test
@@ -526,7 +349,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -541,16 +364,11 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var snykSource =
-        report
-            .getProviders()
-            .get(Constants.SNYK_PROVIDER)
-            .getSources()
-            .get(Constants.SNYK_PROVIDER);
-    assertSummary(snykSource.getSummary());
-    assertDependenciesReport(snykSource.getDependencies());
+    var osvSource = report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(OSV_SOURCE);
+    assertOsvSummary(osvSource);
+    assertOsvDependenciesReport(osvSource.getDependencies());
 
-    verifySnykRequest(OK_TOKEN);
+    verifyTpaRequest(OK_TOKEN);
   }
 
   @Test
@@ -577,53 +395,16 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var snykSource =
-        report
-            .getProviders()
-            .get(Constants.SNYK_PROVIDER)
-            .getSources()
-            .get(Constants.SNYK_PROVIDER);
-    assertSummary(snykSource.getSummary());
-    assertNull(snykSource.getDependencies());
+    var osvSource = report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(OSV_SOURCE);
+    var csafSource =
+        report.getProviders().get(Constants.TPA_PROVIDER).getSources().get(CSAF_SOURCE);
+    assertOsvSummary(osvSource);
+    assertCsafSummary(csafSource);
 
-    verifySnykRequest(null);
-  }
+    assertNull(osvSource.getDependencies());
+    assertNull(csafSource.getDependencies());
 
-  @Test
-  public void testNonVerboseWithToken() {
-    stubAllProviders();
-
-    var report =
-        given()
-            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
-            .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .queryParam(Constants.VERBOSE_MODE_HEADER, Boolean.FALSE)
-            .body(loadSBOMFile(CYCLONEDX))
-            .when()
-            .post("/api/v4/analysis")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .extract()
-            .body()
-            .as(AnalysisReport.class);
-
-    assertScanned(report.getScanned());
-    var snykSource =
-        report
-            .getProviders()
-            .get(Constants.SNYK_PROVIDER)
-            .getSources()
-            .get(Constants.SNYK_PROVIDER);
-    assertSummary(snykSource.getSummary());
-    assertNull(snykSource.getDependencies());
-
-    verifySnykRequest(OK_TOKEN);
+    verifyTpaRequest(TPA_TOKEN);
   }
 
   @ParameterizedTest
@@ -637,9 +418,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .setHeader(Constants.RHDA_TOKEN_HEADER, DEFAULT_RHDA_TOKEN)
             .setHeader(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .setHeader("Accept", Constants.MULTIPART_MIXED)
-            .setHeader(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .setHeader(Constants.OSS_INDEX_USER_HEADER, OK_USER)
-            .setHeader(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
             .version(Version.valueOf(version))
             .POST(HttpRequest.BodyPublishers.ofFile(loadSBOMFile(CYCLONEDX).toPath()))
             .build();
@@ -694,8 +472,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
         "Should have proper multipart boundary structure");
 
     // Verify API calls were made
-    verifySnykRequest(OK_TOKEN);
-    verifyOssRequest(OK_USER, OK_TOKEN);
+    verifyTpaRequest(TPA_TOKEN);
   }
 
   @Test
@@ -796,9 +573,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
         given()
             .header(CONTENT_TYPE, getContentType(sbom))
             .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
-            .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
             .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .body(loadBatchSBOMFile(sbom))
             .when()
@@ -814,8 +588,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .asPrettyString();
     assertJson("reports/batch_report_all_token.json", body);
-    verifySnykRequest(OK_TOKEN, 3);
-    verifyOssRequest(OK_USER, OK_TOKEN, 3);
     verifyTpaRequest(OK_TOKEN, 3);
     verifyOsvRequest(3);
   }
@@ -826,18 +598,32 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertEquals(9, scanned.getTotal());
   }
 
-  private void assertSummary(SourceSummary summary) {
-    assertEquals(4, summary.getTotal());
+  private void assertOsvSummary(Source source) {
+    assertNotNull(source);
+    var summary = source.getSummary();
+    assertEquals(7, summary.getTotal());
 
     assertEquals(0, summary.getDirect());
-    assertEquals(4, summary.getTransitive());
-    assertEquals(0, summary.getCritical());
-    assertEquals(1, summary.getHigh());
-    assertEquals(3, summary.getMedium());
+    assertEquals(7, summary.getTransitive());
+    assertEquals(1, summary.getCritical());
+    assertEquals(4, summary.getHigh());
+    assertEquals(2, summary.getMedium());
     assertEquals(0, summary.getLow());
   }
 
-  private void assertDependenciesReport(List<DependencyReport> dependencies) {
+  private void assertCsafSummary(Source source) {
+    assertNotNull(source);
+    var summary = source.getSummary();
+    assertEquals(2, summary.getTotal());
+    assertEquals(0, summary.getDirect());
+    assertEquals(2, summary.getTransitive());
+    assertEquals(1, summary.getCritical());
+    assertEquals(1, summary.getHigh());
+    assertEquals(0, summary.getMedium());
+    assertEquals(0, summary.getLow());
+  }
+
+  private void assertOsvDependenciesReport(List<DependencyReport> dependencies) {
     assertEquals(2, dependencies.size());
 
     var hibernate =
@@ -847,14 +633,28 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertEquals(hibernate, report.getRef());
     assertTrue(report.getIssues().isEmpty());
 
-    assertEquals(1, report.getTransitive().size());
-    var tReport = report.getTransitive().get(0);
-    var jackson =
-        new PackageRef("pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar");
-    assertEquals(jackson, tReport.getRef());
-    assertEquals(3, tReport.getIssues().size());
-    assertEquals(tReport.getHighestVulnerability(), tReport.getIssues().get(0));
-    assertEquals(report.getHighestVulnerability(), tReport.getHighestVulnerability());
+    assertEquals(2, report.getTransitive().size());
+    report
+        .getTransitive()
+        .forEach(
+            t -> {
+              if (t.getRef().name().equals("io.quarkus:quarkus-core")) {
+                var jackson =
+                    new PackageRef("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
+                assertEquals(jackson, t.getRef());
+                assertEquals(2, t.getIssues().size());
+                assertEquals(t.getHighestVulnerability(), t.getIssues().get(0));
+              }
+              if (t.getRef().name().equals("com.fasterxml.jackson.core:jackson-databind")) {
+                var jackson =
+                    new PackageRef(
+                        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar");
+                assertEquals(jackson, t.getRef());
+                assertEquals(3, t.getIssues().size());
+                assertEquals(t.getHighestVulnerability(), t.getIssues().get(0));
+                assertEquals(report.getHighestVulnerability(), t.getHighestVulnerability());
+              }
+            });
   }
 
   private DependencyReport getReport(String pkgName, List<DependencyReport> dependencies) {
@@ -865,5 +665,25 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .orElse(null);
     assertNotNull(dep);
     return dep;
+  }
+
+  private void assertRecommendations(
+      String body, String provider, String source, int recommendations) {
+    try {
+      var report = MAPPER.readValue(body, AnalysisReport.class);
+      assertTrue(report.getProviders().containsKey(provider));
+      assertTrue(report.getProviders().get(provider).getSources().containsKey(source));
+      assertEquals(
+          recommendations,
+          report
+              .getProviders()
+              .get(provider)
+              .getSources()
+              .get(source)
+              .getSummary()
+              .getRecommendations());
+    } catch (IOException e) {
+      fail("Failed to read report: " + e.getMessage());
+    }
   }
 }

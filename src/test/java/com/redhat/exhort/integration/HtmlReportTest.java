@@ -18,6 +18,7 @@
 
 package com.redhat.exhort.integration;
 
+import static com.redhat.exhort.extensions.WiremockExtension.TPA_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,13 +37,10 @@ import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlHeading2;
 import org.htmlunit.html.HtmlHeading4;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableDataCell;
-import org.htmlunit.html.HtmlTableRow;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -54,13 +52,6 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
   private static final String CYCLONEDX = "cyclonedx";
 
-  /**
-   * The generated HTML only has 1 vulnerability tab for Snyk. The quarkus-hibernate-orm has a
-   * private vulnerability that should be hidden and display the "Sign up" link to the user.
-   *
-   * <p>In order to expand the transitive table, it is required to click on the button contained in
-   * the <td>
-   */
   @Test
   public void testHtmlWithoutToken() throws IOException {
     stubAllProviders();
@@ -85,111 +76,34 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     var webClient = initWebClient();
     HtmlPage page = extractPage(webClient, body);
-    // Select the Snyk Source
-    HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
-    assertNotNull(snykSourceBtn);
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa/csaf source']");
+    assertNotNull(srcBtn);
 
-    page = click(webClient, snykSourceBtn);
+    page = click(webClient, srcBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(4, tables.size());
-    DomElement snykTable = tables.get(tables.size() - 1);
-    HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", snykTable);
+    assertEquals(3, tables.size()); // osv | tpa/osv | tpa/csaf
+    DomElement table = tables.get(tables.size() - 1); // tpa/csaf
+    HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
     assertNotNull(tbody);
     page = expandTransitiveTableDataCell(webClient, tbody);
-    snykTable =
-        page.getFirstByXPath("//table[contains(@aria-label, 'snyk transitive vulnerabilities')]");
-    List<HtmlTableBody> tbodies = snykTable.getByXPath(".//tbody");
-    HtmlTableBody privateIssueTbody =
+
+    table =
+        page.getFirstByXPath(
+            "//table[contains(@aria-label, 'tpa/csaf transitive vulnerabilities')]");
+    List<HtmlTableBody> tbodies = table.getByXPath(".//tbody");
+    HtmlTableBody issue =
         tbodies.stream()
             .filter(
                 issuesTbody -> {
                   List<HtmlAnchor> tds = issuesTbody.getByXPath("./tr/td");
-                  return tds.size() == 4;
+                  return tds.size() == 6;
                 })
             .findFirst()
             .get();
-    assertNotNull(privateIssueTbody);
-    HtmlTableDataCell td = privateIssueTbody.getFirstByXPath("./tr/td");
-    assertEquals(
-        "Sign up for a Snyk account to learn about the vulnerabilities found",
-        td.asNormalizedText());
+    assertNotNull(issue);
 
-    // Select the Oss-Index Source
-    HtmlButton ossIndexSourceBtn = page.getFirstByXPath("//button[@aria-label='oss-index source']");
-    assertNotNull(ossIndexSourceBtn);
-    page = click(webClient, ossIndexSourceBtn);
-
-    List<HtmlHeading2> headings = page.getByXPath("//div[@class='pf-v5-c-empty-state__title']/h2");
-    assertEquals("Set up oss-index", headings.get(0).getTextContent());
-
-    verifySnykRequest(null);
-  }
-
-  /**
-   * This report contains both oss-index and snyk reports. So in order to show the Snyk report, we
-   * need to click on the tab. Then the quarkus-hibernate-orm having the unique vulnerability should
-   * appear without limitations.
-   *
-   * @throws IOException
-   */
-  @Test
-  public void testHtmlWithToken() throws IOException {
-    stubAllProviders();
-
-    String body =
-        given()
-            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
-            .body(loadSBOMFile(CYCLONEDX))
-            .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
-            .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
-            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
-            .when()
-            .post("/api/v4/analysis")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .contentType(MediaType.TEXT_HTML)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .extract()
-            .body()
-            .asString();
-
-    var webClient = initWebClient();
-    HtmlPage page = extractPage(webClient, body);
-    // Select the Snyk Source
-    HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
-    assertNotNull(snykSourceBtn);
-    page = click(webClient, snykSourceBtn);
-
-    DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(5, tables.size());
-
-    HtmlTableBody tbody =
-        getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", tables.get(2));
-    assertNotNull(tbody);
-    page = expandTransitiveTableDataCell(webClient, tbody);
-    tables = page.getElementsByTagName("table");
-    tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", tables.get(1));
-
-    // TODO: figure out why the Snyk unique vulnerability is not being rendered in headless mode
-
-    // HtmlTable issuesTable = getIssuesTable(tbody);
-    // List<HtmlTableBody> tbodies = issuesTable.getByXPath(".//table//tbody");
-    // HtmlTableBody privateIssueTbody = tbodies.stream().filter(issuesTbody -> {
-    //   List<HtmlTableDataCell> tds = issuesTbody.getByXPath("./tr/td");
-    //   return tds.get(0).asNormalizedText().startsWith("SNYK");
-
-    // }).findFirst().get();
-    // assertNotNull(privateIssueTbody);
-
-    verifySnykRequest(OK_TOKEN);
-    verifyOssRequest(OK_USER, OK_TOKEN);
-    verifyTpaRequest(OK_TOKEN);
+    verifyTpaRequest(TPA_TOKEN);
   }
 
   @Test
@@ -201,7 +115,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -219,18 +133,17 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
-        "Warning alert:Snyk: Unauthorized: Verify the provided credentials are valid.",
+        "Warning alert:Tpa: Unauthorized: Verify the provided credentials are valid.",
         heading.getTextContent());
 
-    // Select the Snyk Source
-    HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
-    assertNotNull(snykSourceBtn);
-    page = click(webClient, snykSourceBtn);
+    // Select the Tpa Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    assertNotNull(srcBtn);
+    page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifySnykRequest(INVALID_TOKEN);
-    verifyNoInteractionsWithOSS();
+    verifyTpaRequest(INVALID_TOKEN);
   }
 
   @Test
@@ -242,7 +155,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.SNYK_TOKEN_HEADER, UNAUTH_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, UNAUTH_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -259,19 +172,18 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     HtmlPage page = extractPage(webClient, body);
     HtmlHeading4 heading = page.getFirstByXPath("//div[@class='pf-v5-c-alert pf-m-warning']/h4");
     assertEquals(
-        "Warning alert:Snyk: Forbidden: The provided credentials don't have the required"
+        "Warning alert:Tpa: Forbidden: The provided credentials don't have the required"
             + " permissions.",
         heading.getTextContent());
 
-    // Select the Snyk Source
-    HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
-    assertNotNull(snykSourceBtn);
-    page = click(webClient, snykSourceBtn);
+    // Select the TPA Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    assertNotNull(srcBtn);
+    page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifySnykRequest(UNAUTH_TOKEN);
-    verifyNoInteractionsWithOSS();
+    verifyTpaRequest(UNAUTH_TOKEN);
   }
 
   @Test
@@ -283,7 +195,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.SNYK_TOKEN_HEADER, ERROR_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, ERROR_TOKEN)
             .when()
             .post("/api/v4/analysis")
             .then()
@@ -303,22 +215,21 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     boolean foundHeading = false;
     for (HtmlHeading4 heading : headings) {
       String headingText = heading.getTextContent();
-      if (headingText.contains("Snyk")) {
+      if (headingText.contains("Tpa")) {
         foundHeading = true;
-        assertEquals("Danger alert:Snyk: Server Error: This is an example error", headingText);
+        assertEquals("Danger alert:Tpa: Server Error: Unexpected error", headingText);
         break;
       }
     }
-    assertTrue(foundHeading, "No heading with 'Snyk' found for hmtl error");
-    // Select the Snyk Source
-    HtmlButton snykSourceBtn = page.getFirstByXPath("//button[@aria-label='snyk source']");
-    assertNotNull(snykSourceBtn);
-    page = click(webClient, snykSourceBtn);
+    assertTrue(foundHeading, "No heading with 'TPA' found for hmtl error");
+    // Select the Tpa Source
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='tpa source']");
+    assertNotNull(srcBtn);
+    page = click(webClient, srcBtn);
     final String pageAsText = page.asNormalizedText();
     assertTrue(pageAsText.contains("No results found"));
 
-    verifySnykRequest(ERROR_TOKEN);
-    verifyNoInteractionsWithOSS();
+    verifyTpaRequest(ERROR_TOKEN);
   }
 
   @Test
@@ -330,9 +241,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .body(loadBatchSBOMFile(CYCLONEDX))
             .header("Accept", MediaType.TEXT_HTML)
-            .header(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)
-            .header(Constants.OSS_INDEX_USER_HEADER, OK_USER)
-            .header(Constants.OSS_INDEX_TOKEN_HEADER, OK_TOKEN)
+            .header(Constants.TPA_TOKEN_HEADER, OK_TOKEN)
             .when()
             .post("/api/v4/batch-analysis")
             .then()
@@ -359,8 +268,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
             "//a[contains(@href, 'https://catalog.redhat.com/software/containers/ubi9/')]");
     assertTrue(!anchorElements.isEmpty(), "At least one href contains the desired substring");
 
-    verifySnykRequest(OK_TOKEN, 3);
-    verifyOssRequest(OK_USER, OK_TOKEN, 3);
+    verifyTpaRequest(OK_TOKEN, 3);
   }
 
   private HtmlTableBody getTableBodyForDependency(String depRef, DomElement table) {
@@ -379,10 +287,6 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     return expandTableDataCell(webClient, tbody, "Transitive Vulnerabilities");
   }
 
-  private HtmlPage expandDirectTableDataCell(WebClient webClient, HtmlTableBody tbody) {
-    return expandTableDataCell(webClient, tbody, "Direct Vulnerabilities");
-  }
-
   private HtmlPage expandTableDataCell(WebClient webClient, HtmlTableBody tbody, String dataLabel) {
     HtmlTableDataCell td =
         tbody.getFirstByXPath(String.format("./tr/td[@data-label='%s']", dataLabel));
@@ -390,24 +294,26 @@ public class HtmlReportTest extends AbstractAnalysisTest {
       return tbody.getHtmlPageOrNull();
     }
     HtmlButton button = td.getFirstByXPath("./button");
-    return click(webClient, button);
-  }
 
-  private HtmlTable getIssuesTable(HtmlTableBody dependencyTable) {
-    List<HtmlTableRow> rows = dependencyTable.getByXPath("./tr");
-    if (rows.size() != 2) {
-      fail(
-          "Expected table to have 2 <tr>. One for the dependency name and another for the"
-              + " vulnerabilities. Found: "
-              + rows.size());
-    }
-    return rows.get(1).getFirstByXPath("//table");
+    // Debug: Print button details
+    System.err.println(
+        "*** DEBUG: Found button: "
+            + button.getAttribute("id")
+            + ", aria-expanded: "
+            + button.getAttribute("aria-expanded")
+            + ", class: "
+            + button.getAttribute("class")
+            + " ***");
+
+    return click(webClient, button);
   }
 
   private WebClient initWebClient() {
     WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
     webClient.getOptions().setJavaScriptEnabled(true);
     webClient.getOptions().setThrowExceptionOnScriptError(true);
+    webClient.getOptions().setCssEnabled(false); // Disable CSS to avoid warnings
+    webClient.getOptions().setPrintContentOnFailingStatusCode(false);
 
     return webClient;
   }
@@ -420,6 +326,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
       fail("The string is not valid HTML.", e);
     }
     webClient.waitForBackgroundJavaScript(50000);
+    assertNotNull(page, "Page should not be null");
     assertTrue(page.isHtmlPage(), "The string is valid HTML.");
     assertEquals("Dependency Analysis", page.getTitleText());
     assertNotNull(page.getElementsById("root"));

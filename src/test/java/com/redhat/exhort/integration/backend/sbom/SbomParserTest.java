@@ -46,6 +46,11 @@ import jakarta.ws.rs.core.Response;
 
 public class SbomParserTest {
 
+  static final String MAVEN_PURL_TYPE = "maven";
+  static final String NPM_PURL_TYPE = "npm";
+  static final String PYPI_PURL_TYPE = "pypi";
+  static final String GOLANG_PURL_TYPE = "golang";
+
   private static final Collection<String> MEDIA_TYPES =
       List.of(Constants.SPDX_MEDIATYPE_JSON, Constants.CYCLONEDX_MEDIATYPE_JSON);
 
@@ -184,10 +189,10 @@ public class SbomParserTest {
     return getMediaTypes()
         .mapMulti(
             (t, consumer) -> {
-              consumer.accept(arguments(t, Constants.MAVEN_PURL_TYPE, 2, 7));
-              consumer.accept(arguments(t, Constants.GOLANG_PURL_TYPE, 2, 3));
-              consumer.accept(arguments(t, Constants.NPM_PURL_TYPE, 2, 3));
-              consumer.accept(arguments(t, Constants.PYPI_PURL_TYPE, 2, 1));
+              consumer.accept(arguments(t, MAVEN_PURL_TYPE, 2, 7));
+              consumer.accept(arguments(t, GOLANG_PURL_TYPE, 2, 3));
+              consumer.accept(arguments(t, NPM_PURL_TYPE, 2, 3));
+              consumer.accept(arguments(t, PYPI_PURL_TYPE, 2, 1));
             });
   }
 

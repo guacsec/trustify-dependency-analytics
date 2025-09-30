@@ -62,8 +62,6 @@ public class TokenValidationTest extends AbstractAnalysisTest {
   @ParameterizedTest
   @MethodSource("tokenErrorArguments")
   public void testServerError(String provider, Map<String, String> headers) {
-    stubOssToken();
-    stubSnykTokenRequests();
     stubTpaTokenRequests();
 
     var msg =
@@ -88,22 +86,12 @@ public class TokenValidationTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> tokenErrorArguments() {
     return Stream.of(
-        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, ERROR_TOKEN)),
-        Arguments.of(
-            Constants.OSS_INDEX_PROVIDER,
-            Map.of(
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                ERROR_TOKEN)),
-        Arguments.of(Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, ERROR_TOKEN)));
+        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, ERROR_TOKEN)));
   }
 
   @ParameterizedTest
   @MethodSource("tokenSuccessArguments")
   public void testSuccess(String provider, Map<String, String> headers) {
-    stubOssToken();
-    stubSnykTokenRequests();
     stubTpaTokenRequests();
 
     var msg =
@@ -128,22 +116,12 @@ public class TokenValidationTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> tokenSuccessArguments() {
     return Stream.of(
-        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, OK_TOKEN)),
-        Arguments.of(
-            Constants.OSS_INDEX_PROVIDER,
-            Map.of(
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                OK_TOKEN)),
-        Arguments.of(Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, OK_TOKEN)));
+        Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, OK_TOKEN)));
   }
 
   @ParameterizedTest
   @MethodSource("tokenUnauthorizedArguments")
   public void testUnauthorized(String provider, Map<String, String> headers) {
-    stubOssToken();
-    stubSnykTokenRequests();
     stubTpaTokenRequests();
 
     var msg =
@@ -168,53 +146,6 @@ public class TokenValidationTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> tokenUnauthorizedArguments() {
     return Stream.of(
-        Arguments.of(
-            Constants.OSS_INDEX_PROVIDER,
-            Map.of(
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                INVALID_TOKEN)),
-        Arguments.of(Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, INVALID_TOKEN)),
         Arguments.of(Constants.TPA_PROVIDER, Map.of(Constants.TPA_TOKEN_HEADER, INVALID_TOKEN)));
-  }
-
-  @ParameterizedTest
-  @MethodSource("tokenTooManyRequestsArguments")
-  public void testTooManyRequests(String provider, Map<String, String> headers) {
-    stubOssToken();
-    stubSnykTokenRequests();
-
-    var msg =
-        given()
-            .when()
-            .headers(headers)
-            .get("/api/v4/token")
-            .then()
-            .assertThat()
-            .statusCode(Response.Status.TOO_MANY_REQUESTS.getStatusCode())
-            .contentType(MediaType.TEXT_PLAIN)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .extract()
-            .body()
-            .asString();
-
-    assertEquals("Unable to validate " + provider + " Token: Too Many Requests", msg);
-    verifyTokenRequest(provider, headers);
-  }
-
-  private static Stream<Arguments> tokenTooManyRequestsArguments() {
-    return Stream.of(
-        Arguments.of(
-            Constants.OSS_INDEX_PROVIDER,
-            Map.of(
-                Constants.OSS_INDEX_USER_HEADER,
-                OK_USER,
-                Constants.OSS_INDEX_TOKEN_HEADER,
-                RATE_LIMIT_TOKEN)),
-        Arguments.of(
-            Constants.SNYK_PROVIDER, Map.of(Constants.SNYK_TOKEN_HEADER, RATE_LIMIT_TOKEN)));
   }
 }

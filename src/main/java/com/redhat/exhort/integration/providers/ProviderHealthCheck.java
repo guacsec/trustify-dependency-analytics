@@ -30,12 +30,7 @@ import com.redhat.exhort.api.v4.ProviderStatus;
 public class ProviderHealthCheck extends AbstractHealthCheck {
 
   private static final List<String> ALL_PROVIDERS_HEALTH_CHECKS =
-      List.of(
-          "direct:snykHealthCheck",
-          "direct:snykHealthCheck",
-          "direct:osvHealthCheck",
-          "direct:tpaHealthCheck",
-          "direct:ossIndexHealthCheck");
+      List.of("direct:osvHealthCheck", "direct:tpaHealthCheck");
 
   public ProviderHealthCheck() {
     super("External Providers Readiness Check");

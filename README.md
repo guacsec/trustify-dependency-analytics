@@ -13,7 +13,6 @@
 ## Required parameters
 
 - `api.tpa.host` The host of the Trusted Profile Analyzer service. Used as a Vulnerability Provider.
-- `api.snyk.token` Snyk API token for default authentication when the Snyk integration is enabled
 
 ### TPA Client Authentication
 
@@ -29,37 +28,18 @@
 
 ## Providers
 
-Currently these are the available providers that will provide a vulnerability report for your components or full dependency graph.
+Exhort can integrate with Trusted Profile Analyzer to retrieve vulnerability data.
 
-- TPA ([`Trusted Profile Analyzer`](https://www.trustification.io/))
-- Snyk (`snyk`)
-- OSS Index (`oss-index`)
+- Trusted Profile Analyzer ([`Trusted Profile Analyzer`](https://www.trustification.io/))
 
 You can disable a given provider for the dependency graph analysis by using `api.<provider>.disabled=true` property at startup.
 
-Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=snyk&providers=oss-index`
+Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=tpa`
 
 ## Recommendations
 
 By default the service will look for Red Hat Trusted Content remmediations and recommendations. If you want to opt out from this service
 you can use the `recommend` query parameter and set it to `false`. Example `/analysis?recommend=false`
-
-## Package URL Types
-
-The supported Package URL types depends on each external provider.
-
-- TPA and OSS Index don't have any limitation on the type used.
-- Snyk: Given the limitations of the API endpoint currently being used only supports the following PackageURL types:
-  - Maven (`maven`)
-  - Gradle (`gradle`)
-  - NPM (`npm`)
-  - Go Modules (`gomodules`)
-  - Pip (`pip`)
-  - RPM (`rpm`)
-  - Cocoapods (`cocoapods`)
-  - Gem (`gem`)
-  - NuGet (`nuget`)
-  - Debian (`deb`)
 
 ## Exhort API
 
@@ -140,10 +120,10 @@ $ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accep
 If clients don't provide the token to authenticate against the Vulnerability Provider the default one will be used instead but vulnerabilities unique to
 that specific provider will not show all the details.
 
-To provide the client authentication tokens use HTTP Headers in the request. The format for the tokens Headers is `ex-provider-token`. e.g. `ex-snyk-token`:
+To provide the client authentication tokens use HTTP Headers in the request. The format for the tokens Headers is `ex-provider-token`. e.g. `ex-tpa-token`:
 
 ```bash
-http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-snyk-token:the-client-token
+http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-tpa-token:the-client-token
 ```
 
 In case the vulnerability provider requires of Basic Authentication the headers will be `ex-provider-user` and `ex-provider-token`.
@@ -264,7 +244,7 @@ The request will be a GET to the `/token` path containing the HTTP header with t
 other HTTP requests. i.e. `ex-<provider>-token`
 
 ```bash
-http -v :8080/api/v4/token ex-snyk-token==example-token
+http -v :8080/api/v4/token ex-tpa-token==example-token
 ```
 
 The possible responses are:
@@ -335,7 +315,7 @@ In all cases, the original request and headers are logged for the SRE Team to re
 The required parameters can be injected as environment variables through a secret. Create the `exhort-secret` Secret before deploying the application.
 
 ```bash
-oc create secret generic -n exhort --from-literal=api-snyk-token=<snyk_api_token> exhort-secret
+oc create secret generic -n exhort --from-literal=api-tpa-token=<tpa_api_token> exhort-secret
 ```
 
 After that you can use the [exhort.yaml](./deploy/exhort.yaml)

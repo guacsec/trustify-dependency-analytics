@@ -39,14 +39,8 @@ public class CustomMetrics {
 
   private static final Collection<String> MONITORED_ROUTES =
       List.of(
-          "snykValidateToken",
-          "snykRequest",
           "getTrustedContent",
           "tpaRequest",
-          "osvRequest",
-          "ossValidateCredentials",
-          "ossSplitReq",
-          "ossIndexRequest",
           "analyticsIdentify",
           "analyticsTrackAnalysis",
           "analyticsTrackToken",

@@ -9,28 +9,25 @@ export const unauthorizedReport: AppData = {
       "transitive": 7
     },
     "providers": {
-      "oss-index": {
+      "osv": {
         "status": {
           "ok": false,
-          "name": 'oss-index',
+          "name": 'osv',
           "code": 401,
           "message": 'Unauthorized: Verify the provided credentials are valid.'
         }
       },
-      "snyk": {
+      "tpa": {
         "status": {
           "ok": false,
-          "name": 'snyk',
+          "name": 'tpa',
           "code": 401,
           "message": 'Unauthorized: Verify the provided credentials are valid.'
         }
       }
     },
   },
-  ossIssueTemplate: 'http://ossindex.sonatype.org/vulnerability/__ISSUE_ID__',
-  snykIssueTemplate: 'https://security.snyk.io/vuln/__ISSUE_ID__',
   nvdIssueTemplate: 'https://nvd.nist.gov/vuln/detail/__ISSUE_ID__',
-  snykSignup: 'https://app.snyk.io/login',
   cveIssueTemplate: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=__ISSUE_ID__',
   imageMapping: "[\n" +
     "  {\n" +

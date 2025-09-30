@@ -1,19 +1,13 @@
-import { withTokenReport } from './reportWithToken.mock';
-import { withoutTokenReport } from './reportWithoutToken.mock';
 import { errorReport } from './reportWithError.mock';
 import { forbiddenReport } from './reportWithForbidden.mock';
 import { unauthorizedReport } from './reportWithUnauthorized.mock';
-import { reportMixed } from './reportMixed.mock';
-import { unauthenticatedReport } from './reportWithUnauthenticated.mock';
+import { reportBasic } from './reportBasic.mock';
 import { dockerReport} from './reportDocker.mock';
 
 export const MOCK_REPORT = {
-  mixed: reportMixed,
-  withToken: withTokenReport,
-  withoutToken: withoutTokenReport,
+  basic: reportBasic,
   error: errorReport,
   forbidden: forbiddenReport,
   unauthorizedReport: unauthorizedReport,
-  unauthenticatedReport: unauthenticatedReport,
   docker: dockerReport,
 };

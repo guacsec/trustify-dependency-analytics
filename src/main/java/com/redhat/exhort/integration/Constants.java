@@ -43,10 +43,6 @@ public final class Constants {
   public static final String ACCEPT_HEADER = "Accept";
   public static final String ACCEPT_ENCODING_HEADER = "Accept-Encoding";
   public static final String AUTHORIZATION_HEADER = "Authorization";
-  public static final String SNYK_TOKEN_HEADER = "ex-snyk-token";
-  public static final String SNYK_USER_AGENT_HEADER_FORMAT = "redhat-snyk-%s-%s";
-  public static final String OSS_INDEX_USER_HEADER = "ex-oss-index-user";
-  public static final String OSS_INDEX_TOKEN_HEADER = "ex-oss-index-token";
   public static final String TPA_TOKEN_HEADER = "ex-tpa-token";
 
   public static final String VERBOSE_MODE_HEADER = "verbose";
@@ -62,26 +58,12 @@ public final class Constants {
   public static final String SPDX_MEDIATYPE_JSON = "application/vnd.spdx+json";
   public static final String CYCLONEDX_MEDIATYPE_JSON = "application/vnd.cyclonedx+json";
 
-  public static final String SNYK_PROVIDER = "snyk";
-  public static final String OSS_INDEX_PROVIDER = "oss-index";
   public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
   public static final String OSV_PROVIDER = "osv";
   public static final String TPA_PROVIDER = "tpa";
   public static final String UNKNOWN_PROVIDER = "unknown";
 
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
-
-  // PURL Types used in the application. See Snyk Supported PURL Types
-  public static final String MAVEN_PURL_TYPE = "maven";
-  public static final String NPM_PURL_TYPE = "npm";
-  public static final String PYPI_PURL_TYPE = "pypi";
-  public static final String GOLANG_PURL_TYPE = "golang";
-  public static final String DEB_PURL_TYPE = "deb";
-  public static final String NUGET_PURL_TYPE = "nuget";
-  public static final String GEM_PURL_TYPE = "gem";
-  public static final String COCOAPODS_PURL_TYPE = "cocoapods";
-  public static final String RPM_PURL_TYPE = "rpm";
-  public static final String OCI_PURL_TYPE = "oci";
 
   public static final String PKG_MANAGER_PROPERTY = "pkgManager";
   public static final String REQUEST_CONTENT_PROPERTY = "requestContent";
@@ -95,12 +77,6 @@ public final class Constants {
   public static final String SBOM_ID_PROPERTY = "sbomId";
   public static final String UNSCANNED_REFS_PROPERTY = "unscannedRefs";
   public static final String CACHED_RECOMMENDATIONS = "missedRecommendations";
-
-  public static final String SNYK_DEP_GRAPH_API_PATH = "/test/dep-graph";
-  public static final String SNYK_TOKEN_API_PATH = "/user/me";
-
-  public static final String OSS_INDEX_AUTH_COMPONENT_API_PATH = "/authorized/component-report";
-  public static final String OSS_INDEX_VERSION_PATH = "/version";
 
   public static final String OSV_NVD_PURLS_PATH = "/purls";
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
@@ -123,8 +99,6 @@ public final class Constants {
       Collections.unmodifiableList(
           new ArrayList<>() {
             {
-              add(SNYK_PROVIDER);
-              add(OSS_INDEX_PROVIDER);
               add(OSV_PROVIDER);
               add(TPA_PROVIDER);
             }

@@ -28,7 +28,6 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
 
-  public static final String SNYK_TOKEN = "snyk-token-xyz";
   public static final String TPA_TOKEN = "tpa-token-abc";
 
   final WireMockServer server = new WireMockServer(options().dynamicPort());
@@ -38,10 +37,7 @@ public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
     server.start();
 
     return Map.of(
-        "api.snyk.host", server.baseUrl(),
-        "api.snyk.token", SNYK_TOKEN,
         "api.trustedcontent.host", server.baseUrl(),
-        "api.ossindex.host", server.baseUrl(),
         "api.onguard.host", server.baseUrl(),
         "api.tpa.host", server.baseUrl());
   }
