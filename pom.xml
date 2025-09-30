@@ -49,6 +49,7 @@
 
     <!-- Dependencies -->
     <exhort-api.version>1.0.18</exhort-api.version>
+    <cyclonedx.version>11.0.0</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
     <spdx.version>2.0.2</spdx.version>
     <htmlunit.version>4.11.1</htmlunit.version>
@@ -192,6 +193,7 @@
     <dependency>
       <groupId>org.cyclonedx</groupId>
       <artifactId>cyclonedx-core-java</artifactId>
+      <version>${cyclonedx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.spdx</groupId>
