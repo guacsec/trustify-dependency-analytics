@@ -30,10 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.camel.Exchange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.DependencyReport;
@@ -73,9 +75,9 @@ public class ProviderResponseHandlerTest {
     ProviderResponseHandler handler = new TestResponseHandler();
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issuesData, null, unscanned),
             tree,
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
     assertOkStatus(response);
     SourceSummary summary = getValidSource(response).getSummary();
@@ -143,7 +145,10 @@ public class ProviderResponseHandlerTest {
     DependencyTree tree = buildTree();
     ProviderReport response =
         handler.buildReport(
-            new ProviderResponse(issues, null, null), tree, null, EMPTY_TRUSTED_CONTENT_RESPONSE);
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(issues, null, null),
+            tree,
+            EMPTY_TRUSTED_CONTENT_RESPONSE);
     assertOkStatus(response);
     assertEquals(1, response.getSources().size());
     Source report = response.getSources().get(TEST_SOURCE);
@@ -164,9 +169,9 @@ public class ProviderResponseHandlerTest {
 
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
 
     assertOkStatus(response);
@@ -221,9 +226,9 @@ public class ProviderResponseHandlerTest {
 
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
 
     assertOkStatus(response);
@@ -251,9 +256,9 @@ public class ProviderResponseHandlerTest {
 
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
 
     assertOkStatus(response);
@@ -272,9 +277,9 @@ public class ProviderResponseHandlerTest {
 
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
 
     assertOkStatus(response);
@@ -300,9 +305,9 @@ public class ProviderResponseHandlerTest {
 
     var report =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             new TrustedContentResponse(recommendations, null));
     Source source = getValidSource(report);
 
@@ -337,9 +342,9 @@ public class ProviderResponseHandlerTest {
 
     var report =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             new TrustedContentResponse(recommendations, null));
 
     assertNotNull(report);
@@ -394,9 +399,9 @@ public class ProviderResponseHandlerTest {
 
     var report =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, null),
             buildTree(),
-            null,
             new TrustedContentResponse(recommendations, null));
     Source source = getValidSource(report);
     assertEquals(1, source.getSummary().getRecommendations());
@@ -448,9 +453,9 @@ public class ProviderResponseHandlerTest {
     DependencyTree tree = buildTree();
     ProviderReport response =
         handler.buildReport(
+            Mockito.mock(Exchange.class),
             new ProviderResponse(issues, null, unscanned),
             tree,
-            null,
             EMPTY_TRUSTED_CONTENT_RESPONSE);
     assertOkStatus(response);
     assertEquals(1, response.getSources().size());
@@ -595,13 +600,13 @@ public class ProviderResponseHandlerTest {
   private static class TestResponseHandler extends ProviderResponseHandler {
 
     @Override
-    protected String getProviderName() {
+    protected String getProviderName(Exchange exchange) {
       return TEST_PROVIDER;
     }
 
     @Override
-    public ProviderResponse responseToIssues(
-        byte[] response, String privateProviders, DependencyTree tree) throws IOException {
+    public ProviderResponse responseToIssues(byte[] response, DependencyTree tree)
+        throws IOException {
       throw new IllegalArgumentException("not implemented");
     }
   }

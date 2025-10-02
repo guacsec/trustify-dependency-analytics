@@ -22,13 +22,10 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.hamcrest.text.MatchesPattern;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -38,6 +35,11 @@ import jakarta.ws.rs.core.Response;
 @QuarkusTest
 public class TokenValidationTest extends AbstractAnalysisTest {
 
+  @BeforeEach
+  void setup() {
+    stubTokenValidationEndpoint();
+  }
+
   @Test
   public void testMissingToken() {
     var msg =
@@ -46,7 +48,7 @@ public class TokenValidationTest extends AbstractAnalysisTest {
             .get("/api/v4/token")
             .then()
             .assertThat()
-            .statusCode(400)
+            .statusCode(401)
             .header(
                 Constants.EXHORT_REQUEST_ID_HEADER,
                 MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
@@ -54,20 +56,17 @@ public class TokenValidationTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asString();
-    assertEquals("Missing provider authentication headers", msg);
+    assertEquals("Provider token header is missing", msg);
 
     verifyNoInteractions();
   }
 
-  @ParameterizedTest
-  @MethodSource("tokenErrorArguments")
-  public void testServerError(String provider, Map<String, String> headers) {
-    stubTrustifyTokenRequests();
-
+  @Test
+  public void testServerError() {
     var msg =
         given()
             .when()
-            .headers(headers)
+            .headers(Map.of(Constants.TRUSTIFY_TOKEN_HEADER, ERROR_TOKEN))
             .get("/api/v4/token")
             .then()
             .assertThat()
@@ -80,25 +79,17 @@ public class TokenValidationTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    assertEquals("Unable to validate " + provider + " Token: Server Error", msg);
-    verifyTokenRequest(provider, headers);
+    assertEquals("Token validation failed for provider: " + TRUSTIFY_PROVIDER, msg);
+    verifyTokenValidationEndpoint();
   }
 
-  private static Stream<Arguments> tokenErrorArguments() {
-    return Stream.of(
-        Arguments.of(
-            Constants.TRUSTIFY_PROVIDER, Map.of(Constants.TRUSTIFY_TOKEN_HEADER, ERROR_TOKEN)));
-  }
-
-  @ParameterizedTest
-  @MethodSource("tokenSuccessArguments")
-  public void testSuccess(String provider, Map<String, String> headers) {
-    stubTrustifyTokenRequests();
+  @Test
+  public void testSuccess() {
 
     var msg =
         given()
             .when()
-            .headers(headers)
+            .headers(Map.of(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN))
             .get("/api/v4/token")
             .then()
             .assertThat()
@@ -111,25 +102,16 @@ public class TokenValidationTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    assertEquals("Token validated successfully", msg);
-    verifyTokenRequest(provider, headers);
+    assertEquals("Token validated successfully for provider: " + TRUSTIFY_PROVIDER, msg);
+    verifyTokenValidationEndpoint();
   }
 
-  private static Stream<Arguments> tokenSuccessArguments() {
-    return Stream.of(
-        Arguments.of(
-            Constants.TRUSTIFY_PROVIDER, Map.of(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)));
-  }
-
-  @ParameterizedTest
-  @MethodSource("tokenUnauthorizedArguments")
-  public void testUnauthorized(String provider, Map<String, String> headers) {
-    stubTrustifyTokenRequests();
-
+  @Test
+  public void testUnauthorized() {
     var msg =
         given()
             .when()
-            .headers(headers)
+            .headers(Map.of(Constants.TRUSTIFY_TOKEN_HEADER, INVALID_TOKEN))
             .get("/api/v4/token")
             .then()
             .assertThat()
@@ -142,13 +124,28 @@ public class TokenValidationTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    assertEquals("Invalid token provided. Unauthorized", msg);
-    verifyTokenRequest(provider, headers);
+    assertEquals("Invalid token for provider " + TRUSTIFY_PROVIDER, msg);
+    verifyTokenValidationEndpoint();
   }
 
-  private static Stream<Arguments> tokenUnauthorizedArguments() {
-    return Stream.of(
-        Arguments.of(
-            Constants.TRUSTIFY_PROVIDER, Map.of(Constants.TRUSTIFY_TOKEN_HEADER, INVALID_TOKEN)));
+  @Test
+  public void testWrongProvider() {
+    var msg =
+        given()
+            .when()
+            .headers(Map.of("ex-wrong-provider-token", OK_TOKEN))
+            .get("/api/v4/token")
+            .then()
+            .assertThat()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+            .contentType(MediaType.TEXT_PLAIN)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .extract()
+            .body()
+            .asString();
+
+    assertEquals("Provider wrong-provider is not available", msg);
   }
 }

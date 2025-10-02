@@ -56,7 +56,8 @@ public class TcResponseAggregation implements AggregationStrategy {
   }
 
   public TrustedContentResponse aggregateCachedResponse(
-      @ExchangeProperty(Constants.CACHED_RECOMMENDATIONS) TrustedContentCachedRequest cached,
+      @ExchangeProperty(Constants.CACHED_RECOMMENDATIONS_PROPERTY)
+          TrustedContentCachedRequest cached,
       Exchange exchange)
       throws ExecutionException {
 
@@ -76,7 +77,7 @@ public class TcResponseAggregation implements AggregationStrategy {
         new HashMap<>(externalResponse.recommendations());
     cacheService.cacheRecommendations(externalResponse, cached.miss());
     recommendations.putAll(cached.cached());
-    exchange.removeProperty(Constants.CACHED_RECOMMENDATIONS);
+    exchange.removeProperty(Constants.CACHED_RECOMMENDATIONS_PROPERTY);
     return new TrustedContentResponse(recommendations, externalResponse.status());
   }
 

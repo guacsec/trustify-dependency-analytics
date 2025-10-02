@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Body;
+import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,14 +57,13 @@ public class OsvResponseHandler extends ProviderResponseHandler {
   @Inject ObjectMapper mapper;
 
   @Override
-  protected String getProviderName() {
+  protected String getProviderName(Exchange exchange) {
     return Constants.OSV_PROVIDER;
   }
 
   @Override
   public ProviderResponse responseToIssues(
       @Body byte[] response,
-      @ExchangeProperty(Constants.PROVIDER_PRIVATE_DATA_PROPERTY) String privateProviders,
       @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree)
       throws IOException {
     var json = (ObjectNode) mapper.readTree(response);

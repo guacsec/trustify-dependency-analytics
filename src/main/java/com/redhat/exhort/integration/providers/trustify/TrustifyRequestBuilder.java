@@ -18,38 +18,25 @@
 
 package com.redhat.exhort.integration.providers.trustify;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.camel.Exchange;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.config.ObjectMapperProducer;
-import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.model.DependencyTree;
 
-import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 @ApplicationScoped
 @RegisterForReflection
 public class TrustifyRequestBuilder {
 
-  @ConfigProperty(name = "quarkus.oidc-client.trustify.enabled", defaultValue = "true")
-  boolean authEnabled;
-
-  @Inject OidcClients oidcClients;
-
   private static final int BULK_SIZE = 128;
 
   public static final String TRUSTIFY_CLIENT_TENANT = "trustify";
-  private static final int TRUSTIFY_CLIENT_TIMEOUT = 10;
 
   private final ObjectMapper mapper = ObjectMapperProducer.newInstance();
 
@@ -75,29 +62,6 @@ public class TrustifyRequestBuilder {
       bulks.add(bulk);
     }
     return bulks;
-  }
-
-  public void addAuthentication(Exchange exchange) {
-    var message = exchange.getMessage();
-    var userToken = message.getHeader(Constants.TRUSTIFY_TOKEN_HEADER, String.class);
-    String token;
-    if (!authEnabled) {
-      return;
-    }
-    if (userToken != null) {
-      token = userToken;
-    } else {
-      token =
-          oidcClients
-              .getClient(TRUSTIFY_CLIENT_TENANT)
-              .getTokens()
-              .await()
-              .atMost(Duration.ofSeconds(TRUSTIFY_CLIENT_TIMEOUT))
-              .getAccessToken();
-    }
-    if (token != null) {
-      message.setHeader("Authorization", "Bearer " + token);
-    }
   }
 
   public boolean isEmpty(DependencyTree tree) {

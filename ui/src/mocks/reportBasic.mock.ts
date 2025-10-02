@@ -20,10 +20,10 @@ export const reportBasic: AppData = {
                 
             }
         },
-        "tpa": {
+        "rhtpa": {
             "status": {
                 "ok": true,
-                "name": "tpa",
+                "name": "rhtpa",
                 "code": 200,
                 "message": "OK"
             },

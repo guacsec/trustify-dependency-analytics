@@ -158,7 +158,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     assertNotNull(result.issues());
@@ -240,7 +240,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     Issue issue = issues.get(0);
@@ -255,7 +255,7 @@ public class TrustifyResponseHandlerTest {
     String jsonResponse = "{}";
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     assertNotNull(result.issues());
@@ -272,7 +272,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -294,7 +294,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -317,7 +317,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -355,7 +355,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -404,7 +404,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertEquals(1, issues.size());
@@ -465,7 +465,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertEquals(1, issues.size());
@@ -522,7 +522,7 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, null, dependencyTree);
+    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
     assertTrue(result.issues().isEmpty());

@@ -21,6 +21,7 @@ package com.redhat.exhort.integration.trustedcontent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.camel.Exchange;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.exhort.api.PackageRef;
@@ -55,6 +57,7 @@ class TcResponseHandlerTest {
   void testAggregation() throws IOException {
     var response =
         handler.processRecommendations(
+            mock(Exchange.class),
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/simple.json")
@@ -99,6 +102,7 @@ class TcResponseHandlerTest {
   void testEmpty() throws IOException {
     var response =
         handler.processRecommendations(
+            mock(Exchange.class),
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/empty_report.json")
@@ -119,6 +123,7 @@ class TcResponseHandlerTest {
     handler.ubiRecommendation = mapping;
     var response =
         handler.processRecommendations(
+            mock(Exchange.class),
             getClass()
                 .getClassLoader()
                 .getResourceAsStream("__files/trustedcontent/empty_report.json")

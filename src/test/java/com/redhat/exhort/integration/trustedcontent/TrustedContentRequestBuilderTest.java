@@ -74,7 +74,7 @@ public class TrustedContentRequestBuilderTest {
     assertTrue(result.isEmpty());
     verify(exchange)
         .setProperty(
-            eq(Constants.CACHED_RECOMMENDATIONS),
+            eq(Constants.CACHED_RECOMMENDATIONS_PROPERTY),
             argThat(
                 req -> {
                   var tcReq = (TrustedContentCachedRequest) req;
@@ -95,7 +95,7 @@ public class TrustedContentRequestBuilderTest {
     assertEquals(deps.size(), result.size());
     verify(exchange)
         .setProperty(
-            eq(Constants.CACHED_RECOMMENDATIONS),
+            eq(Constants.CACHED_RECOMMENDATIONS_PROPERTY),
             argThat(
                 req -> {
                   var tcReq = (TrustedContentCachedRequest) req;
@@ -119,7 +119,7 @@ public class TrustedContentRequestBuilderTest {
     assertTrue(result.isEmpty());
     verify(exchange)
         .setProperty(
-            eq(Constants.CACHED_RECOMMENDATIONS),
+            eq(Constants.CACHED_RECOMMENDATIONS_PROPERTY),
             argThat(
                 req -> {
                   var tcReq = (TrustedContentCachedRequest) req;
@@ -150,7 +150,7 @@ public class TrustedContentRequestBuilderTest {
     assertTrue(result.contains(TEST_PURLS[2]));
     verify(exchange)
         .setProperty(
-            eq(Constants.CACHED_RECOMMENDATIONS),
+            eq(Constants.CACHED_RECOMMENDATIONS_PROPERTY),
             argThat(
                 req -> {
                   var tcReq = (TrustedContentCachedRequest) req;

@@ -27,7 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -44,8 +44,8 @@ import org.apache.camel.component.micrometer.MicrometerConstants;
 import org.apache.camel.component.micrometer.routepolicy.MicrometerRoutePolicyFactory;
 import org.apache.camel.model.rest.RestParamType;
 import org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy;
-import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.exhort.analytics.AnalyticsService;
 import com.redhat.exhort.api.PackageRef;
@@ -54,7 +54,6 @@ import com.redhat.exhort.config.exception.DetailedException;
 import com.redhat.exhort.config.exception.SbomValidationException;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.ProviderAggregationStrategy;
-import com.redhat.exhort.integration.providers.ProvidersBodyPlusResponseCodeAggregationStrategy;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
 import com.redhat.exhort.integration.sbom.SbomParser;
 import com.redhat.exhort.integration.sbom.SbomParserFactory;
@@ -77,7 +76,6 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class ExhortIntegration extends EndpointRouteBuilder {
 
-  private static final Logger LOGGER = Logger.getLogger(ExhortIntegration.class);
   private static final String GZIP_ENCODING = "gzip";
 
   private final MeterRegistry registry;
@@ -236,23 +234,24 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("findVulnerabilities"))
       .routeId("findVulnerabilities")
-      .recipientList(method(vulnerabilityProvider, "getProviderEndpoints"))
-      .aggregationStrategy(AggregationStrategies.beanAllowNull(ProviderAggregationStrategy.class, "aggregate"))
-        .parallelProcessing();
+      .process(this::setProviders)
+      .setProperty("originalBody", body())
+      .split(exchangeProperty(Constants.PROVIDERS_PROPERTY), AggregationStrategies.beanAllowNull(ProviderAggregationStrategy.class, "aggregate"))
+        .parallelProcessing()
+        .process(this::setProviderConfiguration)
+        .setBody(exchangeProperty("originalBody"))
+        .choice()
+          .when(exchangeProperty(Constants.PROVIDER_NAME_PROPERTY).isEqualTo(Constants.OSV_PROVIDER))
+            .toD("direct:osvScan")
+          .otherwise()
+            .toD("direct:trustifyScan")
+        .end();
 
     from(direct("validateToken"))
       .routeId("validateToken")
       .setProperty(Constants.EXHORT_REQUEST_ID_HEADER, method(BackendUtils.class,"generateRequestId"))
       .to(direct("analyticsIdentify"))
-      .choice()
-        .when(header(Constants.TRUSTIFY_TOKEN_HEADER).isNotNull())
-          .setProperty(PROVIDERS_PARAM, constant(Arrays.asList(Constants.TRUSTIFY_PROVIDER)))
-          .to(direct("trustifyValidateCredentials"))
-        .otherwise()
-          .setProperty(PROVIDERS_PARAM, constant(Arrays.asList(Constants.UNKNOWN_PROVIDER)))
-          .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.BAD_REQUEST.getStatusCode()))
-          .setBody(constant("Missing provider authentication headers"))
-      .end()
+      .to(direct("trustifyValidateCredentials"))
       .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
       .to(seda("analyticsTrackToken"))
       .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
@@ -288,21 +287,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Status.INTERNAL_SERVER_ERROR.getStatusCode()))
       .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN));
 
-    from(direct("exhortHealthCheck"))
-      .routeId("exhortHealthCheck")
-      .recipientList(header(Constants.HEALTH_CHECKS_LIST_HEADER_NAME))
-      .aggregationStrategy(new ProvidersBodyPlusResponseCodeAggregationStrategy());
-
-    from(direct("healthCheckProviderDisabled"))
-      .routeId("healthCheckProviderDisabled")
-      .setProperty(Constants.EXCLUDE_FROM_READINESS_CHECK, constant(true))
-      .setBody(constant(String.format("Provider %s is disabled",exchangeProperty(Constants.PROVIDER_NAME))))
-
-      .process(exchange -> {
-        String providerName = exchange.getProperty(Constants.PROVIDER_NAME, String.class);
-        exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_TEXT,String.format("Provider %s is disabled", providerName)); })
-      .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE));
-
     //fmt:on
 
   }
@@ -329,7 +313,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
                         try {
                           return parser.parse(
                               new ByteArrayInputStream(mapper.writeValueAsBytes(e.getValue())));
-                        } catch (Exception parseEx) {
+                        } catch (JsonProcessingException parseEx) {
                           throw new SbomValidationException(
                               "Failed to parse SBOM " + parseEx.getMessage(), parseEx);
                         }
@@ -364,7 +348,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   private void cleanUpHeaders(Exchange exchange) {
     var msg = exchange.getIn();
     msg.removeHeader(VERBOSE_MODE_HEADER);
-    msg.removeHeaders("ex-.*-user");
     msg.removeHeaders("ex-.*-token");
     msg.removeHeader(Constants.AUTHORIZATION_HEADER);
     msg.removeHeaders("rhda-.*");
@@ -410,5 +393,33 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   public Map<String, AnalysisReport> transformBatchAnalysisReportList(
       @Body List<Map.Entry<String, AnalysisReport>> reports) {
     return reports.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private void setProviders(Exchange exchange) {
+    String providersQuery = exchange.getIn().getHeader(Constants.PROVIDERS_PARAM, String.class);
+    List<String> providers = new ArrayList<>();
+    if (providersQuery != null && !providersQuery.isEmpty()) {
+      for (String provider : providersQuery.split(",")) {
+        providers.add(provider.trim());
+        if (!vulnerabilityProvider.isProviderEnabled(provider)
+            && !Constants.OSV_PROVIDER.equals(provider)) {
+          throw new ClientErrorException(
+              "Provider " + provider + " is not enabled", Response.Status.BAD_REQUEST);
+        }
+      }
+    }
+    if (providers.isEmpty()) {
+      providers = vulnerabilityProvider.getEnabled();
+    }
+    if (providers != null && !providers.isEmpty()) {
+      exchange.setProperty(Constants.PROVIDERS_PROPERTY, providers);
+    }
+  }
+
+  private void setProviderConfiguration(Exchange exchange) {
+    var provider = exchange.getIn().getBody(String.class);
+    var config = vulnerabilityProvider.getProviderConfig(provider);
+    exchange.setProperty(Constants.PROVIDER_NAME_PROPERTY, provider);
+    exchange.setProperty(Constants.PROVIDER_CONFIG_PROPERTY, config);
   }
 }

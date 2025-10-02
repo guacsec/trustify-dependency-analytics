@@ -21,16 +21,17 @@ package com.redhat.exhort.integration.providers.osv;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
+import com.redhat.exhort.model.ProviderHealthCheckResult;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class OsvIntegration extends EndpointRouteBuilder {
@@ -80,12 +81,13 @@ public class OsvIntegration extends EndpointRouteBuilder {
 
     from(direct("osvHealthCheck"))
       .routeId("osvHealthCheck")
-      .setProperty(Constants.PROVIDER_NAME, constant(Constants.OSV_PROVIDER))
+      .setProperty(Constants.PROVIDER_NAME_PROPERTY, constant(Constants.OSV_PROVIDER))
       .choice()
          .when(method(vulnerabilityProvider, "getEnabled").contains(Constants.OSV_PROVIDER))
             .to(direct("osvHealthCheckEndpoint"))
          .otherwise()
-            .to(direct("healthCheckProviderDisabled"));
+          .setBody(constant(ProviderHealthCheckResult.disabled(Constants.OSV_PROVIDER)))
+         ;
 
     from(direct("osvHealthCheckEndpoint"))
       .routeId("osvHealthCheckEndpoint")
@@ -96,11 +98,9 @@ public class OsvIntegration extends EndpointRouteBuilder {
             .timeoutDuration(timeout)
          .end()
          .to(vertxHttp("{{api.onguard.management.host}}"))
-         .setHeader(Exchange.HTTP_RESPONSE_TEXT,constant("Service is up and running"))
-         .setBody(constant("Service is up and running"))
+         .setBody(constant(ProviderHealthCheckResult.success(Constants.OSV_PROVIDER)))
       .onFallback()
-         .setBody(constant(Constants.OSV_PROVIDER + "Service is down"))
-         .setHeader(Exchange.HTTP_RESPONSE_CODE,constant(Response.Status.SERVICE_UNAVAILABLE))
+        .process(this::buildErrorHealthResult)
       .end();
     // fmt:on
   }
@@ -123,5 +123,24 @@ public class OsvIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.CONTENT_TYPE);
     message.setHeader(Exchange.HTTP_PATH, Constants.OSV_NVD_HEALTH_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
+  }
+
+  private void buildErrorHealthResult(Exchange exchange) {
+    Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+    switch (exception) {
+      case HttpOperationFailedException httpException -> {
+        ProviderHealthCheckResult result =
+            ProviderHealthCheckResult.error(
+                Constants.OSV_PROVIDER,
+                httpException.getStatusCode(),
+                httpException.getStatusText());
+        exchange.getMessage().setBody(result);
+      }
+      default -> {
+        ProviderHealthCheckResult result =
+            ProviderHealthCheckResult.error(Constants.OSV_PROVIDER, 500, exception.getMessage());
+        exchange.getMessage().setBody(result);
+      }
+    }
   }
 }

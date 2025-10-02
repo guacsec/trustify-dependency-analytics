@@ -63,6 +63,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 @RegisterForReflection
@@ -77,10 +78,10 @@ public abstract class ProviderResponseHandler {
 
   @Inject MonitoringProcessor monitoringProcessor;
 
-  protected abstract String getProviderName();
+  protected abstract String getProviderName(Exchange exchange);
 
-  public abstract ProviderResponse responseToIssues(
-      byte[] response, String privateProviders, DependencyTree tree) throws IOException;
+  public abstract ProviderResponse responseToIssues(byte[] response, DependencyTree tree)
+      throws IOException;
 
   public ProviderResponse aggregateSplit(ProviderResponse oldExchange, ProviderResponse newExchange)
       throws IOException {
@@ -150,17 +151,19 @@ public abstract class ProviderResponseHandler {
   }
 
   public ProviderReport unauthenticatedResponse(Exchange exchange) {
+    var providerName = getProviderName(exchange);
     return new ProviderReport()
         .status(
             new ProviderStatus()
-                .name(getProviderName())
+                .name(providerName)
                 .ok(Boolean.FALSE)
                 .message(Constants.HTTP_UNAUTHENTICATED)
                 .code(Response.Status.UNAUTHORIZED.getStatusCode()));
   }
 
   public void processResponseError(Exchange exchange) {
-    ProviderStatus status = new ProviderStatus().ok(false).name(getProviderName());
+    var providerName = getProviderName(exchange);
+    ProviderStatus status = new ProviderStatus().ok(false).name(providerName);
     Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
     Throwable cause = exception.getCause();
 
@@ -170,8 +173,7 @@ public abstract class ProviderResponseHandler {
     if (cause == null) {
       cause = exception;
     }
-    if (cause instanceof HttpOperationFailedException) {
-      HttpOperationFailedException httpException = (HttpOperationFailedException) cause;
+    if (cause instanceof HttpOperationFailedException httpException) {
       String message = prettifyHttpError(httpException);
       status.message(message).code(httpException.getStatusCode());
       LOGGER.warn("Unable to process request: {}", message, cause);
@@ -179,20 +181,21 @@ public abstract class ProviderResponseHandler {
         || cause instanceof UnexpectedProviderException
         || cause instanceof PackageValidationException) {
       status.message(cause.getMessage()).code(422);
-      LOGGER.debug("Unable to process request to: {}", getProviderName(), exception);
+      LOGGER.debug("Unable to process request to: {}", providerName, exception);
     } else {
       status
           .message(cause.getMessage())
           .code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-      LOGGER.warn("Unable to process request to: {}", getProviderName(), cause);
+      LOGGER.warn("Unable to process request to: {}", providerName, cause);
     }
     ProviderResponse response = new ProviderResponse(null, status, null);
-    monitoringProcessor.processProviderError(exchange, exception, getProviderName());
+    monitoringProcessor.processProviderError(exchange, exception, providerName);
     exchange.getMessage().setBody(response);
   }
 
   public void processTokenFallBack(Exchange exchange) {
     Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
+    var providerName = getProviderName(exchange);
     Throwable cause = exception;
     if (exception.getCause() != null) {
       cause = exception.getCause();
@@ -200,17 +203,20 @@ public abstract class ProviderResponseHandler {
     String body;
     int code = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
-    if (cause instanceof HttpOperationFailedException) {
-      HttpOperationFailedException httpException = (HttpOperationFailedException) cause;
-      code = httpException.getStatusCode();
-      if (code == Response.Status.UNAUTHORIZED.getStatusCode()) {
-        body = "Invalid token provided. Unauthorized";
-      } else {
-        body =
-            "Unable to validate " + getProviderName() + " Token: " + httpException.getStatusText();
+    switch (cause) {
+      case WebApplicationException webException -> {
+        code = webException.getResponse().getStatus();
+        body = webException.getMessage();
       }
-    } else {
-      body = "Unable to validate " + getProviderName() + " Token: " + cause.getMessage();
+      case HttpOperationFailedException httpException -> {
+        code = httpException.getStatusCode();
+        if (code == Response.Status.UNAUTHORIZED.getStatusCode()) {
+          body = "Invalid token provided. Unauthorized";
+        } else {
+          body = "Unable to validate " + providerName + " Token: " + httpException.getStatusText();
+        }
+      }
+      default -> body = "Unable to validate " + providerName + " Token: " + cause.getMessage();
     }
     exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, code);
     exchange.getMessage().setBody(body);
@@ -271,19 +277,20 @@ public abstract class ProviderResponseHandler {
   }
 
   public ProviderReport buildReport(
+      Exchange exchange,
       @Body ProviderResponse response,
       @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree,
-      @ExchangeProperty(Constants.PROVIDER_PRIVATE_DATA_PROPERTY) String privateProviders,
       @ExchangeProperty(Constants.TRUSTED_CONTENT_PROVIDER) TrustedContentResponse tcResponse)
       throws IOException {
     if (response.status() != null) {
       return new ProviderReport().status(response.status()).sources(Collections.emptyMap());
     }
+    var providerName = getProviderName(exchange);
     var sourcesIssues = splitIssuesBySource(response.issues());
     if (sourcesIssues.isEmpty()
         && (!tcResponse.recommendations().isEmpty()
             || (response.unscanned() != null && !response.unscanned().isEmpty()))) {
-      sourcesIssues.put(getProviderName(), Collections.emptyMap());
+      sourcesIssues.put(providerName, Collections.emptyMap());
     }
     Map<String, Source> reports = new HashMap<>();
     sourcesIssues
@@ -292,15 +299,13 @@ public abstract class ProviderResponseHandler {
             k ->
                 reports.put(
                     k.getKey(),
-                    buildReportForSource(
-                        k.getValue(), tree, privateProviders, tcResponse, response.unscanned())));
-    return new ProviderReport().status(defaultOkStatus(getProviderName())).sources(reports);
+                    buildReportForSource(k.getValue(), tree, tcResponse, response.unscanned())));
+    return new ProviderReport().status(defaultOkStatus(providerName)).sources(reports);
   }
 
   private Source buildReportForSource(
       Map<String, List<Issue>> issuesData,
       DependencyTree tree,
-      String privateProviders,
       TrustedContentResponse tcResponse,
       List<UnscannedDependency> unscanned) {
     List<DependencyReport> sourceReport = new ArrayList<>();

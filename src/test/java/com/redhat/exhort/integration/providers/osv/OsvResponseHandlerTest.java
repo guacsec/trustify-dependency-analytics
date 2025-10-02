@@ -57,7 +57,7 @@ public class OsvResponseHandlerTest {
     deps.put(jacksonRef, new DirectDependency(jacksonRef, null));
     var dependencyTree = new DependencyTree(deps);
 
-    var report = handler.responseToIssues(providerResponse, null, dependencyTree);
+    var report = handler.responseToIssues(providerResponse, dependencyTree);
 
     assertFalse(report.issues().isEmpty());
     assertEquals(2, report.issues().size());

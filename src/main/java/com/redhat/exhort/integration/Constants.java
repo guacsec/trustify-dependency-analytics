@@ -31,7 +31,7 @@ public final class Constants {
 
   private Constants() {}
 
-  public static final String PROVIDER_NAME = "providerName";
+  public static final String PROVIDER_NAME_PROPERTY = "providerName";
 
   public static final String EXCLUDE_FROM_READINESS_CHECK = "exclusionFromReadiness";
   public static final String PROVIDERS_PARAM = "providers";
@@ -60,49 +60,34 @@ public final class Constants {
 
   public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
   public static final String OSV_PROVIDER = "osv";
-  public static final String TRUSTIFY_PROVIDER = "trustify";
-  public static final String UNKNOWN_PROVIDER = "unknown";
 
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
 
-  public static final String PKG_MANAGER_PROPERTY = "pkgManager";
   public static final String REQUEST_CONTENT_PROPERTY = "requestContent";
   public static final String REPORT_PROPERTY = "report";
   public static final String REPORTS_PROPERTY = "reports";
-  public static final String PROVIDER_PRIVATE_DATA_PROPERTY = "providerPrivateData";
   public static final String RESPONSE_STATUS_PROPERTY = "responseStatus";
   public static final String DEPENDENCY_TREE_PROPERTY = "dependencyTree";
   public static final String API_VERSION_PROPERTY = "apiVersion";
   public static final String GZIP_RESPONSE_PROPERTY = "gzipResponse";
   public static final String SBOM_ID_PROPERTY = "sbomId";
   public static final String UNSCANNED_REFS_PROPERTY = "unscannedRefs";
-  public static final String CACHED_RECOMMENDATIONS = "missedRecommendations";
+  public static final String CACHED_RECOMMENDATIONS_PROPERTY = "missedRecommendations";
+  public static final String PROVIDER_CONFIG_PROPERTY = "providerConfig";
+  public static final String PROVIDERS_PROPERTY = "providers";
 
   public static final String OSV_NVD_PURLS_PATH = "/purls";
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
   public static final String TRUSTED_CONTENT_PATH = "/recommend";
-  public static final String TRUSTIFY_ANALYZE_PATH = "/vulnerability/analyze";
-  public static final String TRUSTIFY_HEALTH_PATH = "/health/live";
-  public static final String TRUSTIFY_TOKEN_PATH = "/vulnerability";
+  public static final String TRUSTIFY_ANALYZE_PATH = "/api/v2/vulnerability/analyze";
+  public static final String TRUSTIFY_HEALTH_PATH = "/.well-known/trustify";
 
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
-  public static final boolean DEFAULT_VERBOSE_MODE = false;
-
-  public static final String UNSCANNED_REASON_UNSUPPORTED_PACKAGE_TYPE = "unsupported-pkg-type";
 
   public static final String ANONYMOUS_ID_PROPERTY = "telemetry-anonymous-id";
 
   public static final String TELEMETRY_WRITE_KEY = "telemetry.write-key";
-
-  public static final List<String> PROVIDERS =
-      Collections.unmodifiableList(
-          new ArrayList<>() {
-            {
-              add(OSV_PROVIDER);
-              add(TRUSTIFY_PROVIDER);
-            }
-          });
 
   public static final List<MediaType> VALID_RESPONSE_MEDIA_TYPES =
       Collections.unmodifiableList(

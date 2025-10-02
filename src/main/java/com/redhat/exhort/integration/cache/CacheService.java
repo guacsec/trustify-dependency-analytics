@@ -33,7 +33,7 @@ public interface CacheService {
 
   public void cacheRecommendations(
       @Body TrustedContentResponse response,
-      @ExchangeProperty(Constants.CACHED_RECOMMENDATIONS) Set<PackageRef> misses);
+      @ExchangeProperty(Constants.CACHED_RECOMMENDATIONS_PROPERTY) Set<PackageRef> misses);
 
   public Map<PackageRef, CachedRecommendation> getRecommendations(Set<PackageRef> purls);
 }

@@ -77,7 +77,9 @@ public class TcResponseHandler extends ProviderResponseHandler {
   }
 
   public TrustedContentResponse processRecommendations(
-      @Body byte[] tcResponse, @ExchangeProperty(Constants.SBOM_ID_PROPERTY) String sbomId)
+      Exchange exchange,
+      @Body byte[] tcResponse,
+      @ExchangeProperty(Constants.SBOM_ID_PROPERTY) String sbomId)
       throws IOException {
     var recommendations = mapper.readValue(tcResponse, Recommendations.class);
     var mergedRecommendations = mergeRecommendations(recommendations);
@@ -86,7 +88,7 @@ public class TcResponseHandler extends ProviderResponseHandler {
     return new TrustedContentResponse(
         mergedRecommendations,
         new ProviderStatus()
-            .name(getProviderName())
+            .name(getProviderName(exchange))
             .code(Status.OK.getStatusCode())
             .message(Status.OK.getReasonPhrase())
             .ok(Boolean.TRUE));
@@ -145,7 +147,7 @@ public class TcResponseHandler extends ProviderResponseHandler {
   }
 
   @Override
-  protected String getProviderName() {
+  protected String getProviderName(Exchange exchange) {
     return Constants.TRUSTED_CONTENT_PROVIDER;
   }
 
@@ -157,8 +159,8 @@ public class TcResponseHandler extends ProviderResponseHandler {
   }
 
   @Override
-  public ProviderResponse responseToIssues(
-      byte[] response, String privateProviders, DependencyTree tree) throws IOException {
+  public ProviderResponse responseToIssues(byte[] response, DependencyTree tree)
+      throws IOException {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 

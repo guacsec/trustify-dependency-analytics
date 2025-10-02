@@ -191,10 +191,9 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
   private static Stream<Arguments> emptySbomArguments() {
     return Stream.of(
-        Arguments.of(Map.of(Constants.TRUSTIFY_PROVIDER, 200), Collections.emptyMap()),
+        Arguments.of(Map.of(TRUSTIFY_PROVIDER, 200), Collections.emptyMap()),
         Arguments.of(
-            Map.of(Constants.TRUSTIFY_PROVIDER, 200),
-            Map.of(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)));
+            Map.of(TRUSTIFY_PROVIDER, 200), Map.of(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)));
   }
 
   @Test
@@ -246,8 +245,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertRecommendations(body, Constants.TRUSTIFY_PROVIDER, CSAF_SOURCE, 0);
-    assertRecommendations(body, Constants.TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
+    assertRecommendations(body, TRUSTIFY_PROVIDER, CSAF_SOURCE, 0);
+    assertRecommendations(body, TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyOsvRequest();
     verifyNoInteractionsWithTrustedContent();
@@ -306,7 +305,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertEquals(3, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
-        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getStatus().getCode());
+        report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
 
     verifyTrustifyRequest(INVALID_TOKEN);
   }
@@ -335,8 +334,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertEquals(3, report.getProviders().size());
-    assertEquals(401, report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getStatus().getCode());
-    assertTrue(report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().isEmpty());
+    assertEquals(401, report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
+    assertTrue(report.getProviders().get(TRUSTIFY_PROVIDER).getSources().isEmpty());
 
     verifyTrustifyRequest(INVALID_TOKEN);
   }
@@ -365,8 +364,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var osvSource =
-        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    var osvSource = report.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
     assertOsvSummary(osvSource);
     assertOsvDependenciesReport(osvSource.getDependencies());
 
@@ -397,10 +395,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     assertScanned(report.getScanned());
-    var osvSource =
-        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
-    var csafSource =
-        report.getProviders().get(Constants.TRUSTIFY_PROVIDER).getSources().get(CSAF_SOURCE);
+    var osvSource = report.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    var csafSource = report.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(CSAF_SOURCE);
     assertOsvSummary(osvSource);
     assertCsafSummary(csafSource);
 

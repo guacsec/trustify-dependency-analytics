@@ -22,11 +22,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.redhat.exhort.extensions.WiremockExtension.TRUSTIFY_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -64,10 +64,11 @@ import jakarta.ws.rs.core.MediaType;
 @QuarkusTestResource(WiremockExtension.class)
 public abstract class AbstractAnalysisTest {
 
-  static final String OK_TOKEN = "test-token";
-  static final String ERROR_TOKEN = "fail";
-  static final String INVALID_TOKEN = "invalid-token";
-  static final String UNAUTH_TOKEN = "test-not-authorized";
+  public static final String OK_TOKEN = "test-token";
+  public static final String ERROR_TOKEN = "fail";
+  public static final String INVALID_TOKEN = "invalid-token";
+  public static final String UNAUTH_TOKEN = "test-not-authorized";
+  public static final String TRUSTIFY_PROVIDER = "trustify";
 
   static final String WIREMOCK_URL_TEMPLATE = "__WIREMOCK_URL__";
 
@@ -162,26 +163,6 @@ public abstract class AbstractAnalysisTest {
     }
   }
 
-  protected void verifyTokenRequest(String provider, Map<String, String> headers) {
-
-    verifyTrustifyTokenRequest(headers.get(Constants.TRUSTIFY_TOKEN_HEADER));
-  }
-
-  protected void verifyTrustifyTokenRequest(String token) {
-    if (token == null) {
-      server.verify(
-          1,
-          getRequestedFor(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-              .withQueryParam("limit", equalTo("0")));
-    } else {
-      server.verify(
-          1,
-          getRequestedFor(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-              .withQueryParam("limit", equalTo("0"))
-              .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + token)));
-    }
-  }
-
   protected void verifyTrustifyRequest(String token) {
     verifyTrustifyRequest(token, 1);
   }
@@ -203,10 +184,7 @@ public abstract class AbstractAnalysisTest {
     providers.stream()
         .forEach(
             p -> {
-              switch (p) {
-                case Constants.TRUSTIFY_PROVIDER -> verifyTrustifyRequest(
-                    credentials.get(Constants.TRUSTIFY_TOKEN_HEADER));
-              }
+              verifyTrustifyRequest(credentials.get(Constants.TRUSTIFY_TOKEN_HEADER));
             });
     verifyTrustedContentRequest();
   }
@@ -351,43 +329,36 @@ public abstract class AbstractAnalysisTest {
     OidcWiremockExtension.restubOidcEndpoints(server);
   }
 
-  protected void stubTrustifyTokenRequests() {
-    // Missing token
-    server.stubFor(
-        get(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-            .withQueryParam("limit", equalTo("0"))
-            .willReturn(aResponse().withStatus(401)));
+  protected void stubTokenValidationEndpoint() {
 
-    // Accepted tokens
     server.stubFor(
-        get(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-            .withHeader(
-                Constants.AUTHORIZATION_HEADER,
-                equalTo("Bearer " + TRUSTIFY_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
-            .withQueryParam("limit", equalTo("0"))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("trustify/empty_report.json")));
+        post(urlMatching(".*/realms/.*/token/introspect.*"))
+            .withBasicAuth(OidcWiremockExtension.CLIENT_ID, OidcWiremockExtension.CLIENT_SECRET)
+            .withHeader("Content-Type", equalTo("application/x-www-form-urlencoded"))
+            .withRequestBody(equalTo(getRequestBody(AbstractAnalysisTest.OK_TOKEN)))
+            .willReturn(aResponse().withStatus(200).withBody("{\"active\":true}")));
+    server.stubFor(
+        post(urlMatching(".*/realms/.*/token/introspect.*"))
+            .withBasicAuth(OidcWiremockExtension.CLIENT_ID, OidcWiremockExtension.CLIENT_SECRET)
+            .withHeader("Content-Type", equalTo("application/x-www-form-urlencoded"))
+            .withRequestBody(equalTo(getRequestBody(AbstractAnalysisTest.ERROR_TOKEN)))
+            .willReturn(aResponse().withStatus(500).withBody("{\"active\":false}")));
+    server.stubFor(
+        post(urlMatching(".*/realms/.*/token/introspect.*"))
+            .withBasicAuth(OidcWiremockExtension.CLIENT_ID, OidcWiremockExtension.CLIENT_SECRET)
+            .withHeader("Content-Type", equalTo("application/x-www-form-urlencoded"))
+            .withRequestBody(equalTo(getRequestBody(AbstractAnalysisTest.INVALID_TOKEN)))
+            .willReturn(aResponse().withStatus(401).withBody("{\"active\":false}")));
+  }
 
-    // Internal Error
-    server.stubFor(
-        get(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
-            .withQueryParam("limit", equalTo("0"))
-            .willReturn(aResponse().withStatus(500).withBody("This is an example error")));
+  protected void verifyTokenValidationEndpoint() {
+    server.verify(1, postRequestedFor(urlMatching(".*/realms/.*/token/introspect.*")));
+  }
 
-    // Invalid token
-    server.stubFor(
-        get(urlPathEqualTo(Constants.TRUSTIFY_TOKEN_PATH))
-            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + INVALID_TOKEN))
-            .withQueryParam("limit", equalTo("0"))
-            .willReturn(
-                aResponse()
-                    .withStatus(401)
-                    .withBody(
-                        "{\"error\": \"Unauthorized\", \"message\": \"Authentication failed\"}")));
+  private String getRequestBody(String token) {
+    return "token="
+        + URLEncoder.encode(token, StandardCharsets.UTF_8)
+        + "&token_type_hint=access_token";
   }
 
   protected void verifyTrustedContentRequest() {

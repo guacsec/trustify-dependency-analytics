@@ -66,14 +66,12 @@ public class ReportTemplate {
       @Body Object report,
       @ExchangeProperty(Constants.ANONYMOUS_ID_PROPERTY) String anonymousId,
       @ExchangeProperty(Constants.RHDA_TOKEN_HEADER) String userId,
-      @ExchangeProperty(Constants.RHDA_SOURCE_HEADER) String rhdaSource,
-      @ExchangeProperty(Constants.PROVIDER_PRIVATE_DATA_PROPERTY) List<String> providerPrivateData)
+      @ExchangeProperty(Constants.RHDA_SOURCE_HEADER) String rhdaSource)
       throws JsonMappingException, JsonProcessingException, IOException {
 
     Map<String, Object> params = new HashMap<>();
     params.put("report", report);
     params.put("nvdIssueTemplate", nvdIssuePathRegex);
-    params.put("providerPrivateData", providerPrivateData);
     params.put("cveIssueTemplate", cveIssuePathRegex);
     params.put("imageMapping", getImageMapping());
     params.put("rhdaSource", rhdaSource);

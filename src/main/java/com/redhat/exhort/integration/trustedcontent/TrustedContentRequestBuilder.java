@@ -97,7 +97,7 @@ public class TrustedContentRequestBuilder {
           }
         });
     var req = new TrustedContentCachedRequest(cachedIdxRecommendations, miss);
-    exchange.setProperty(Constants.CACHED_RECOMMENDATIONS, req);
+    exchange.setProperty(Constants.CACHED_RECOMMENDATIONS_PROPERTY, req);
     return req.miss();
   }
 }

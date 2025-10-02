@@ -10,31 +10,34 @@
 - External Vulnerability providers enabled.
 - Postgres Database: Stores data needed for the Model Cards functionality. See [Model Cards](#model-cards)
 
-## Required parameters
+## Vulnerability providers
 
-- `api.trustify.host` The host of the Trustify service. Used as a Vulnerability Provider.
+It is possible to integrate with any number of vulnerability providers that follow the [Trustify](https://github.com/guacsec/trustify).
+Besides it allows users to integrate with [ONGuard](https://github.com/trustification/onguard) service to retrieve OSV vulnerabilities.
 
-### Trustify Client Authentication
+### Configure the ONGuard vulnerability provider
 
-- `quarkus.oidc-client.trustify.enabled`: Defaults to `true`. Set to `false` to disable `trustify` authentication
-- `quarkus.oidc-client.trustify.auth-server-url`: Authentication server. Example: https://sso.example.com/auth/realms/myrealm
-- `quarkus.oidc-client.trustify.client-id`: OIDC Client ID
-- `quarkus.oidc-client.trustify.credentials.secret`: OIDC Client secret
+- `api.onguard.host` - The base URL of the ONGuard service endpoint (e.g., `https://api.onguard.example.com`)
+- `api.onguard.disabled` - Boolean flag to disable the ONGuard provider (default: `false`)
+- `api.onguard.timeout` - Request timeout duration for ONGuard API calls (default: `60s`)
+- `api.onguard.management.host` - Management endpoint URL for health checks and monitoring
+
+### Configure a Trustify Vulnerability provider
+
+You can define any number of vulnerability providers where the key is the identifier
+
+- `providers.provider1.host` - The base URL of the Trustify provider endpoint (e.g., `https://trustify.example.com`)
+- `providers.provider1.auth.server-url` - OIDC/OAuth2 server URL for authentication (e.g., `https://auth.example.com/realms/trustify`)
+- `providers.provider1.auth.client-id` - OAuth2 client ID for authenticating with the provider
+- `providers.provider1.auth.client-secret` - OAuth2 client secret for authenticating with the provider
+- `providers.provider1.auth.token-timeout` - Token request timeout duration (default: `10s`)
+- `providers.provider1.auth.client-timeout` - OAuth2 client timeout duration (default: `30s`)
+- `providers.provider1.disabled` - Boolean flag to disable this specific provider (default: `false`)
 
 ## OpenAPI and SwaggerUI
 
 - OpenAPI Spec: There is an [openapi.yaml](https://maven.pkg.github.com/guacsec/trustify-da-api-spec/blob/main/api/v4/openapi.yaml)
 - Swagger UI: Available at http://localhost:8080/q/swagger-ui for development or when enabled with the property `quarkus.swagger-ui.always-include=true`
-
-## Providers
-
-Exhort can integrate with Trusted Profile Analyzer to retrieve vulnerability data.
-
-- Trusted Profile Analyzer ([`Trusted Profile Analyzer`](https://www.trustification.io/))
-
-You can disable a given provider for the dependency graph analysis by using `api.<provider>.disabled=true` property at startup.
-
-Providers should be defined as a multi-valued list in the `providers` Query Parameter. e.g. `/analysis?providers=trustify`
 
 ## Recommendations
 
@@ -86,15 +89,15 @@ $ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accep
         "transitive": 7
     },
     "providers": {
-        "oss-index": {
+        "trustify": {
             "status": {
                 "ok": true,
-                "name": "oss-index",
+                "name": "trustify",
                 "code": 200,
                 "message": "OK"
             },
             "sources": {
-                "oss-index": {
+                "osv": {
                     "summary": {
                         "direct": 0,
                         "transitive": 3,

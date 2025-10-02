@@ -32,8 +32,8 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 public class OidcWiremockExtension extends WiremockExtension {
 
-  private static final String CLIENT_ID = "test-trustify-client";
-  private static final String CLIENT_SECRET = "test-trustify-secret";
+  public static final String CLIENT_ID = "test-trustify-client";
+  public static final String CLIENT_SECRET = "test-trustify-secret";
 
   @Override
   public Map<String, String> start() {
