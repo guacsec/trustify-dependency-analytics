@@ -32,6 +32,8 @@ import com.redhat.exhort.model.trustify.ProviderConfig;
 import com.redhat.exhort.model.trustify.ProvidersConfig;
 import com.redhat.exhort.service.DynamicOidcClientService;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ClientErrorException;
@@ -56,6 +58,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject TrustifyResponseHandler responseHandler;
   @Inject TrustifyRequestBuilder requestBuilder;
+  @Inject MeterRegistry registry;
 
   @Override
   public void configure() throws Exception {
@@ -87,16 +90,22 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
             .timeoutEnabled(true)
             .timeoutDuration(TIMEOUT_DURATION)
           .end()
-          .process(this::processRequest)
-          .process(this::addAuthentication)
-          .toD("${exchangeProperty.trustifyUrl}")
-          .transform(method(responseHandler, "responseToIssues"))
+          .to(direct("trustifyRequest"))
         .onFallback()
           .process(responseHandler::processResponseError);
+    
+    from(direct("trustifyRequest"))
+      .routeId("trustifyRequest")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .process(this::processRequest)
+      .process(this::addAuthentication)
+      .toD("${exchangeProperty.trustifyUrl}")
+      .transform(method(responseHandler, "responseToIssues"));
 
     // Generic health check route
     from(direct("trustifyHealthCheck"))
       .routeId("trustifyHealthCheck")
+      .routePolicy(new ProviderRoutePolicy(registry))
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
@@ -112,6 +121,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     // Generic credential validation route
     from(direct("trustifyValidateCredentials"))
       .routeId("trustifyValidateCredentials")
+      .routePolicy(new ProviderRoutePolicy(registry))
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)

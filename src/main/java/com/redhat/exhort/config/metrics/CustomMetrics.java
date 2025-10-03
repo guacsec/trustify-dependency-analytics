@@ -24,6 +24,7 @@ import java.util.List;
 import io.micrometer.core.instrument.Meter.Id;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 
@@ -40,13 +41,16 @@ public class CustomMetrics {
       List.of(
           "getTrustedContent",
           "trustifyScan",
+          // See ProviderRoutePolicy for more details
+          // "trustifyHealthCheck"
+          // "trustifyRequest"
+          // "trustifyValidateCredentials"
           "analyticsIdentify",
           "analyticsTrackAnalysis",
           "analyticsTrackToken",
           "processFailedRequests",
           "processInternalError",
-          "osvHealthCheck",
-          "trustifyHealthCheck");
+          "osvHealthCheck");
 
   @Produces
   @Singleton
