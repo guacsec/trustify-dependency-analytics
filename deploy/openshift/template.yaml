@@ -87,21 +87,21 @@ objects:
                   containerPort: '${{MANAGEMENT_PORT}}'
                   protocol: TCP
               env:
-                - name: TRUSTIFY_HOST
-                  value: '${TRUSTIFY_HOST}'
-                - name: TRUSTIFY_AUTH_SERVER_URL
-                  value: '${TRUSTIFY_AUTH_SERVER_URL}'
-                # - name: TRUSTIFY_CLIENT_ID
-                #   valueFrom:
-                #     secretKeyRef:
-                #       name: exhort-secret
-                #       key: trustify.client.id
-                # - name: TRUSTIFY_CLIENT_SECRET
-                #   valueFrom:
-                #     secretKeyRef:
-                #       name: exhort-secret
-                #       key: trustify.client.secret
-                - name: API_TRUSTIFY_DISABLED
+                - name: PROVIDER_RHTPA_HOST
+                  value: '${RHTPA_HOST}'
+                - name: PROVIDER_RHTPA_AUTH_SERVER_URL
+                  value: '${RHTPA_AUTH_SERVER_URL}'
+                - name: PROVIDER_RHTPA_AUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: exhort-secret
+                      key: rhtpa.client.id
+                - name: PROVIDER_RHTPA_AUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: exhort-secret
+                      key: rhtpa.client.secret
+                - name: PROVIDER_RHTPA_DISABLED
                   value: '${TRUSTIFY_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:
@@ -230,18 +230,18 @@ parameters:
     description: SSL Mode for Postgres
     value: 'prefer'
     required: true
-  - name: TRUSTIFY_DISABLED
-    displayName: Disable Trustify
-    description: Disable Trustify integration
+  - name: RHTPA_DISABLED
+    displayName: Disable RHTPA
+    description: Disable RHTPA integration
     value: "true"
     required: true
-  - name: TRUSTIFY_HOST
-    displayName: Trustify Host
-    description: Trustify REST API
+  - name: RHTPA_HOST
+    displayName: RHTPA Host
+    description: RHTPA REST API
     value: https://trust.rhcloud.com/api/v2/
     required: true
-  - name: TRUSTIFY_AUTH_SERVER_URL
-    displayName: Trustify Auth Server URL
+  - name: RHTPA_AUTH_SERVER_URL
+    displayName: RHTPA Auth Server URL
     description: Trustify Auth Server URL
     value: https://sso.redhat.com/auth/realms/redhat-external
     required: true
