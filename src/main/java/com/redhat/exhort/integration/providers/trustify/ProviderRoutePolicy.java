@@ -32,7 +32,6 @@ import io.micrometer.core.instrument.Timer;
 public class ProviderRoutePolicy extends RoutePolicySupport {
 
   private final MeterRegistry registry;
-  private static final double SECOND = 1000;
 
   public ProviderRoutePolicy(MeterRegistry registry) {
     this.registry = registry;
