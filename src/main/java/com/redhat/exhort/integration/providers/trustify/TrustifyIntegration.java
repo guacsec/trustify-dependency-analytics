@@ -46,6 +46,7 @@ import jakarta.ws.rs.core.Response;
 public class TrustifyIntegration extends EndpointRouteBuilder {
 
   private static final String TIMEOUT_DURATION = "60s";
+  private static final String TIMEOUT_DURATION_HEALTH = "1s";
 
   private static final String TRUSTIFY_URL_PROPERTY = "trustifyUrl";
 
@@ -109,7 +110,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
-          .timeoutDuration(TIMEOUT_DURATION)
+          .timeoutDuration(TIMEOUT_DURATION_HEALTH)
         .end()
         .process(this::processHealthRequest)
         .toD("${exchangeProperty.trustifyUrl}")

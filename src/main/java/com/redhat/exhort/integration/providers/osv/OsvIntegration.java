@@ -18,6 +18,8 @@
 
 package com.redhat.exhort.integration.providers.osv;
 
+import java.net.ConnectException;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
@@ -27,6 +29,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.redhat.exhort.integration.Constants;
 import com.redhat.exhort.integration.providers.VulnerabilityProvider;
 import com.redhat.exhort.model.ProviderHealthCheckResult;
+import com.redhat.exhort.model.trustify.ProviderConfig;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,8 +39,10 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class OsvIntegration extends EndpointRouteBuilder {
 
-  @ConfigProperty(name = "api.onguard.timeout", defaultValue = "60s")
+  @ConfigProperty(name = "api.onguard.timeout", defaultValue = "30s")
   String timeout;
+
+  private static final String TIMEOUT_DURATION_HEALTH = "1s";
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject OsvResponseHandler responseHandler;
@@ -86,19 +91,18 @@ public class OsvIntegration extends EndpointRouteBuilder {
          .when(method(vulnerabilityProvider, "getEnabled").contains(Constants.OSV_PROVIDER))
             .to(direct("osvHealthCheckEndpoint"))
          .otherwise()
-          .setBody(constant(ProviderHealthCheckResult.disabled(Constants.OSV_PROVIDER)))
-         ;
+          .setBody(constant(ProviderHealthCheckResult.disabled(Constants.OSV_PROVIDER)));
 
     from(direct("osvHealthCheckEndpoint"))
       .routeId("osvHealthCheckEndpoint")
-      .process(this::processHealthRequest)
       .circuitBreaker()
-         .faultToleranceConfiguration()
-            .timeoutEnabled(true)
-            .timeoutDuration(timeout)
-         .end()
-         .to(vertxHttp("{{api.onguard.management.host}}"))
-         .setBody(constant(ProviderHealthCheckResult.success(Constants.OSV_PROVIDER)))
+        .faultToleranceConfiguration()
+          .timeoutEnabled(true)
+          .timeoutDuration(TIMEOUT_DURATION_HEALTH)
+        .end()
+        .process(this::processHealthRequest)
+        .toD("${exchangeProperty.osvUrl}")
+        .setBody(constant(ProviderHealthCheckResult.success(Constants.OSV_PROVIDER)))
       .onFallback()
         .process(this::buildErrorHealthResult)
       .end();
@@ -123,6 +127,8 @@ public class OsvIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.CONTENT_TYPE);
     message.setHeader(Exchange.HTTP_PATH, Constants.OSV_NVD_HEALTH_PATH);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
+    var config = message.getBody(ProviderConfig.class);
+    exchange.setProperty("osvUrl", config.host());
   }
 
   private void buildErrorHealthResult(Exchange exchange) {
@@ -134,6 +140,17 @@ public class OsvIntegration extends EndpointRouteBuilder {
                 Constants.OSV_PROVIDER,
                 httpException.getStatusCode(),
                 httpException.getStatusText());
+        exchange.getMessage().setBody(result);
+      }
+      case InterruptedException ignored -> {
+        ProviderHealthCheckResult result =
+            ProviderHealthCheckResult.error(Constants.OSV_PROVIDER, 408, "Request timeout");
+        exchange.getMessage().setBody(result);
+      }
+      case ConnectException connectException -> {
+        ProviderHealthCheckResult result =
+            ProviderHealthCheckResult.error(
+                Constants.OSV_PROVIDER, 503, connectException.getMessage());
         exchange.getMessage().setBody(result);
       }
       default -> {
