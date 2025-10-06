@@ -45,9 +45,6 @@ public class CustomMetrics {
           // "trustifyHealthCheck"
           // "trustifyRequest"
           // "trustifyValidateCredentials"
-          "analyticsIdentify",
-          "analyticsTrackAnalysis",
-          "analyticsTrackToken",
           "processFailedRequests",
           "processInternalError",
           "osvHealthCheck");

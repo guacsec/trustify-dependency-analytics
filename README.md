@@ -278,12 +278,11 @@ is not provided an anonymous event with a generated UUID will be sent instead.
 - `rhda-operation-type` When performing an analysis, clients might specify whether it is a component-analysis or a stack-analysis
 - `rhda-pkg-manager` The Package manager that the SBOM was generated from (examples: `maven`, `gradle-kotlin`)
 
-Telemetry connects to [Segment](https://segment.com/) for sending events.
+Telemetry connects to [Segment](https://segment.com/) for sending events from the HTML Report.
 The connection can be configured with the following properties.
 
 - `telemetry.disabled`: To completely disable telemetry
 - `telemetry.write-key`: Authentication key to connect to Segment
-- `quarkus.rest-client.segment-api.url`: Segment API endpoint
 
 ## Monitoring
 

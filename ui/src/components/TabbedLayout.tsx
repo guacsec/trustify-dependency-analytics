@@ -14,16 +14,12 @@ export const TabbedLayout = ({report}: { report: Report }) => {
   const analytics = appContext.writeKey && appContext.writeKey.trim() !== '' ?
       AnalyticsBrowser.load({ writeKey: appContext.writeKey } as AnalyticsBrowserSettings) : null;
   const previousActiveTabKey = useRef<string | number>('');
-  const identificationPerformedRef = useRef(false);
 
   useEffect(() => {
-    if (!analytics || identificationPerformedRef.current) return;
-    if (appContext.userId != null) {
-      analytics.identify(appContext.userId);
-    } else if (appContext.anonymousId != null) {
+    if (!analytics) return;
+    if (appContext.anonymousId != null) {
       analytics.setAnonymousId(appContext.anonymousId);
     }
-    identificationPerformedRef.current = true;
     // eslint-disable-next-line
   }, []);
 

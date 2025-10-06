@@ -47,7 +47,6 @@ import org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.exhort.analytics.AnalyticsService;
 import com.redhat.exhort.api.PackageRef;
 import com.redhat.exhort.api.v4.AnalysisReport;
 import com.redhat.exhort.config.exception.DetailedException;
@@ -81,8 +80,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   private final MeterRegistry registry;
 
   @Inject VulnerabilityProvider vulnerabilityProvider;
-
-  @Inject AnalyticsService analytics;
 
   @Inject MonitoringProcessor monitoringProcessor;
 
@@ -177,7 +174,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .routeId("dependencyAnalysis")
       .to(direct("preProcessAnalysisRequest"))
       .process(this::processAnalysisRequest)
-      .to(direct("analyticsIdentify"))
+      .process(monitoringProcessor::processOriginalRequest)
       .to(direct("analyzeSbom"))
       .to(direct("report"))
       .to(direct("postProcessAnalysisRequest"));
@@ -186,7 +183,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .routeId("batchDependencyAnalysis")
       .to(direct("preProcessAnalysisRequest"))
       .process(this::processBatchAnalysisRequest)
-      .to(direct("analyticsIdentify"))
+      .process(monitoringProcessor::processOriginalRequest)
       .to(direct("analyzeSboms"))
       .to(direct("batchReport"))
       .to(direct("postProcessAnalysisRequest"));
@@ -224,7 +221,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("postProcessAnalysisRequest"))
       .routeId("postProcessAnalysisRequest")
-      .to(seda("analyticsTrackAnalysis"))
       .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
       .choice()
         .when(exchangeProperty(Constants.GZIP_RESPONSE_PROPERTY).isNotNull()).marshal().gzipDeflater()
@@ -250,29 +246,11 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     from(direct("validateToken"))
       .routeId("validateToken")
       .setProperty(Constants.EXHORT_REQUEST_ID_HEADER, method(BackendUtils.class,"generateRequestId"))
-      .to(direct("analyticsIdentify"))
+      .process(monitoringProcessor::processOriginalRequest)
       .to(direct("trustifyValidateCredentials"))
       .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
-      .to(seda("analyticsTrackToken"))
       .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
       .process(this::cleanUpHeaders);
-
-    from(direct("analyticsIdentify"))
-      .routeId("analyticsIdentify")
-      .process(monitoringProcessor::processOriginalRequest)
-      .to(seda("analyticsAsyncIdentify"));
-
-    from(seda("analyticsAsyncIdentify"))
-      .routeId("analyticsAsyncIdentify")
-      .process(analytics::identify);
-
-    from(seda("analyticsTrackToken"))
-      .routeId("analyticsTrackToken")
-      .process(analytics::trackToken);
-
-    from(seda("analyticsTrackAnalysis"))
-      .routeId("analyticsTrackAnalysis")
-      .process(analytics::trackAnalysis);
 
     from(seda("processFailedRequests"))
       .routeId("processFailedRequests")
