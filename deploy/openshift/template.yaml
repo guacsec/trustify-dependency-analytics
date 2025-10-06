@@ -102,7 +102,7 @@ objects:
                       name: exhort-secret
                       key: rhtpa.client.secret
                 - name: PROVIDER_RHTPA_DISABLED
-                  value: '${TRUSTIFY_DISABLED}'
+                  value: '${RHTPA_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:
                     secretKeyRef:
@@ -233,7 +233,7 @@ parameters:
   - name: RHTPA_DISABLED
     displayName: Disable RHTPA
     description: Disable RHTPA integration
-    value: "true"
+    value: "false"
     required: true
   - name: RHTPA_HOST
     displayName: RHTPA Host

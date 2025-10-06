@@ -907,7 +907,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.90, sum by (le) (rate(camel_route_policy_seconds_bucket{routeId=\"trustifyRequest\"}[2m])))",
+              "expr": "histogram_quantile(0.90, sum by (le) (rate(camel_route_policy_seconds_bucket{provider=\"rhtpa\",routeId=\"trustifyRequest\"}[2m])))",
               "legendFormat": "0.90",
               "range": true,
               "refId": "A"
@@ -918,7 +918,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le) (rate(camel_route_policy_seconds_bucket{routeId=\"trustifyRequest\"}[2m])))",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(camel_route_policy_seconds_bucket{provider=\"rhtpa\",routeId=\"trustifyRequest\"}[2m])))",
               "hide": false,
               "legendFormat": "0.95",
               "range": true,
@@ -930,7 +930,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.99, sum by (le) (rate(camel_route_policy_seconds_bucket{routeId=\"trustifyRequest\"}[2m])))",
+              "expr": "histogram_quantile(0.99, sum by (le) (rate(camel_route_policy_seconds_bucket{provider=\"rhtpa\",routeId=\"trustifyRequest\"}[2m])))",
               "hide": false,
               "legendFormat": "0.99",
               "range": true,
