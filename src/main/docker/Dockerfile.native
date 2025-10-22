@@ -7,11 +7,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t quarkus/exhort .
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/dependency-analytics .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/exhort
+# docker run -i --rm -p 8080:8080 quarkus/dependency-analytics
 #
 ###
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1760515502

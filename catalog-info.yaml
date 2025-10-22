@@ -2,18 +2,18 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   annotations:
-    backstage.io/kubernetes-id: exhort
-    github.com/project-slug: trustification/exhort
+    backstage.io/kubernetes-id: dependency-analytics
+    github.com/project-slug: guacsec/trustify-dependency-analytics
     github.com/project-readme-path: README.md
-    backstage.io/view-url: https://github.com/trustification/exhort/blob/main/catalog-info.yaml
-    backstage.io/edit-url: https://github.com/trustification/exhort/blob/main/catalog-info.yaml
-    backstage.io/source-location: url:https://github.com/trustification/exhort
-    rhda/manifest-file-path: pom.xml
-    backstage.io/techdocs-ref: url:https://github.com/trustification/exhort
-  name: exhort
+    backstage.io/view-url: https://github.com/guacsec/trustify-dependency-analytics/blob/main/catalog-info.yaml
+    backstage.io/edit-url: https://github.com/guacsec/trustify-dependency-analytics/blob/main/catalog-info.yaml
+    backstage.io/source-location: url:https://github.com/guacsec/trustify-dependency-analytics
+    trust-da/manifest-file-path: pom.xml
+    backstage.io/techdocs-ref: url:https://github.com/guacsec/trustify-dependency-analytics
+  name: dependency-analytics
   tags:
-    - rhda
+    - trust-da
 spec:
   lifecycle: production
-  owner: trustification
+  owner: guacsec
   type: service

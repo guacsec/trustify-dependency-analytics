@@ -4,7 +4,7 @@
   <groupId>com.redhat.ecosystemappeng</groupId>
   <artifactId>exhort</artifactId>
   <version>2.0.0-SNAPSHOT</version>
-  <name>RHDA - Exhort</name>
+  <name>Trust-DA - Dependency Analytics</name>
   <licenses>
     <license>
       <name>Apache-2.0</name>
@@ -13,14 +13,14 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:trustification/exhort.git</connection>
-    <developerConnection>scm:git:git@github.com:trustification/exhort.git</developerConnection>
+    <connection>scm:git:git@github.com:guacsec/trustify-dependency-analytics.git</connection>
+    <developerConnection>scm:git:git@github.com:guacsec/trustify-dependency-analytics.git</developerConnection>
     <tag>v1.6.2</tag>
-    <url>https://github.com/trustification/exhort</url>
+    <url>https://github.com/guacsec/trustify-dependency-analytics</url>
   </scm>
   <issueManagement>
     <system>GitHub Issues</system>
-    <url>https://github.com/trustification/exhort/issues</url>
+    <url>https://github.com/guacsec/trustify-dependency-analytics/issues</url>
   </issueManagement>
   <properties>
     <!-- Build properties -->

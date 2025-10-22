@@ -25,13 +25,13 @@ import SecurityCheckIcon from '../images/security-check.svg';
 import {constructImageName, imageRemediationLink} from '../utils/utils';
 import {useAppContext} from "../App";
 
-const hasRhtpaProvider = (obj: any): boolean => {
+const hasTrustifyProvider = (obj: any): boolean => {
   return obj && typeof obj === 'object' && 'rhtpa' in obj;
 };
 
 export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isReportMap?: boolean, purl?: string }) => {
   const appContext = useAppContext();
-  const showRhtpaCard = hasRhtpaProvider(appContext.report.providers);
+  const showTrustifyCard = hasTrustifyProvider(appContext.report.providers);
 
   return (
     <Grid hasGutter>
@@ -85,7 +85,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
           <Divider/>
         </Card>
       </GridItem>
-      <GridItem md={showRhtpaCard ? 6 : undefined}>
+      <GridItem md={showTrustifyCard ? 6 : undefined}>
         <Card isFlat>
           <DescriptionListGroup>
             <CardTitle component="h4">
@@ -149,7 +149,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
           </DescriptionListGroup>
         </Card>&nbsp;
       </GridItem>
-      {showRhtpaCard && (
+      {showTrustifyCard && (
         <GridItem md={6}>
         <Card isFlat>
           <DescriptionListGroup>
@@ -162,7 +162,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
               <DescriptionListDescription>
                 <List isPlain>
                   <ListItem>
-                    Check out our new Trusted Profile Analyzer to get visibility and insight into your software risk
+                    Check out our new Trustify to get visibility and insight into your software risk
                     profile, for instance by exploring vulnerabilites or analyzing SBOMs.
                   </ListItem>
                   <ListItem>

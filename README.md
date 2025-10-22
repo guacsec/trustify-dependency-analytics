@@ -1,7 +1,7 @@
-# Exhort
+# Dependency Analytics
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI](https://github.com/trustification/exhort/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/trustification/exhort/actions/workflows/ci.yaml)
+[![CI](https://github.com/guacsec/trustify-dependency-analytics/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/guacsec/trustify-dependency-analytics/actions/workflows/ci.yaml)
 
 ## Dependencies
 
@@ -44,9 +44,9 @@ You can define any number of vulnerability providers where the key is the identi
 By default the service will look for Red Hat Trusted Content remmediations and recommendations. If you want to opt out from this service
 you can use the `recommend` query parameter and set it to `false`. Example `/analysis?recommend=false`
 
-## Exhort API
+## Dependency Analytics API
 
-Here you can find the [Exhort API Specification](https://maven.pkg.github.com/guacsec/trustify-da-api-spec) together with
+Here you can find the [Dependency Analytics API Specification](https://maven.pkg.github.com/guacsec/trustify-da-api-spec) together with
 the Java and Javascript generated data model.
 
 ## Dependency Analysis `/api/v4/analysis`
@@ -54,7 +54,7 @@ the Java and Javascript generated data model.
 The expected input data format is a Software Bill of Materials (SBOM) containing the aggregate of all direct and transitive
 dependencies of a project.
 
-The `Content-Type` HTTP header will allow Exhort distinguish between the different supported SBOM formats.
+The `Content-Type` HTTP header will allow Dependency Analytics distinguish between the different supported SBOM formats.
 
 - [CycloneDX](https://cyclonedx.org/specification/overview/): `application/vnd.cyclonedx+json`
 - [SPDX](https://spdx.dev/specifications/): `application/vnd.spdx+json`
@@ -214,7 +214,7 @@ Content-Disposition: attachment; filename=report.html
 
 <html>
     <header>
-        <title>Exhort Dependency Report</title>
+        <title>Dependency Analytics Report</title>
     </header>
     <body>
         <h1>Dependency Report</h1>
@@ -254,7 +254,7 @@ The possible responses are:
 
 - 200 - Token validated successfully
 - 400 - Missing provider authentication headers
-- 401 - Invalid auth token provided or Missing required authentication header (rhda-token)
+- 401 - Invalid auth token provided or Missing required authentication header (trust-da-token)
 - 403 - The token is not authorized
 - 429 - Rate limit exceeded
 - 500 - Server error
@@ -272,11 +272,11 @@ See [Model Cards Readme](docs/model-cards.md) for more details.
 
 API Clients are expected to send the following HTTP Headers in order to help observe the use of the Backend service:
 
-- `rhda-token` HTTP Header that will be used to correlate different events related to the same user. If the header
+- `trust-da-token` HTTP Header that will be used to correlate different events related to the same user. If the header
 is not provided an anonymous event with a generated UUID will be sent instead.
-- `rhda-source` The client consuming the Exhort API. It will default to the `User-Agent` HTTP Header
-- `rhda-operation-type` When performing an analysis, clients might specify whether it is a component-analysis or a stack-analysis
-- `rhda-pkg-manager` The Package manager that the SBOM was generated from (examples: `maven`, `gradle-kotlin`)
+- `trust-da-source` The client consuming the Dependency Analytics API. It will default to the `User-Agent` HTTP Header
+- `trust-da-operation-type` When performing an analysis, clients might specify whether it is a component-analysis or a stack-analysis
+- `trust-da-pkg-manager` The Package manager that the SBOM was generated from (examples: `maven`, `gradle-kotlin`)
 
 Telemetry connects to [Segment](https://segment.com/) for sending events from the HTML Report.
 The connection can be configured with the following properties.
@@ -314,16 +314,16 @@ In all cases, the original request and headers are logged for the SRE Team to re
 
 ## Deploy on OpenShift
 
-The required parameters can be injected as environment variables through a secret. Create the `exhort-secret` Secret before deploying the application.
+The required parameters can be injected as environment variables through a secret. Create the `dependency-analytics-secret` Secret before deploying the application.
 
 ```bash
-oc create secret generic -n exhort --from-literal=api-trustify-token=<api_token> exhort-secret
+oc create secret generic -n exhort --from-literal=api-trustify-token=<api_token> dependency-analytics-secret
 ```
 
-After that you can use the [exhort.yaml](./deploy/exhort.yaml)
+After that you can use the [dependency-analytics.yaml](./deploy/dependency-analytics.yaml)
 
 ```bash
-oc apply -f deploy/exhort.yaml
+oc apply -f deploy/dependency-analytics.yaml
 ```
 
 ## Running the application in dev mode
