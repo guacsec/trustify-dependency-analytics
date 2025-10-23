@@ -5,12 +5,10 @@ COPY --chown=quarkus:quarkus mvnw /code/mvnw
 COPY --chown=quarkus:quarkus .mvn /code/.mvn
 COPY --chown=quarkus:quarkus pom.xml /code/
 COPY --chown=quarkus:quarkus ui /code/ui
-## Maven Settings with the auth token for Github Maven Repository
-COPY --chown=quarkus:quarkus settings.xml /code/settings.xml
 
 USER quarkus
 WORKDIR /code
-RUN ./mvnw -B -Pnative --settings /code/settings.xml org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline
+RUN ./mvnw -B -Pnative org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline
 COPY --chown=quarkus:quarkus src /code/src
 RUN ./mvnw verify -B -Dmaven.test.skip=true -Dquarkus.native.native-image-xmx=8g
 
