@@ -64,8 +64,8 @@ public class ReportTemplate {
       Exchange exchange,
       @Body Object report,
       @ExchangeProperty(Constants.ANONYMOUS_ID_PROPERTY) String anonymousId,
-      @ExchangeProperty(Constants.RHDA_TOKEN_HEADER) String userId,
-      @ExchangeProperty(Constants.RHDA_SOURCE_HEADER) String rhdaSource)
+      @ExchangeProperty(Constants.TRUST_DA_TOKEN_HEADER) String userId,
+      @ExchangeProperty(Constants.TRUST_DA_SOURCE_HEADER) String rhdaSource)
       throws JsonMappingException, JsonProcessingException, IOException {
 
     Map<String, Object> params = new HashMap<>();

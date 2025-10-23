@@ -46,10 +46,10 @@ public final class Constants {
 
   public static final String VERBOSE_MODE_HEADER = "verbose";
 
-  public static final String RHDA_TOKEN_HEADER = "rhda-token";
-  public static final String RHDA_SOURCE_HEADER = "rhda-source";
-  public static final String RHDA_OPERATION_TYPE_HEADER = "rhda-operation-type";
-  public static final String RHDA_PKG_MANAGER_HEADER = "rhda-pkg-manager";
+  public static final String TRUST_DA_TOKEN_HEADER = "trust-da-token";
+  public static final String TRUST_DA_SOURCE_HEADER = "trust-da-source";
+  public static final String TRUST_DA_OPERATION_TYPE_HEADER = "trust-da-operation-type";
+  public static final String TRUST_DA_PKG_MANAGER_HEADER = "trust-da-pkg-manager";
   public static final String USER_AGENT_HEADER = "User-Agent";
   public static final String EXHORT_REQUEST_ID_HEADER = "ex-request-id";
   public static final MediaType MULTIPART_MIXED_TYPE = new MediaType("multipart", "mixed");

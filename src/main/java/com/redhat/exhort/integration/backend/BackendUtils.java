@@ -64,7 +64,7 @@ public class BackendUtils {
     return match.toString();
   }
 
-  public String generateRequestId(@Header(Constants.RHDA_TOKEN_HEADER) String rhdaToken) {
+  public String generateRequestId(@Header(Constants.TRUST_DA_TOKEN_HEADER) String rhdaToken) {
     byte[] requestId;
     try {
       MessageDigest digestMaker = MessageDigest.getInstance("SHA-256");

@@ -74,7 +74,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
   private static final String CYCLONEDX = "cyclonedx";
   private static final String SPDX = "spdx";
-  private static final String DEFAULT_RHDA_TOKEN = "example-rhda-token";
+  private static final String DEFAULT_TRUST_DA_TOKEN = "example-trust-da-token";
   private static final String OSV_SOURCE = "osv";
   private static final String CSAF_SOURCE = "csaf";
 
@@ -413,7 +413,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     var client = HttpClient.newHttpClient();
     var request =
         HttpRequest.newBuilder(URI.create("http://localhost:8081/api/v4/analysis"))
-            .setHeader(Constants.RHDA_TOKEN_HEADER, DEFAULT_RHDA_TOKEN)
+            .setHeader(Constants.TRUST_DA_TOKEN_HEADER, DEFAULT_TRUST_DA_TOKEN)
             .setHeader(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
             .setHeader("Accept", Constants.MULTIPART_MIXED)
             .version(Version.valueOf(version))

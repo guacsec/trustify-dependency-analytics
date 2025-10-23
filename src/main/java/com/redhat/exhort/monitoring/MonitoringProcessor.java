@@ -41,9 +41,9 @@ public class MonitoringProcessor {
     Exchange.CONTENT_TYPE,
     Constants.ACCEPT_HEADER,
     Constants.USER_AGENT_HEADER,
-    Constants.RHDA_SOURCE_HEADER,
-    Constants.RHDA_OPERATION_TYPE_HEADER,
-    Constants.RHDA_PKG_MANAGER_HEADER
+    Constants.TRUST_DA_SOURCE_HEADER,
+    Constants.TRUST_DA_OPERATION_TYPE_HEADER,
+    Constants.TRUST_DA_PKG_MANAGER_HEADER
   };
 
   private static final String[] LOGGED_PROPERTIES = {
@@ -64,7 +64,7 @@ public class MonitoringProcessor {
     var context =
         new MonitoringContext(
             null, // Start with empty breadcrumbs
-            exchange.getIn().getHeader(Constants.RHDA_TOKEN_HEADER, String.class),
+            exchange.getIn().getHeader(Constants.TRUST_DA_TOKEN_HEADER, String.class),
             metadata,
             null);
 
