@@ -94,19 +94,19 @@ objects:
                 - name: PROVIDER_RHTPA_AUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
-                      name: exhort-secret
+                      name: trust-da-secret
                       key: rhtpa.client.id
                 - name: PROVIDER_RHTPA_AUTH_CLIENT_SECRET
                   valueFrom:
                     secretKeyRef:
-                      name: exhort-secret
+                      name: trust-da-secret
                       key: rhtpa.client.secret
                 - name: PROVIDER_RHTPA_DISABLED
                   value: '${RHTPA_DISABLED}'
                 - name: TELEMETRY_WRITE_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: exhort-secret
+                      name: trust-da-secret
                       key: telemetry-write-key
                 - name: DB_REDIS_HOST
                   valueFrom:

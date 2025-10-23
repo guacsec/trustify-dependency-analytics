@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: exhort
+  name: trust-da
   labels:
-    app: exhort
+    app: trust-da
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: exhort
+      app: trust-da
   template:
     metadata:
       labels:
-        app: exhort
+        app: trust-da
     spec:
       containers:
-      - name: exhort
-        image: exhort:latest
+      - name: trust-da
+        image: trust-da:latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
@@ -35,7 +35,7 @@ spec:
         - name: MONITORING_SENTRY_DSN
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: sentry-dsn
         - name: MONITORING_SENTRY_SERVERNAME
           valueFrom:
@@ -46,34 +46,34 @@ spec:
         - name: TELEMETRY_WRITE_KEY
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: telemetry-write-key
         - name: DB_REDIS_HOST
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: db.host
         - name: DB_REDIS_PORT
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: db.port
         - name: TRUSTIFY_HOST
           value: https://trust.rhcloud.com/api/v2/
         - name: TRUSTIFY_CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: trustify.client.id
         - name: TRUSTIFY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: trustify.client.secret
         - name: TRUSTIFY_AUTH_SERVER_URL
           valueFrom:
             secretKeyRef:
-              name: exhort-secret
+              name: trust-da-secret
               key: trustify.auth.server.url
         livenessProbe:
           httpGet:
@@ -90,9 +90,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: exhort
+  name: trust-da
   labels:
-    app: exhort
+    app: trust-da
 spec:
   ports:
   - name: http
@@ -104,4 +104,4 @@ spec:
     protocol: TCP
     targetPort: 9000
   selector:
-    app: exhort
+    app: trust-da
