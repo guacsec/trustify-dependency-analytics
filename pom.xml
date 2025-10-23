@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.redhat.ecosystemappeng</groupId>
-  <artifactId>exhort</artifactId>
+  <groupId>io.github.guacsec</groupId>
+  <artifactId>trustify-dependency-analytics</artifactId>
   <version>2.0.0-SNAPSHOT</version>
   <name>Trustify - Dependency Analytics</name>
   <licenses>
@@ -48,7 +48,7 @@
     <deploy-plugin.version>3.1.1</deploy-plugin.version>
 
     <!-- Dependencies -->
-    <exhort-api.version>1.0.18</exhort-api.version>
+    <trustify-da-api.version>2.0.1</trustify-da-api.version>
     <cyclonedx.version>11.0.0</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
     <spdx.version>2.0.2</spdx.version>
@@ -60,19 +60,6 @@
     <node.version>v20.9.0</node.version>
     <yarn.version>v1.22.19</yarn.version>
   </properties>
-
-  <repositories>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/guacsec/trustify-da-api-spec</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -94,9 +81,9 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>com.redhat.ecosystemappeng</groupId>
-      <artifactId>exhort-api-spec</artifactId>
-      <version>${exhort-api.version}</version>
+      <groupId>io.github.guacsec</groupId>
+      <artifactId>trustify-da-api-model</artifactId>
+      <version>${trustify-da-api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

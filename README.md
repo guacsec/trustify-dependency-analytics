@@ -36,7 +36,7 @@ You can define any number of vulnerability providers where the key is the identi
 
 ## OpenAPI and SwaggerUI
 
-- OpenAPI Spec: There is an [openapi.yaml](https://maven.pkg.github.com/guacsec/trustify-da-api-spec/blob/main/api/v4/openapi.yaml)
+- OpenAPI Spec: There is an [openapi.yaml](https://maven.pkg.github.com/guacsec/trustify-da-api-spec/blob/main/api/v5/openapi.yaml)
 - Swagger UI: Available at http://localhost:8080/q/swagger-ui for development or when enabled with the property `quarkus.swagger-ui.always-include=true`
 
 ## Recommendations
@@ -49,7 +49,7 @@ you can use the `recommend` query parameter and set it to `false`. Example `/ana
 Here you can find the [Dependency Analytics API Specification](https://maven.pkg.github.com/guacsec/trustify-da-api-spec) together with
 the Java and Javascript generated data model.
 
-## Dependency Analysis `/api/v4/analysis`
+## Dependency Analysis `/api/v5/analysis`
 
 The expected input data format is a Software Bill of Materials (SBOM) containing the aggregate of all direct and transitive
 dependencies of a project.
@@ -71,7 +71,7 @@ The generated file will be located under `./target/bom.json`. Make sure the requ
 Then you can analyze the vulnerabilities with the following command:
 
 ```bash
-$ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"application/json" @'target/bom.json'
+$ http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"application/json" @'target/bom.json'
 ```
 
 ### Verbose Mode
@@ -80,7 +80,7 @@ When the Dependency Graph Analysis returns a JSON report it contains all vulnera
 in order to retrieve just a Summary. Use the `verbose=false` Query parameter to disable it.
 
 ```bash
-$ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"application/json" @'target/sbom.json' verbose==false
+$ http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"application/json" @'target/sbom.json' verbose==false
 
 {
     "scanned": {
@@ -126,13 +126,13 @@ that specific provider will not show all the details.
 To provide the client authentication tokens use HTTP Headers in the request. The format for the tokens Headers is `ex-provider-token`. e.g. `ex-trustify-token`:
 
 ```bash
-http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-trustify-token:the-client-token
+http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-trustify-token:the-client-token
 ```
 
 In case the vulnerability provider requires of Basic Authentication the headers will be `ex-provider-user` and `ex-provider-token`.
 
 ```bash
-http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-oss-index-user:the-client-username ex-oss-index-token:the-client-token
+http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json' ex-oss-index-user:the-client-username ex-oss-index-token:the-client-token
 ```
 
 ### HTML Report
@@ -146,7 +146,7 @@ The HTML report will show limited information:
 - Private vulnerabilities (i.e. vulnerabilities reported by the provider) will not be displayed.
 
 ```bash
-$ http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json'
+$ http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"text/html" @'target/sbom.json'
 
 <html>
 ...
@@ -160,7 +160,7 @@ For that, use the `Accept: multipart/mixed` request header.
 
 
 ```bash
-http :8080/api/v4/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"multipart/mixed" @'target/sbom.json'
+http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"multipart/mixed" @'target/sbom.json'
 HTTP/1.1 200 OK
     boundary="----=_Part_2_2047647971.1682593849895"
 Content-Type: multipart/mixed;
@@ -225,7 +225,7 @@ Content-Disposition: attachment; filename=report.html
 
 ```
 
-### Batch Dependency Analysis `/api/v4/batch-analysis`
+### Batch Dependency Analysis `/api/v5/batch-analysis`
 
 This API performs dependency analysis for multiple projects.
 
@@ -247,7 +247,7 @@ The request will be a GET to the `/token` path containing the HTTP header with t
 other HTTP requests. i.e. `ex-<provider>-token`
 
 ```bash
-http -v :8080/api/v4/token ex-trustify-token==example-token
+http -v :8080/api/v5/token ex-trustify-token==example-token
 ```
 
 The possible responses are:
