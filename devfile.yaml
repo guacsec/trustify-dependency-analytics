@@ -6,8 +6,8 @@ metadata:
   supportUrl: https://github.com/guacsec/trustify-dependency-analytics/issues
   icon: https://github.com/fabric8-analytics/fabric8-analytics-vscode-extension/blob/master/icon/trusted_content_icon.png?raw=true
   website: https://github.com/guacsec/trustify-dependency-analytics
-  displayName: Dependency Analytics
-  description: Dependency Analytics
+  displayName: Trustify Dependency Analytics
+  description: Trustify Dependency Analytics
   tags:
     - Dependency Analytics
     - Java
@@ -35,7 +35,7 @@ components:
       deployment/memoryRequest: 128Mi
       deployment/container-port: 9000
     kubernetes:
-      uri: deploy/dependency-analytics.yaml
+      uri: deploy/trust-da.yaml
       endpoints:
         - name: http
           targetPort: 8080

@@ -314,16 +314,16 @@ In all cases, the original request and headers are logged for the SRE Team to re
 
 ## Deploy on OpenShift
 
-The required parameters can be injected as environment variables through a secret. Create the `dependency-analytics-secret` Secret before deploying the application.
+The required parameters can be injected as environment variables through a secret. Create the `trust-da-secret` Secret before deploying the application.
 
 ```bash
-oc create secret generic -n exhort --from-literal=api-trustify-token=<api_token> dependency-analytics-secret
+oc create secret generic -n trust-da --from-literal=api-trustify-token=<api_token> trust-da-secret
 ```
 
-After that you can use the [dependency-analytics.yaml](./deploy/dependency-analytics.yaml)
+After that you can use the [trust-da.yaml](./deploy/trust-da.yaml)
 
 ```bash
-oc apply -f deploy/dependency-analytics.yaml
+oc apply -f deploy/trust-da.yaml
 ```
 
 ## Running the application in dev mode
