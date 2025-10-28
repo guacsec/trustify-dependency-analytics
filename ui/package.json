@@ -26,7 +26,11 @@
   },
   "scripts": {
     "start": "craco start",
+    "start:community": "env-cmd -f .env.community craco start",
+    "start:redhat": "env-cmd -f .env.redhat craco start",
     "build": "craco build && yarn copy:js:main && yarn copy:js:vendor && yarn copy:css:main && yarn copy:css:vendor",
+    "build:community": "env-cmd -f .env.community craco build && yarn copy:js:main && yarn copy:js:vendor && yarn copy:css:main && yarn copy:css:vendor",
+    "build:redhat": "env-cmd -f .env.redhat craco build && yarn copy:js:main && yarn copy:js:vendor && yarn copy:css:main && yarn copy:css:vendor",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "copy:js:main": "cp build/static/js/main.js ../src/main/resources/freemarker/templates/generated/main.js",
@@ -60,6 +64,7 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/plugin-transform-destructuring": "^7.25.9",
     "@craco/craco": "^7.1.0",
+    "env-cmd": "^10.1.0",
     "prettier": "^3.0.1"
   }
 }

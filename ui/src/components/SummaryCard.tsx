@@ -20,10 +20,12 @@ import {
 import ExclamationTriangleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
 import {ChartCard} from './ChartCard';
 import {getSourceName, getSources, Report} from '../api/report';
-import RedhatIcon from "@patternfly/react-icons/dist/esm/icons/redhat-icon";
 import SecurityCheckIcon from '../images/security-check.svg';
+import TrustifyIcon from '../images/trustify.png';
+import RedhatIcon from "@patternfly/react-icons/dist/esm/icons/redhat-icon";
 import {constructImageName, imageRemediationLink} from '../utils/utils';
 import {useAppContext} from "../App";
+import {getBrandingConfig} from '../config/branding';
 
 const hasTrustifyProvider = (obj: any): boolean => {
   return obj && typeof obj === 'object' && 'rhtpa' in obj;
@@ -32,13 +34,14 @@ const hasTrustifyProvider = (obj: any): boolean => {
 export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isReportMap?: boolean, purl?: string }) => {
   const appContext = useAppContext();
   const showTrustifyCard = hasTrustifyProvider(appContext.report.providers);
+  const brandingConfig = getBrandingConfig();
 
   return (
     <Grid hasGutter>
       <Title headingLevel="h3" size={TitleSizes['2xl']} style={{paddingLeft: '15px'}}>
         <Icon isInline status="info">
           <ExclamationTriangleIcon style={{fill: "#f0ab00"}}/>
-        </Icon>&nbsp;Red Hat Overview of security Issues
+        </Icon>&nbsp;{brandingConfig.title}
       </Title>
       <Divider/>
       <GridItem>
@@ -91,9 +94,13 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
             <CardTitle component="h4">
               <DescriptionListTerm style={{fontSize: "large"}}>
                 <Icon isInline status="info">
-                  <RedhatIcon style={{fill: "#cc0000"}}/>
+                  {brandingConfig.mode === 'redhat' ? (
+                    <RedhatIcon style={{fill: "#cc0000"}}/>
+                  ) : (
+                    <img src={TrustifyIcon} alt="Trustify Icon" style={{width: "16px", height: "16px"}}/>
+                  )}
                 </Icon>&nbsp;
-                Red Hat Remediations
+                {brandingConfig.remediationTitle}
               </DescriptionListTerm>
             </CardTitle>
             <CardBody>
@@ -102,7 +109,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                   <List isPlain>
                     <ListItem>
                       Switch to UBI 9 for enhanced security and enterprise-grade stability in your containerized
-                      applications, backed by Red Hat's support and compatibility assurance.
+                      applications, backed by {brandingConfig.mode === 'redhat' ? "Red Hat's support" : "enterprise-grade support"} and compatibility assurance.
                     </ListItem>
                     <ListItem>
                       <a href={purl ? imageRemediationLink(purl, report, appContext.imageMapping) : '###'}
@@ -127,7 +134,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                           <ListItem>
                             <Icon isInline status="success">
                               <img src={SecurityCheckIcon} alt="Security Check Icon"/>
-                            </Icon>&nbsp;{source.report.summary.remediations} remediations are available from Red Hat
+                            </Icon>&nbsp;{source.report.summary.remediations} remediations are available{brandingConfig.mode === 'redhat' ? ' from Red Hat' : ''}
                             for {remediationsSrc}
                           </ListItem>
                         )
@@ -137,7 +144,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                           <Icon isInline status="success">
                             <img src={SecurityCheckIcon} alt="Security Check Icon"/>
                           </Icon>&nbsp;
-                          There are no available Red Hat remediations for your SBOM at this time for {source.provider}
+                          There are no available{brandingConfig.mode === 'redhat' ? ' Red Hat' : ''} remediations for your SBOM at this time for {source.provider}
                         </ListItem>
                       )
                     })
@@ -155,18 +162,17 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
           <DescriptionListGroup>
             <CardTitle component="h4">
               <DescriptionListTerm style={{fontSize: "large"}}>
-                Join to explore Red Hat TPA
+{brandingConfig.exploreTitle}
               </DescriptionListTerm>
             </CardTitle>
             <CardBody>
               <DescriptionListDescription>
                 <List isPlain>
                   <ListItem>
-                    Check out our new Trustify to get visibility and insight into your software risk
-                    profile, for instance by exploring vulnerabilites or analyzing SBOMs.
+{brandingConfig.exploreDescription}
                   </ListItem>
                   <ListItem>
-                    <a href="https://developers.redhat.com/products/trusted-profile-analyzer/overview" target="_blank"
+                    <a href={brandingConfig.url} target="_blank"
                        rel="noopener noreferrer">
                       <Button variant="primary" size="sm">
                         Take me there
