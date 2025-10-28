@@ -19,29 +19,42 @@ import {
 } from '@patternfly/react-core';
 import ExclamationTriangleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
 import {ChartCard} from './ChartCard';
-import {getSourceName, getSources, Report} from '../api/report';
+import {getSourceName, getSources, Report, BrandingConfig} from '../api/report';
 import SecurityCheckIcon from '../images/security-check.svg';
 import TrustifyIcon from '../images/trustify.png';
-import RedhatIcon from "@patternfly/react-icons/dist/esm/icons/redhat-icon";
 import {constructImageName, imageRemediationLink} from '../utils/utils';
 import {useAppContext} from "../App";
-import {getBrandingConfig} from '../config/branding';
 
 const hasTrustifyProvider = (obj: any): boolean => {
   return obj && typeof obj === 'object' && 'rhtpa' in obj;
 };
 
+const ICON_STYLE = {width: "16px", height: "16px", verticalAlign: "middle"} as const;
+
 export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isReportMap?: boolean, purl?: string }) => {
   const appContext = useAppContext();
   const showTrustifyCard = hasTrustifyProvider(appContext.report.providers);
-  const brandingConfig = getBrandingConfig();
+
+  // Get branding config from appData with fallback defaults
+  const brandingConfig: BrandingConfig = appContext.brandingConfig || {
+    displayName: 'Trustify',
+    exploreUrl: 'https://guac.sh/trustify/',
+    exploreTitle: 'Learn more about Trustify',
+    exploreDescription: 'The Trustify project is a collection of software components that enables you to store and retrieve Software Bill of Materials (SBOMs), and advisory documents.'
+  };
+
+  const getBrandIcon = () => {
+    // Always use the default icon - custom icons can be overridden via CSS
+    return <img src={TrustifyIcon} alt="Trustify Icon" style={ICON_STYLE}/>;
+  };
+
 
   return (
     <Grid hasGutter>
       <Title headingLevel="h3" size={TitleSizes['2xl']} style={{paddingLeft: '15px'}}>
         <Icon isInline status="info">
           <ExclamationTriangleIcon style={{fill: "#f0ab00"}}/>
-        </Icon>&nbsp;{brandingConfig.title}
+        </Icon>&nbsp;{brandingConfig.displayName} Overview of security issues
       </Title>
       <Divider/>
       <GridItem>
@@ -93,14 +106,8 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
           <DescriptionListGroup>
             <CardTitle component="h4">
               <DescriptionListTerm style={{fontSize: "large"}}>
-                <Icon isInline status="info">
-                  {brandingConfig.mode === 'redhat' ? (
-                    <RedhatIcon style={{fill: "#cc0000"}}/>
-                  ) : (
-                    <img src={TrustifyIcon} alt="Trustify Icon" style={{width: "16px", height: "16px"}}/>
-                  )}
-                </Icon>&nbsp;
-                {brandingConfig.remediationTitle}
+                {getBrandIcon()}&nbsp;
+                {brandingConfig.displayName} Remediations
               </DescriptionListTerm>
             </CardTitle>
             <CardBody>
@@ -109,7 +116,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                   <List isPlain>
                     <ListItem>
                       Switch to UBI 9 for enhanced security and enterprise-grade stability in your containerized
-                      applications, backed by {brandingConfig.mode === 'redhat' ? "Red Hat's support" : "enterprise-grade support"} and compatibility assurance.
+                      applications, backed by enterprise-grade support and compatibility assurance.
                     </ListItem>
                     <ListItem>
                       <a href={purl ? imageRemediationLink(purl, report, appContext.imageMapping) : '###'}
@@ -134,7 +141,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                           <ListItem>
                             <Icon isInline status="success">
                               <img src={SecurityCheckIcon} alt="Security Check Icon"/>
-                            </Icon>&nbsp;{source.report.summary.remediations} remediations are available{brandingConfig.mode === 'redhat' ? ' from Red Hat' : ''}
+                            </Icon>&nbsp;{source.report.summary.remediations} remediations are available
                             for {remediationsSrc}
                           </ListItem>
                         )
@@ -144,7 +151,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                           <Icon isInline status="success">
                             <img src={SecurityCheckIcon} alt="Security Check Icon"/>
                           </Icon>&nbsp;
-                          There are no available{brandingConfig.mode === 'redhat' ? ' Red Hat' : ''} remediations for your SBOM at this time for {source.provider}
+                          There are no available remediations for your SBOM at this time for {source.provider}
                         </ListItem>
                       )
                     })
@@ -172,7 +179,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
 {brandingConfig.exploreDescription}
                   </ListItem>
                   <ListItem>
-                    <a href={brandingConfig.url} target="_blank"
+                    <a href={brandingConfig.exploreUrl} target="_blank"
                        rel="noopener noreferrer">
                       <Button variant="primary" size="sm">
                         Take me there

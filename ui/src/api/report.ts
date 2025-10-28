@@ -10,6 +10,14 @@ export interface AppData {
   anonymousId?: string | null;
   writeKey?: string | null;
   rhdaSource?: string | null;
+  brandingConfig?: BrandingConfig;
+}
+
+export interface BrandingConfig {
+  displayName: string;
+  exploreUrl: string;
+  exploreTitle: string;
+  exploreDescription: string;
 }
 
 export interface ReportMap {

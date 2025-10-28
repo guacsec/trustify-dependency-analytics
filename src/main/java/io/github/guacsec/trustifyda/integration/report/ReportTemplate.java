@@ -58,6 +58,9 @@ public class ReportTemplate {
   @ConfigProperty(name = "telemetry.disabled", defaultValue = "false")
   Boolean disabled;
 
+  // Branding configuration
+  @Inject Optional<BrandingConfig> brandingConfig;
+
   @Inject ObjectMapper mapper;
 
   public Map<String, Object> setVariables(
@@ -74,6 +77,8 @@ public class ReportTemplate {
     params.put("cveIssueTemplate", cveIssuePathRegex);
     params.put("imageMapping", getImageMapping());
     params.put("rhdaSource", rhdaSource);
+    // Only include branding config if it's present
+    brandingConfig.ifPresent(config -> params.put("brandingConfig", getBrandingConfigMap(config)));
     if (!disabled && writeKey.isPresent()) {
       params.put("userId", userId);
       params.put("anonymousId", anonymousId);
@@ -106,6 +111,15 @@ public class ReportTemplate {
 
     ObjectWriter objectWriter = new ObjectMapper().writer();
     return objectWriter.writeValueAsString(urlMapping);
+  }
+
+  private Map<String, String> getBrandingConfigMap(BrandingConfig config) {
+    Map<String, String> branding = new HashMap<>();
+    branding.put("displayName", config.displayName());
+    branding.put("exploreUrl", config.exploreUrl());
+    branding.put("exploreTitle", config.exploreTitle());
+    branding.put("exploreDescription", config.exploreDescription());
+    return branding;
   }
 
   @RegisterForReflection
