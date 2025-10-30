@@ -28,4 +28,6 @@ public interface BrandingConfig {
   String exploreTitle();
 
   String exploreDescription();
+
+  String imageRecommendation();
 }
