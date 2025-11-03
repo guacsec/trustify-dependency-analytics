@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: trustify-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=trustify123
+    command: redis-server --requirepass trustify123
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: trustify-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: trustify
+      POSTGRES_USER: trustify
+      POSTGRES_PASSWORD: trustify123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustify -d trustify"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:
+  postgres_data:

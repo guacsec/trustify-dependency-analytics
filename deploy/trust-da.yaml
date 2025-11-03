@@ -31,23 +31,7 @@ spec:
             cpu: "500m"
         env:
         - name: MONITORING_ENABLED
-          value: "true"
-        - name: MONITORING_SENTRY_DSN
-          valueFrom:
-            secretKeyRef:
-              name: trust-da-secret
-              key: sentry-dsn
-        - name: MONITORING_SENTRY_SERVERNAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: MONITORING_SENTRY_ENVIRONMENT
-          value: development
-        - name: TELEMETRY_WRITE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: trust-da-secret
-              key: telemetry-write-key
+          value: "false"
         - name: DB_REDIS_HOST
           valueFrom:
             secretKeyRef:
@@ -59,7 +43,7 @@ spec:
               name: trust-da-secret
               key: db.port
         - name: TRUSTIFY_HOST
-          value: https://trust.rhcloud.com/api/v2/
+          value: http://trustify:8080/api/v2/
         - name: TRUSTIFY_CLIENT_ID
           valueFrom:
             secretKeyRef:

@@ -10,7 +10,7 @@ USER quarkus
 WORKDIR /code
 RUN ./mvnw -B -Pnative org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline
 COPY --chown=quarkus:quarkus src /code/src
-RUN ./mvnw verify -B -Dmaven.test.skip=true -Dquarkus.native.native-image-xmx=8g
+RUN ./mvnw verify -B -Dmaven.test.skip=true -Pnative -Dquarkus.native.native-image-xmx=8g
 
 ## Stage 2 : create the docker final image
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1760515502
