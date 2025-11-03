@@ -13,6 +13,7 @@ branding.explore.url=https://guac.sh/trustify/
 branding.explore.title=Learn more about Trustify
 branding.explore.description=The Trustify project is a collection of software components that enables you to store and retrieve Software Bill of Materials (SBOMs), and advisory documents.
 branding.image.recommendation=
+branding.image.remediation.link=
 
 # Example: Custom organization branding profile
 %myorg.branding.display.name=MyOrg
@@ -20,6 +21,7 @@ branding.image.recommendation=
 %myorg.branding.explore.title=Learn about MyOrg Security
 %myorg.branding.explore.description=Explore our comprehensive security analysis tools and vulnerability management platform.
 %myorg.branding.image.recommendation=Custom container image recommendations for enhanced security.
+%myorg.branding.image.remediation.link=https://example.com/container-catalog
 ```
 
 ## Examples
@@ -36,6 +38,7 @@ To create a new branding profile for your organization:
    %myorg.branding.explore.title=Learn about Your Org Security
    %myorg.branding.explore.description=Your custom description here.
    %myorg.branding.image.recommendation=Your custom container image recommendation text.
+   %myorg.branding.image.remediation.link=https://your-org.com/container-catalog
    ```
 
 2. **Use the profile** when running the application:
@@ -54,6 +57,7 @@ export BRANDING_EXPLORE_URL="https://example.com/security-tools"
 export BRANDING_EXPLORE_TITLE="Learn about MyOrg Security"
 export BRANDING_EXPLORE_DESCRIPTION="Explore our comprehensive security analysis tools and vulnerability management platform."
 export BRANDING_IMAGE_RECOMMENDATION="Custom container image recommendations for enhanced security."
+export BRANDING_IMAGE_REMEDIATION_LINK="https://example.com/container-catalog"
 
 ./mvnw quarkus:dev
 ```
@@ -90,6 +94,7 @@ Add to `/src/main/resources/application.properties`:
 %myorg.branding.explore.title=Learn about MyOrg Security
 %myorg.branding.explore.description=Explore our comprehensive security analysis tools and vulnerability management platform.
 %myorg.branding.image.recommendation=Custom container image recommendations for enhanced security.
+%myorg.branding.image.remediation.link=https://myorg.com/container-catalog
 ```
 
 **Step 4: Build with your changes**

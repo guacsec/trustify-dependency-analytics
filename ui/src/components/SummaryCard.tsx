@@ -41,7 +41,8 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
     exploreUrl: 'https://guac.sh/trustify/',
     exploreTitle: 'Learn more about Trustify',
     exploreDescription: 'The Trustify project is a collection of software components that enables you to store and retrieve Software Bill of Materials (SBOMs), and advisory documents.',
-    imageRecommendation: ''
+    imageRecommendation: '',
+    imageRemediationLink: ''
   };
 
   const getBrandIcon = () => {
@@ -102,8 +103,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
           <Divider/>
         </Card>
       </GridItem>
-      {/* Only show this card if: not isReportMap OR (isReportMap AND imageRecommendation has text) */}
-      {(!isReportMap || (isReportMap && brandingConfig.imageRecommendation.trim())) && (
+      {(!isReportMap || (brandingConfig.imageRecommendation.trim() && brandingConfig.imageRemediationLink.trim())) && (
         <GridItem md={showTrustifyCard ? 6 : undefined}>
           <Card isFlat>
             <DescriptionListGroup>
@@ -115,13 +115,13 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
               </CardTitle>
               <CardBody>
                 <DescriptionListDescription>
-                  {isReportMap && brandingConfig.imageRecommendation.trim() ? (
+                  {isReportMap ? (
                     <List isPlain>
                       <ListItem>
                         {brandingConfig.imageRecommendation}
                       </ListItem>
                       <ListItem>
-                        <a href={purl ? imageRemediationLink(purl, report, appContext.imageMapping) : '###'}
+                        <a href={purl ? imageRemediationLink(purl, report, appContext.imageMapping, brandingConfig.imageRemediationLink) : '###'}
                            target="_blank" rel="noreferrer">
                           <Button variant="primary" size="sm">
                             Take me there
@@ -129,7 +129,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                         </a>
                       </ListItem>
                     </List>
-                  ) : !isReportMap ? (
+                  ) : (
                     <List isPlain>
                       {getSources(report).map((source, index) => {
                         let remediationsSrc =
@@ -159,7 +159,7 @@ export const SummaryCard = ({report, isReportMap, purl}: { report: Report, isRep
                       })
                       }
                     </List>
-                  ) : null}
+                  )}
                 </DescriptionListDescription>
               </CardBody>
             </DescriptionListGroup>

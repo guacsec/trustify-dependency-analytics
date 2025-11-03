@@ -262,6 +262,9 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     // Verify multi tab layout
     List<HtmlElement> sectionElements = rootElement.getByXPath("./section");
     assertEquals(1, sectionElements.size());
+    List<HtmlAnchor> anchorElements =
+        page.getByXPath("//a[contains(@href, 'https://test-catalog.example.com/containers/ubi9')]");
+    assertTrue(!anchorElements.isEmpty(), "At least one href contains the desired substring");
     verifyTrustifyRequest(OK_TOKEN, 3);
   }
 

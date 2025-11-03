@@ -30,4 +30,6 @@ public interface BrandingConfig {
   String exploreDescription();
 
   String imageRecommendation();
+
+  String imageRemediationLink();
 }

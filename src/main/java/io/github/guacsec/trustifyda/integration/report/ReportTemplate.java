@@ -129,6 +129,9 @@ public class ReportTemplate {
                           .orElse(""),
                       config
                           .getOptionalValue("branding.image-recommendation", String.class)
+                          .orElse(""),
+                      config
+                          .getOptionalValue("branding.image-remediation-link", String.class)
                           .orElse("")));
     } catch (Exception e) {
       return Optional.empty();
@@ -142,6 +145,7 @@ public class ReportTemplate {
     branding.put("exploreTitle", config.exploreTitle());
     branding.put("exploreDescription", config.exploreDescription());
     branding.put("imageRecommendation", config.imageRecommendation());
+    branding.put("imageRemediationLink", config.imageRemediationLink());
     return branding;
   }
 
@@ -152,18 +156,21 @@ public class ReportTemplate {
     private final String exploreTitle;
     private final String exploreDescription;
     private final String imageRecommendation;
+    private final String imageRemediationLink;
 
     public BrandingConfigImpl(
         String displayName,
         String exploreUrl,
         String exploreTitle,
         String exploreDescription,
-        String imageRecommendation) {
+        String imageRecommendation,
+        String imageRemediationLink) {
       this.displayName = displayName;
       this.exploreUrl = exploreUrl;
       this.exploreTitle = exploreTitle;
       this.exploreDescription = exploreDescription;
       this.imageRecommendation = imageRecommendation;
+      this.imageRemediationLink = imageRemediationLink;
     }
 
     @Override
@@ -189,6 +196,11 @@ public class ReportTemplate {
     @Override
     public String imageRecommendation() {
       return imageRecommendation;
+    }
+
+    @Override
+    public String imageRemediationLink() {
+      return imageRemediationLink;
     }
   }
 

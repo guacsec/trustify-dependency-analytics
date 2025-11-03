@@ -25,7 +25,6 @@ const OSS_SIGN_UP_LINK = 'https://ossindex.sonatype.org/user/register';
 
 const REDHAT_REPOSITORY = 'https://maven.repository.redhat.com/ga/';
 
-const REDHAT_IMAGES_CATALOG = 'https://catalog.redhat.com/software/containers/';
 
 const ENCODED_CHAR_REGEX = /%[0-9A-Fa-f]{2}/;
 
@@ -162,9 +161,9 @@ const isEncoded = (str: string): boolean => {
   return ENCODED_CHAR_REGEX.test(str);
 }
 
-export const imageRemediationLink = (purl: string, report: Report, imageMapping: string) => {
+export const imageRemediationLink = (purl: string, report: Report, imageMapping: string, imageRemediationLink?: string) => {
   const sources = getSources(report);
-  let result = REDHAT_IMAGES_CATALOG;
+  let result = imageRemediationLink || '';
 
   for (const key in sources) {
     const source = sources[key];
@@ -179,12 +178,14 @@ export const imageRemediationLink = (purl: string, report: Report, imageMapping:
       return PackageURL.fromString(transformedRef).toString() === PackageURL.fromString(transformedPurl).toString();
     });
 
-      if (matchingDependency && matchingDependency.recommendation ) {
+      if (matchingDependency && matchingDependency.recommendation && result) {
         const transformedRecommUrl = decodeURIComponent(matchingDependency.recommendation);
         const catalogUrl = getCatalogUrlByPurl(transformedRecommUrl, imageMapping);
 
         if (catalogUrl !== undefined) {
-          return catalogUrl;
+          // Extract image name from the recommendation purl to construct the final URL
+          const imageName = constructImageName(transformedRecommUrl);
+          return result + imageName;
         }
       }
     }
