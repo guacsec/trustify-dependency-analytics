@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:8-alpine
@@ -8,9 +6,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    environment:
-      - REDIS_PASSWORD=trustify123
-    command: redis-server --requirepass trustify123
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 30s
@@ -37,3 +32,8 @@ services:
 volumes:
   redis_data:
   postgres_data:
+
+networks:
+  default:
+    name: trustify-network
+    external: true

@@ -2,10 +2,11 @@
 
 This directory contains Docker Compose files for local development deployment of Trustify with its required infrastructure components.
 
+**Note**: Replace `docker-compose` with `podman-compose` if you're using Podman instead.
+
 ## Files
 
 - `docker-compose.infrastructure.yml` - Infrastructure services (Redis, PostgreSQL)
-- `docker-compose.infra-sso.yml` - Infrastructure services (Keycloak)
 - `docker-compose.application.yml` - Application service (trust-da)
 - `env.example` - Environment variables template
 
@@ -16,9 +17,6 @@ This directory contains Docker Compose files for local development deployment of
 ```bash
 # Start Redis, PostgreSQL, and Keycloak
 docker-compose -f docker-compose.infrastructure.yml up -d
-
-# Start Keycloak
-docker-compose -f docker-compose.infra-sso.yml up -d
 
 # Check if services are healthy
 docker-compose -f docker-compose.infrastructure.yml ps
@@ -34,7 +32,13 @@ cp env.example .env
 nano .env
 ```
 
-### 3. Start Application
+### 3. Create Network
+
+```bash
+docker network create trustify-network
+```
+
+### 4. Start Application
 
 ```bash
 # Start the trust-da application
@@ -52,7 +56,6 @@ docker-compose -f docker-compose.application.yml ps
 |---------|------|-------------|
 | Redis | 6379 | Cache and session storage |
 | PostgreSQL | 5432 | Database for Keycloak and application |
-| Keycloak | 8080 | Identity and access management |
 
 ### Application Services
 
@@ -64,15 +67,12 @@ docker-compose -f docker-compose.application.yml ps
 ## Access Points
 
 - **Application**: http://localhost:8081
-- **Keycloak Admin**: http://localhost:8080
-  - Username: `admin`
-  - Password: `admin123`
 - **PostgreSQL**: localhost:5432
   - Database: `trustify`
   - Username: `trustify`
   - Password: `trustify123`
 - **Redis**: localhost:6379
-  - Password: `trustify123`
+  - No authentication required
 
 ## Health Checks
 
@@ -81,9 +81,6 @@ All services include health checks. You can monitor them with:
 ```bash
 # Check infrastructure health
 docker-compose -f docker-compose.infrastructure.yml ps
-
-# Check Keycloak health
-docker-compose -f docker-compose.infra-sso.yml ps
 
 # Check application health
 docker-compose -f docker-compose.application.yml ps
@@ -94,9 +91,6 @@ docker-compose -f docker-compose.application.yml ps
 ```bash
 # View infrastructure logs
 docker-compose -f docker-compose.infrastructure.yml logs -f
-
-# View Keycloak logs
-docker-compose -f docker-compose.infra-sso.yml logs -f
 
 # View application logs
 docker-compose -f docker-compose.application.yml logs -f
@@ -110,14 +104,11 @@ docker-compose -f docker-compose.application.yml logs -f trust-da
 ```bash
 # Stop application
 docker-compose -f docker-compose.application.yml down
-# Stop Keycloak
-docker-compose -f docker-compose.infa-sso.yml down
 # Stop infrastructure
 docker-compose -f docker-compose.infrastructure.yml down
 
 # Stop everything and remove volumes
 docker-compose -f docker-compose.infrastructure.yml down -v
-docker-compose -f docker-compose.infra-sso.yml down
 docker-compose -f docker-compose.application.yml down
 ```
 
@@ -132,14 +123,22 @@ To reset all data:
 docker-compose -f docker-compose.infrastructure.yml down -v
 ```
 
+## Remove the network
+
+```bash
+docker network rm trustify-network
+```
+
 ## Environment Variables
 
 Create a `.env` file based on `env.example` to customize:
 
+- `TRUSTIFY_HOST`: Your Trustify server host
 - `TRUSTIFY_CLIENT_ID`: Your Trustify client ID
 - `TRUSTIFY_CLIENT_SECRET`: Your Trustify client secret
-- `SENTRY_DSN`: Sentry DSN for error tracking
-- `TELEMETRY_WRITE_KEY`: Telemetry write key
+- `TRUSTIFY_AUTH_SERVER_URL`: The Trustify SSO Server URL
+- `SENTRY_DSN`: Sentry DSN for error tracking (Optional)
+- `TELEMETRY_WRITE_KEY`: Telemetry write key (Optional)
 
 ## Troubleshooting
 
@@ -153,22 +152,4 @@ docker-compose -f docker-compose.application.yml logs
 # Restart services
 docker-compose -f docker-compose.infrastructure.yml restart
 docker-compose -f docker-compose.application.yml restart
-```
-
-### Port conflicts
-
-If you have port conflicts, modify the port mappings in the compose files:
-
-```yaml
-ports:
-  - "8082:8080"  # Change 8081 to 8082
-```
-
-### Network issues
-
-The application uses an external network. If you encounter network issues:
-
-```bash
-# Create the network manually
-docker network create trustify-network
 ```

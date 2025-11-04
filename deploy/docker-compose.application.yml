@@ -1,12 +1,12 @@
-version: '3.8'
-
 services:
   trust-da:
-    image: trust-da:latest
+    image: ${TRUST_DA_IMAGE:-trust-da:latest}
     container_name: trustify-trust-da
+    env_file:
+      - .env
     ports:
-      - "8081:8080"  # Application port
-      - "9001:9000"  # Management port
+      - "8080:8080"  # Application port
+      - "9000:9000"  # Management port
     environment:
       # Monitoring
       MONITORING_ENABLED: "false"
@@ -14,17 +14,18 @@ services:
       # Database
       DB_REDIS_HOST: redis
       DB_REDIS_PORT: 6379
+      DB_POSTGRES_HOST: postgres
+      DB_POSTGRES_PORT: 5432
+      DB_POSTGRES_DATABASE: trustify
+      DB_POSTGRES_USER: trustify
+      DB_POSTGRES_PASSWORD: trustify123
+      API_ONGUARD_DISABLED: true
       
       # Trustify
-      TRUSTIFY_HOST: ${TRUSTIFY_HOST:-https://rhtpa.stage.devshift.net/api/v2/}
-      TRUSTIFY_CLIENT_ID: ${TRUSTIFY_CLIENT_ID:-your-trustify-client-id}
-      TRUSTIFY_CLIENT_SECRET: ${TRUSTIFY_CLIENT_SECRET:-your-trustify-client-secret}
-      TRUSTIFY_AUTH_SERVER_URL: http://keycloak:8080
-    depends_on:
-      redis:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
+      PROVIDER_TRUSTIFY_HOST: ${TRUSTIFY_HOST:-https://trustify.example.com/api/v2/}
+      PROVIDER_TRUSTIFY_AUTH_CLIENT_ID: ${TRUSTIFY_CLIENT_ID:-your-trustify-client-id}
+      PROVIDER_TRUSTIFY_AUTH_CLIENT_SECRET: ${TRUSTIFY_CLIENT_SECRET:-your-trustify-client-secret}
+      PROVIDER_TRUSTIFY_AUTH_SERVER_URL: ${TRUSTIFY_AUTH_SERVER_URL:-http://sso-trustify.example.com:8090}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/q/health/ready"]
       interval: 30s
