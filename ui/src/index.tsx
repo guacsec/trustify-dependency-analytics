@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './overrides/brand-overrides.css';
 import '@patternfly/react-core/dist/styles/base.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
