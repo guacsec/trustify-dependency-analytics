@@ -826,18 +826,12 @@ export const dockerReport: AppData = {
                 "low": 0,
                 "remediations": 0,
                 "recommendations": 1,
-                "unscanned": 1
+                "unscanned": 0
               },
               "dependencies": [
                 {
                   "ref": "pkg:oci/quay.io/default-app@0.0.1",
                   "recommendation": "pkg:oci/quay.io/test-app@0.0.2"
-                }
-              ],
-              "unscanned": [
-                {
-                  "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
-                  "reason": "unsupported-pkg-type"
                 }
               ]
             }

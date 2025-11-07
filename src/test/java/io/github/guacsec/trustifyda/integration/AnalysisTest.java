@@ -55,7 +55,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
-import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Scanned;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
@@ -185,7 +184,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             });
 
     verifyNoInteractionsWithTrustify();
-    verifyNoInteractionsWithTrustedContent();
+    verifyNoInteractionsWithRecommend();
   }
 
   private static Stream<Arguments> emptySbomArguments() {
@@ -216,10 +215,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertJson("reports/report_default_token.json", body);
+    assertJson("reports/report.json", body);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyOsvRequest();
-    verifyTrustedContentRequest();
+    verifyRecommendRequest();
   }
 
   @Test
@@ -248,7 +247,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertRecommendations(body, TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyOsvRequest();
-    verifyNoInteractionsWithTrustedContent();
+    verifyNoInteractionsWithRecommend();
   }
 
   @Test
@@ -273,7 +272,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertJson("reports/report_all_token.json", body);
+    assertJson("reports/report.json", body);
     verifyTrustifyRequest(OK_TOKEN);
     verifyOsvRequest();
   }
@@ -301,7 +300,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(3, report.getProviders().size());
+    assertEquals(2, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
         report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
@@ -332,42 +331,11 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(3, report.getProviders().size());
+    assertEquals(2, report.getProviders().size());
     assertEquals(401, report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
     assertTrue(report.getProviders().get(TRUSTIFY_PROVIDER).getSources().isEmpty());
 
     verifyTrustifyRequest(INVALID_TOKEN);
-  }
-
-  @Test
-  public void testSBOMJsonWithToken() {
-    stubAllProviders();
-
-    var report =
-        given()
-            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
-            .body(loadSBOMFile(CYCLONEDX))
-            .header("Accept", MediaType.APPLICATION_JSON)
-            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
-            .when()
-            .post("/api/v5/analysis")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(
-                Constants.EXHORT_REQUEST_ID_HEADER,
-                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
-            .extract()
-            .body()
-            .as(AnalysisReport.class);
-
-    assertScanned(report.getScanned());
-    var osvSource = report.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
-    assertOsvSummary(osvSource);
-    assertOsvDependenciesReport(osvSource.getDependencies());
-
-    verifyTrustifyRequest(OK_TOKEN);
   }
 
   @Test
@@ -553,12 +521,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asString();
 
     switch (sbom) {
-      case CYCLONEDX:
-        assertTrue(response.startsWith("CycloneDX Validation"));
-        break;
-      case SPDX:
-        assertTrue(response.startsWith("SPDX-2.3 Validation"));
-        break;
+      case CYCLONEDX -> assertTrue(response.startsWith("CycloneDX Validation"));
+      case SPDX -> assertTrue(response.startsWith("SPDX-2.3 Validation"));
     }
   }
 
@@ -585,7 +549,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
-    assertJson("reports/batch_report_all_token.json", body);
+    assertJson("reports/batch_report.json", body);
     verifyTrustifyRequest(OK_TOKEN, 3);
     verifyOsvRequest(3);
   }
@@ -619,50 +583,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertEquals(1, summary.getHigh());
     assertEquals(0, summary.getMedium());
     assertEquals(0, summary.getLow());
-  }
-
-  private void assertOsvDependenciesReport(List<DependencyReport> dependencies) {
-    assertEquals(2, dependencies.size());
-
-    var hibernate =
-        new PackageRef("pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar");
-    var report = getReport(hibernate.name(), dependencies);
-    assertNotNull(report);
-    assertEquals(hibernate, report.getRef());
-    assertTrue(report.getIssues().isEmpty());
-
-    assertEquals(2, report.getTransitive().size());
-    report
-        .getTransitive()
-        .forEach(
-            t -> {
-              if (t.getRef().name().equals("io.quarkus:quarkus-core")) {
-                var jackson =
-                    new PackageRef("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
-                assertEquals(jackson, t.getRef());
-                assertEquals(2, t.getIssues().size());
-                assertEquals(t.getHighestVulnerability(), t.getIssues().get(0));
-              }
-              if (t.getRef().name().equals("com.fasterxml.jackson.core:jackson-databind")) {
-                var jackson =
-                    new PackageRef(
-                        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar");
-                assertEquals(jackson, t.getRef());
-                assertEquals(3, t.getIssues().size());
-                assertEquals(t.getHighestVulnerability(), t.getIssues().get(0));
-                assertEquals(report.getHighestVulnerability(), t.getHighestVulnerability());
-              }
-            });
-  }
-
-  private DependencyReport getReport(String pkgName, List<DependencyReport> dependencies) {
-    var dep =
-        dependencies.stream()
-            .filter(d -> d.getRef().name().equals(pkgName))
-            .findFirst()
-            .orElse(null);
-    assertNotNull(dep);
-    return dep;
   }
 
   private void assertRecommendations(

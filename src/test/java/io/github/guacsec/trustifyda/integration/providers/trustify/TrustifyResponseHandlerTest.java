@@ -20,22 +20,36 @@ package io.github.guacsec.trustifyda.integration.providers.trustify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.Severity;
+import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
+import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
+import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
 
 public class TrustifyResponseHandlerTest {
 
@@ -52,6 +66,19 @@ public class TrustifyResponseHandlerTest {
     var directDep = new DirectDependency(packageRef, Collections.emptySet());
     var dependencies = Collections.singletonMap(packageRef, directDep);
     dependencyTree = new DependencyTree(dependencies);
+
+    // Setup for TrustifyIntegration.processRecommendations() tests
+    trustifyIntegration = new TrustifyIntegration();
+    trustifyIntegration.mapper = new ObjectMapper();
+
+    // Create a mock UBIRecommendation
+    ubiRecommendation = mock(UBIRecommendation.class);
+    Map<String, String> mapping = new HashMap<>();
+    mapping.put("alpine", "pkg:oci/ubi@0.0.2");
+    when(ubiRecommendation.mapping()).thenReturn(mapping);
+    when(ubiRecommendation.purl()).thenReturn(Collections.emptyMap());
+    when(ubiRecommendation.catalogurl()).thenReturn(Collections.emptyMap());
+    trustifyIntegration.ubiRecommendation = ubiRecommendation;
   }
 
   @Test
@@ -161,10 +188,12 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    assertNotNull(result.issues());
-    assertEquals(1, result.issues().size());
+    assertNotNull(result.pkgItems());
+    assertEquals(1, result.pkgItems().size());
 
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertNotNull(issues);
     assertEquals(2, issues.size());
 
@@ -242,7 +271,9 @@ public class TrustifyResponseHandlerTest {
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     Issue issue = issues.get(0);
 
     // Should prioritize V4 based on SCORE_TYPE_ORDER
@@ -258,8 +289,8 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    assertNotNull(result.issues());
-    assertTrue(result.issues().isEmpty());
+    assertNotNull(result.pkgItems());
+    assertTrue(result.pkgItems().isEmpty());
   }
 
   @Test
@@ -275,7 +306,9 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertTrue(issues.isEmpty());
   }
 
@@ -297,7 +330,9 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertTrue(issues.isEmpty());
   }
 
@@ -320,7 +355,9 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertTrue(issues.isEmpty());
   }
 
@@ -358,7 +395,9 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertTrue(issues.isEmpty());
   }
 
@@ -406,7 +445,9 @@ public class TrustifyResponseHandlerTest {
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertEquals(1, issues.size());
 
     Issue issue = issues.get(0);
@@ -467,7 +508,9 @@ public class TrustifyResponseHandlerTest {
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
-    List<Issue> issues = result.issues().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
     assertEquals(1, issues.size());
 
     Issue issue = issues.get(0);
@@ -525,6 +568,129 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
 
     assertNotNull(result);
-    assertTrue(result.issues().isEmpty());
+    assertTrue(result.pkgItems().isEmpty());
   }
+
+  // Tests for TrustifyIntegration.processRecommendations()
+  // These tests were migrated from TcResponseHandlerTest
+
+  private TrustifyIntegration trustifyIntegration;
+  private UBIRecommendation ubiRecommendation;
+
+  @Test
+  void testProcessRecommendationsAggregation() throws IOException {
+    Exchange exchange = mock(Exchange.class);
+    Message inMessage = mock(Message.class);
+    Message outMessage = mock(Message.class);
+
+    when(exchange.getIn()).thenReturn(inMessage);
+    when(exchange.getMessage()).thenReturn(outMessage);
+    when(exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class)).thenReturn(null);
+
+    byte[] responseBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("__files/trustedcontent/simple.json")
+            .readAllBytes();
+    when(inMessage.getBody(byte[].class)).thenReturn(responseBytes);
+
+    trustifyIntegration.processRecommendations(exchange);
+
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<Map> bodyCaptor = forClass(Map.class);
+    verify(outMessage).setBody(bodyCaptor.capture());
+    @SuppressWarnings("unchecked")
+    Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
+    assertNotNull(recommendations);
+    assertEquals(3, recommendations.size());
+
+    Map<String, ExpectedRecommendation> expectations = new HashMap<>();
+    expectations.put(
+        "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+        new ExpectedRecommendation(
+            "1.2.5.redhat-00003", Set.of("CVE-2023-2974", "CVE-2023-1584", "CVE-2023-28867")));
+    expectations.put(
+        "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+        new ExpectedRecommendation(
+            "2.13.8.Final-redhat-00004",
+            Set.of("CVE-2020-36518", "CVE-2023-44487", "CVE-2023-4853")));
+    expectations.put(
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+        new ExpectedRecommendation("2.13.4.2-redhat-00001", Collections.emptySet()));
+
+    expectations
+        .entrySet()
+        .forEach(
+            e -> {
+              var r = recommendations.get(new PackageRef(e.getKey()));
+              assertNotNull(r);
+              assertEquals(e.getValue().version(), r.packageName().version());
+              assertEquals(e.getValue().cves().size(), r.vulnerabilities().size());
+              assertTrue(e.getValue().cves().containsAll(r.vulnerabilities().keySet()));
+            });
+  }
+
+  @Test
+  void testProcessRecommendationsEmpty() throws IOException {
+    Exchange exchange = mock(Exchange.class);
+    Message inMessage = mock(Message.class);
+    Message outMessage = mock(Message.class);
+
+    when(exchange.getIn()).thenReturn(inMessage);
+    when(exchange.getMessage()).thenReturn(outMessage);
+    when(exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class)).thenReturn(null);
+
+    byte[] responseBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("__files/trustedcontent/empty_report.json")
+            .readAllBytes();
+    when(inMessage.getBody(byte[].class)).thenReturn(responseBytes);
+
+    trustifyIntegration.processRecommendations(exchange);
+
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<Map> bodyCaptor = forClass(Map.class);
+    verify(outMessage).setBody(bodyCaptor.capture());
+    @SuppressWarnings("unchecked")
+    Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
+    assertNotNull(recommendations);
+    assertTrue(recommendations.isEmpty());
+  }
+
+  @Test
+  void testProcessRecommendationsWithSbomId() throws IOException {
+    String sbomId = "pkg:oci/alpine@0.0.1";
+    Exchange exchange = mock(Exchange.class);
+    Message inMessage = mock(Message.class);
+    Message outMessage = mock(Message.class);
+
+    when(exchange.getIn()).thenReturn(inMessage);
+    when(exchange.getMessage()).thenReturn(outMessage);
+    when(exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class)).thenReturn(sbomId);
+
+    byte[] responseBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("__files/trustedcontent/empty_report.json")
+            .readAllBytes();
+    when(inMessage.getBody(byte[].class)).thenReturn(responseBytes);
+
+    trustifyIntegration.processRecommendations(exchange);
+
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<Map> bodyCaptor = forClass(Map.class);
+    verify(outMessage).setBody(bodyCaptor.capture());
+    @SuppressWarnings("unchecked")
+    Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
+    assertNotNull(recommendations);
+
+    PackageRef sbomRef = new PackageRef(sbomId);
+    IndexedRecommendation recommendation =
+        new IndexedRecommendation(new PackageRef("pkg:oci/ubi@0.0.2"), null);
+    assertEquals(1, recommendations.size());
+    assertEquals(recommendation, recommendations.get(sbomRef));
+  }
+
+  private static final record ExpectedRecommendation(String version, Set<String> cves) {}
 }

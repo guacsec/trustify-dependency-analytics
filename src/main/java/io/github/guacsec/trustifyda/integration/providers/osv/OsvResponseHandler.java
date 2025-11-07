@@ -42,6 +42,7 @@ import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.providers.ProviderResponseHandler;
 import io.github.guacsec.trustifyda.model.CvssParser;
 import io.github.guacsec.trustifyda.model.DependencyTree;
+import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -66,17 +67,20 @@ public class OsvResponseHandler extends ProviderResponseHandler {
       @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree)
       throws IOException {
     var json = (ObjectNode) mapper.readTree(response);
-    return new ProviderResponse(getIssues(json, tree), null, null);
+    return new ProviderResponse(getIssues(json, tree), null);
   }
 
-  private Map<String, List<Issue>> getIssues(ObjectNode response, DependencyTree tree) {
+  private Map<String, PackageItem> getIssues(ObjectNode response, DependencyTree tree) {
     return tree.getAll().stream()
         .map(PackageRef::ref)
         .filter(ref -> response.has(ref))
-        .collect(Collectors.toMap(ref -> ref, ref -> toIssues(ref, (ArrayNode) response.get(ref))));
+        .collect(
+            Collectors.toMap(
+                ref -> ref,
+                ref -> new PackageItem(ref, null, toIssues((ArrayNode) response.get(ref)))));
   }
 
-  private List<Issue> toIssues(String ref, ArrayNode response) {
+  private List<Issue> toIssues(ArrayNode response) {
     if (response.isEmpty()) {
       return Collections.emptyList();
     }

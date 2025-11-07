@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.providers.osv;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
+import io.github.guacsec.trustifyda.model.PackageItem;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.inject.Inject;
@@ -57,29 +59,35 @@ public class OsvResponseHandlerTest {
 
     var report = handler.responseToIssues(providerResponse, dependencyTree);
 
-    assertFalse(report.issues().isEmpty());
-    assertEquals(2, report.issues().size());
-    var jacksonIssues = report.issues().get(jacksonRef.ref());
+    assertFalse(report.pkgItems().isEmpty());
+    assertEquals(2, report.pkgItems().size());
+    PackageItem jacksonPackageItem = report.pkgItems().get(jacksonRef.ref());
+    assertNotNull(jacksonPackageItem);
+    var jacksonIssues = jacksonPackageItem.issues();
+    assertNotNull(jacksonIssues);
     assertEquals(3, jacksonIssues.size());
 
     // Test V3.1 vector.
     var issue =
         jacksonIssues.stream().filter(i -> i.getCves().contains("CVE-2022-42004")).findFirst();
     assertTrue(issue.isPresent());
-    assertEquals(7.5f, issue.get().getCvssScore());
-    assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", issue.get().getCvss().getCvss());
+    var issueV31 = issue.get();
+    assertEquals(7.5f, issueV31.getCvssScore());
+    assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", issueV31.getCvss().getCvss());
 
     // Test V3.0 vector.
     issue = jacksonIssues.stream().filter(i -> i.getCves().contains("CVE-2022-42003")).findFirst();
     assertTrue(issue.isPresent());
-    assertEquals(7.5f, issue.get().getCvssScore());
-    assertEquals("CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", issue.get().getCvss().getCvss());
+    var issueV30 = issue.get();
+    assertEquals(7.5f, issueV30.getCvssScore());
+    assertEquals("CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", issueV30.getCvss().getCvss());
 
     // Test V2.0 vector.
     issue = jacksonIssues.stream().filter(i -> i.getCves().contains("CVE-2020-36518")).findFirst();
     assertTrue(issue.isPresent());
-    assertEquals(5.0f, issue.get().getCvssScore());
-    assertEquals("AV:N/AC:L/Au:N/C:N/I:N/A:P", issue.get().getCvss().getCvss());
+    var issueV20 = issue.get();
+    assertEquals(5.0f, issueV20.getCvssScore());
+    assertEquals("AV:N/AC:L/Au:N/C:N/I:N/A:P", issueV20.getCvss().getCvss());
   }
 
   private byte[] getProviderResponse(String fileName) throws IOException, URISyntaxException {

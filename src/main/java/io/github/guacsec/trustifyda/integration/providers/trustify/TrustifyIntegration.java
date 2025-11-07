@@ -17,6 +17,13 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AggregationStrategies;
@@ -24,9 +31,17 @@ import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
+import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.ProviderHealthCheckResult;
+import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
+import io.github.guacsec.trustifyda.model.trustedcontent.Recommendations;
+import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
+import io.github.guacsec.trustifyda.model.trustedcontent.Vulnerability;
 import io.github.guacsec.trustifyda.model.trustify.ProviderConfig;
 import io.github.guacsec.trustifyda.model.trustify.ProvidersConfig;
 import io.github.guacsec.trustifyda.service.DynamicOidcClientService;
@@ -57,7 +72,14 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Inject VulnerabilityProvider vulnerabilityProvider;
   @Inject TrustifyResponseHandler responseHandler;
   @Inject TrustifyRequestBuilder requestBuilder;
+  @Inject ObjectMapper mapper;
+  @Inject UBIRecommendation ubiRecommendation;
   @Inject MeterRegistry registry;
+
+  // Other values are Affected and UnderInvestigation
+  // see https://www.cisa.gov/sites/default/files/2023-01/VEX_Status_Justification_Jun22.pdf
+  private static final List<String> FIXED_STATUSES = List.of("NotAffected", "Fixed");
+  private static final String OCI_PURL_TYPE = "oci";
 
   @Override
   public void configure() throws Exception {
@@ -89,17 +111,41 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
             .timeoutEnabled(true)
             .timeoutDuration(TIMEOUT_DURATION)
           .end()
+
           .to(direct("trustifyRequest"))
         .onFallback()
           .process(responseHandler::processResponseError);
+
+    from(direct("recommendations"))
+      .routeId("recommendations")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .choice()
+        .when(exchangeProperty(Constants.RECOMMEND_PARAM).isEqualTo(Boolean.TRUE))
+          .process(this::processRecommendationsRequest)
+          .toD("${exchangeProperty.trustifyUrl}")
+          .process(this::processRecommendations)
+      .endChoice()
+      
+      .end();
+
+    from(direct("vulnerabilities"))
+      .routeId("vulnerabilities")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .process(this::processVulnerabilitiesRequest)
+      .toD("${exchangeProperty.trustifyUrl}")
+      .transform(method(responseHandler, "responseToIssues"))
+      .end();
     
     from(direct("trustifyRequest"))
       .routeId("trustifyRequest")
-      .routePolicy(new ProviderRoutePolicy(registry))
-      .process(this::processRequest)
+      .process(this::setProviderConfig)
       .process(this::addAuthentication)
-      .toD("${exchangeProperty.trustifyUrl}")
-      .transform(method(responseHandler, "responseToIssues"));
+      .multicast(new RecommendationAggregation())
+        .stopOnException()
+        .parallelProcessing()
+          .to(direct("vulnerabilities"))
+          .to(direct("recommendations"))
+      .end();
 
     // Generic health check route
     from(direct("trustifyHealthCheck"))
@@ -132,7 +178,12 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     // fmt:on
   }
 
-  private void processRequest(Exchange exchange) {
+  private void setProviderConfig(Exchange exchange) {
+    var config = exchange.getProperty(Constants.PROVIDER_CONFIG_PROPERTY, ProviderConfig.class);
+    exchange.setProperty(TRUSTIFY_URL_PROPERTY, config.host());
+  }
+
+  private void processVulnerabilitiesRequest(Exchange exchange) {
     Message message = exchange.getMessage();
     message.removeHeader(Exchange.HTTP_RAW_QUERY);
     message.removeHeader(Exchange.HTTP_QUERY);
@@ -142,8 +193,18 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
     message.setHeader(Exchange.HTTP_PATH, Constants.TRUSTIFY_ANALYZE_PATH);
-    var config = exchange.getProperty(Constants.PROVIDER_CONFIG_PROPERTY, ProviderConfig.class);
-    exchange.setProperty(TRUSTIFY_URL_PROPERTY, config.host());
+  }
+
+  private void processRecommendationsRequest(Exchange exchange) {
+    Message message = exchange.getMessage();
+    message.removeHeader(Exchange.HTTP_RAW_QUERY);
+    message.removeHeader(Exchange.HTTP_QUERY);
+    message.removeHeader(Exchange.HTTP_URI);
+    message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+
+    message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
+    message.setHeader(Exchange.HTTP_PATH, Constants.TRUSTIFY_RECOMMEND_PATH);
   }
 
   private void processHealthRequest(Exchange exchange) {
@@ -264,5 +325,70 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       }
     }
     return null;
+  }
+
+  /**
+   * Processes recommendations response from Trusted Content API. Converts the JSON response to a
+   * map of PackageRef to IndexedRecommendation.
+   */
+  public void processRecommendations(Exchange exchange) throws IOException {
+    byte[] tcResponse = exchange.getIn().getBody(byte[].class);
+    String sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
+
+    var recommendations = mapper.readValue(tcResponse, Recommendations.class);
+    var mergedRecommendations = indexRecommendations(recommendations);
+    mergedRecommendations.putAll(getUBIRecommendation(sbomId));
+
+    exchange.getMessage().setBody(mergedRecommendations);
+  }
+
+  private Map<PackageRef, IndexedRecommendation> indexRecommendations(
+      Recommendations recommendations) {
+    Map<PackageRef, IndexedRecommendation> result = new HashMap<>();
+    if (recommendations == null) {
+      return result;
+    }
+    recommendations.getMatchings().entrySet().stream()
+        .filter(e -> !e.getValue().isEmpty())
+        .forEach(
+            e -> {
+              List<TcRecommendation> tcRecommendations = e.getValue();
+              PackageRef pkgRef = tcRecommendations.get(0).packageName();
+              Map<String, Vulnerability> vulnerabilities =
+                  tcRecommendations.stream()
+                      .map(TcRecommendation::vulnerabilities)
+                      .flatMap(List::stream)
+                      .collect(
+                          Collectors.toMap(
+                              v -> v.getId().toUpperCase(), v -> v, this::filterFixed));
+              result.put(
+                  new PackageRef(e.getKey()), new IndexedRecommendation(pkgRef, vulnerabilities));
+            });
+    return result;
+  }
+
+  private Map<PackageRef, IndexedRecommendation> getUBIRecommendation(String sbomId) {
+    if (sbomId == null) {
+      return Collections.emptyMap();
+    }
+
+    var pkgRef = new PackageRef(sbomId);
+    if (!OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
+      return Collections.emptyMap();
+    }
+
+    var recommendedUBIPurl = ubiRecommendation.mapping().get(pkgRef.name());
+    if (recommendedUBIPurl != null) {
+      var recommendation = new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null);
+      return Collections.singletonMap(pkgRef, recommendation);
+    }
+    return Collections.emptyMap();
+  }
+
+  private Vulnerability filterFixed(Vulnerability a, Vulnerability b) {
+    if (a.getStatus() != null && !FIXED_STATUSES.contains(a.getStatus())) {
+      return a;
+    }
+    return b;
   }
 }

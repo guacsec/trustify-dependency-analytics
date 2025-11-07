@@ -44,7 +44,7 @@
         ],
         "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar": [
             {
-                "package": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.8.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2020-36518",
@@ -68,26 +68,6 @@
                     },
                     {
                         "id": "cve-2022-45787",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.8.Final-redhat-00006?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-44487",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.8.Final-redhat-00005?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-4853",
                         "status": "NotAffected",
                         "justification": "VulnerableCodeNotPresent"
                     }
@@ -96,7 +76,7 @@
         ],
         "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": [
             {
-                "package": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2020-36518",
@@ -124,31 +104,11 @@
                         "justification": "VulnerableCodeNotPresent"
                     }
                 ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00005?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-4853",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-44487",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
             }
         ],
         "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar": [
             {
-                "package": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2020-36518",
@@ -195,7 +155,7 @@
         ],
         "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar": [
             {
-                "package": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2020-36518",
@@ -219,26 +179,6 @@
                     },
                     {
                         "id": "cve-2022-45787",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00005?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-4853",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-44487",
                         "status": "NotAffected",
                         "justification": "VulnerableCodeNotPresent"
                     }
@@ -247,7 +187,7 @@
         ],
         "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar": [
             {
-                "package": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final-redhat-00004?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2020-36518",
@@ -271,26 +211,6 @@
                     },
                     {
                         "id": "cve-2022-45787",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00005?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-4853",
-                        "status": "NotAffected",
-                        "justification": "VulnerableCodeNotPresent"
-                    }
-                ]
-            },
-            {
-                "package": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
-                "vulnerabilities": [
-                    {
-                        "id": "cve-2023-44487",
                         "status": "NotAffected",
                         "justification": "VulnerableCodeNotPresent"
                     }
@@ -341,7 +261,7 @@
         ],
         "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar": [
             {
-                "package": "pkg:maven/org.postgresql/postgresql@42.5.1.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+                "package": "pkg:maven/org.postgresql/postgresql@42.5.0.redhat-00001?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
                 "vulnerabilities": [
                     {
                         "id": "cve-2023-2455",

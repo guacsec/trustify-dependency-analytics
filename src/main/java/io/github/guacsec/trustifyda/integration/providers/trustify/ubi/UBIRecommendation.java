@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.github.guacsec.trustifyda.integration.trustedcontent.ubi;
+package io.github.guacsec.trustifyda.integration.providers.trustify.ubi;
 
 import java.util.Map;
 

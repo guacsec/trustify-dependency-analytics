@@ -56,7 +56,6 @@ import io.github.guacsec.trustifyda.integration.providers.ProviderAggregationStr
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
 import io.github.guacsec.trustifyda.integration.sbom.SbomParser;
 import io.github.guacsec.trustifyda.integration.sbom.SbomParserFactory;
-import io.github.guacsec.trustifyda.integration.trustedcontent.TcResponseAggregation;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
@@ -81,8 +80,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   @Inject VulnerabilityProvider vulnerabilityProvider;
 
   @Inject MonitoringProcessor monitoringProcessor;
-
-  @Inject TcResponseAggregation tcResponseAggregation;
 
   @Inject ObjectMapper mapper;
 
@@ -226,7 +223,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("analyzeSbom"))
       .routeId("analyzeSbom")
-      .enrich(direct("getTrustedContent"), tcResponseAggregation)
       .to(direct("findVulnerabilities"))
       .transform().method(ProviderAggregationStrategy.class, "toReport");
 

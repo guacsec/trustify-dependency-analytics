@@ -52,7 +52,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
   private static final String CYCLONEDX = "cyclonedx";
 
   @Test
-  public void testHtmlWithoutToken() throws IOException {
+  public void testHtml() throws IOException {
     stubAllProviders();
 
     String body =
@@ -291,17 +291,6 @@ public class HtmlReportTest extends AbstractAnalysisTest {
       return tbody.getHtmlPageOrNull();
     }
     HtmlButton button = td.getFirstByXPath("./button");
-
-    // Debug: Print button details
-    System.err.println(
-        "*** DEBUG: Found button: "
-            + button.getAttribute("id")
-            + ", aria-expanded: "
-            + button.getAttribute("aria-expanded")
-            + ", class: "
-            + button.getAttribute("class")
-            + " ***");
-
     return click(webClient, button);
   }
 

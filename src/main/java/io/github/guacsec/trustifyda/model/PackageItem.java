@@ -17,8 +17,9 @@
 
 package io.github.guacsec.trustifyda.model;
 
-import java.util.Map;
+import java.util.List;
 
-import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
+import io.github.guacsec.trustifyda.api.v5.Issue;
+import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
 
-public record ProviderResponse(Map<String, PackageItem> pkgItems, ProviderStatus status) {}
+public record PackageItem(String packageRef, TcRecommendation recommendation, List<Issue> issues) {}

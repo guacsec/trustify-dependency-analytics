@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -40,22 +42,17 @@ import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
-import io.github.guacsec.trustifyda.api.v5.Remediation;
-import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
 import io.github.guacsec.trustifyda.api.v5.TransitiveDependencyReport;
-import io.github.guacsec.trustifyda.api.v5.UnscannedDependency;
 import io.github.guacsec.trustifyda.config.exception.PackageValidationException;
 import io.github.guacsec.trustifyda.config.exception.UnexpectedProviderException;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.CvssScoreComparable.DependencyScoreComparator;
 import io.github.guacsec.trustifyda.model.CvssScoreComparable.TransitiveScoreComparator;
 import io.github.guacsec.trustifyda.model.DependencyTree;
+import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.TrustedContentResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.Vulnerability;
 import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -87,46 +84,33 @@ public abstract class ProviderResponseHandler {
       return newExchange;
     }
     if (oldExchange.status() != null && !Boolean.TRUE.equals(oldExchange.status().getOk())) {
-      if (newExchange.unscanned() != null) {
-        if (oldExchange.unscanned() == null) {
-          return new ProviderResponse(
-              oldExchange.issues(), oldExchange.status(), newExchange.unscanned());
-        } else {
-          oldExchange.unscanned().addAll(newExchange.unscanned());
-        }
-      }
       return oldExchange;
     }
-    var exchange = new ProviderResponse(new HashMap<>(), oldExchange.status(), new ArrayList<>());
-    if (oldExchange.unscanned() != null) {
-      exchange.unscanned().addAll(oldExchange.unscanned());
+    var exchange = new ProviderResponse(new HashMap<>(), oldExchange.status());
+
+    if (oldExchange.pkgItems() != null) {
+      exchange.pkgItems().putAll(oldExchange.pkgItems());
     }
-    if (newExchange.unscanned() != null) {
-      exchange.unscanned().addAll(newExchange.unscanned());
-    }
-    if (oldExchange.issues() != null) {
-      exchange.issues().putAll(oldExchange.issues());
-    }
-    if (newExchange.issues() != null) {
+    if (newExchange.pkgItems() != null) {
       exchange
-          .issues()
+          .pkgItems()
           .entrySet()
           .forEach(
               e -> {
-                var issues = newExchange.issues().get(e.getKey());
-                if (issues != null) {
-                  e.getValue().addAll(issues);
+                var item = newExchange.pkgItems().get(e.getKey());
+                if (item != null) {
+                  e.getValue().issues().addAll(item.issues());
                 }
               });
 
-      newExchange.issues().keySet().stream()
-          .filter(k -> !exchange.issues().keySet().contains(k))
+      newExchange.pkgItems().keySet().stream()
+          .filter(k -> !exchange.pkgItems().keySet().contains(k))
           .forEach(
               k -> {
-                exchange.issues().put(k, newExchange.issues().get(k));
+                exchange.pkgItems().put(k, newExchange.pkgItems().get(k));
               });
     } else if (Boolean.FALSE.equals(newExchange.status().getOk())) {
-      return new ProviderResponse(exchange.issues(), newExchange.status(), exchange.unscanned());
+      return new ProviderResponse(exchange.pkgItems(), newExchange.status());
     }
     return exchange;
   }
@@ -188,7 +172,7 @@ public abstract class ProviderResponseHandler {
           .code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
       LOGGER.warn("Unable to process request to: {}", providerName, cause);
     }
-    ProviderResponse response = new ProviderResponse(null, status, null);
+    ProviderResponse response = new ProviderResponse(null, status);
     monitoringProcessor.processProviderError(exchange, exception, providerName);
     exchange.getMessage().setBody(response);
   }
@@ -239,102 +223,143 @@ public abstract class ProviderResponseHandler {
 
   public ProviderResponse emptyResponse(
       @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree) {
-    return new ProviderResponse(Collections.emptyMap(), null, null);
+    return new ProviderResponse(Collections.emptyMap(), null);
   }
 
-  public ProviderResponse unscannedResponse(
-      @ExchangeProperty(Constants.UNSCANNED_REFS_PROPERTY) List<UnscannedDependency> unscanned) {
-    return new ProviderResponse(Collections.emptyMap(), null, unscanned);
-  }
-
-  private Map<String, Map<String, List<Issue>>> splitIssuesBySource(
-      Map<String, List<Issue>> issuesData) {
-    Map<String, Map<String, List<Issue>>> sourcesIssues = new HashMap<>();
-    if (issuesData == null) {
-      return sourcesIssues;
+  /**
+   * Groups PackageItems by source from their issues. Each PackageItem can have issues from
+   * different sources, so we group them accordingly while preserving recommendations.
+   */
+  private Map<String, Map<String, PackageItem>> groupPackageItemsBySource(
+      Map<String, PackageItem> pkgItems, String defaultSource) {
+    Map<String, Map<String, PackageItem>> sourcesData = new HashMap<>();
+    if (pkgItems == null) {
+      return sourcesData;
     }
-    issuesData
-        .entrySet()
-        .forEach(
-            e -> {
-              e.getValue()
-                  .forEach(
-                      i -> {
-                        var issues = sourcesIssues.get(i.getSource());
-                        if (issues == null) {
-                          issues = new HashMap<>();
-                          sourcesIssues.put(i.getSource(), issues);
+
+    var recommendations =
+        pkgItems.values().stream()
+            .filter(item -> item.recommendation() != null)
+            .collect(Collectors.toMap(PackageItem::packageRef, PackageItem::recommendation));
+
+    pkgItems.forEach(
+        (packageRef, packageItem) -> {
+          // If there are issues, group by their source
+          if (packageItem.issues() != null && !packageItem.issues().isEmpty()) {
+            packageItem
+                .issues()
+                .forEach(
+                    issue -> {
+                      String source = issue.getSource();
+                      if (source == null) {
+                        return;
+                      }
+                      var sourceItems = sourcesData.computeIfAbsent(source, k -> new HashMap<>());
+                      // Get or create PackageItem for this source and package
+                      var existingItem = sourceItems.get(packageRef);
+                      var recommendation = recommendations.get(packageRef);
+                      if (existingItem == null) {
+                        // Create new PackageItem with this issue and the recommendation
+                        sourceItems.put(
+                            packageRef,
+                            new PackageItem(
+                                packageRef, recommendation, new ArrayList<>(List.of(issue))));
+                      } else {
+                        // Add issue to existing PackageItem if not already present
+                        if (!existingItem.issues().contains(issue)) {
+                          var updatedIssues = new ArrayList<>(existingItem.issues());
+                          updatedIssues.add(issue);
+
+                          sourceItems.put(
+                              packageRef,
+                              new PackageItem(packageRef, recommendation, updatedIssues));
                         }
-                        var depIssues = issues.get(e.getKey());
-                        if (depIssues == null) {
-                          depIssues = new ArrayList<>();
-                          issues.put(e.getKey(), depIssues);
-                        }
-                        depIssues.add(i);
-                      });
-            });
-    return sourcesIssues;
+                      }
+                    });
+          }
+        });
+    if (sourcesData.isEmpty() && !recommendations.isEmpty()) {
+      sourcesData.put(defaultSource, new HashMap<>());
+    }
+    sourcesData.forEach(
+        (source, items) -> {
+          recommendations.forEach(
+              (packageRef, recommendation) -> {
+                if (!items.containsKey(packageRef)) {
+                  items.put(
+                      packageRef,
+                      new PackageItem(packageRef, recommendation, Collections.emptyList()));
+                }
+              });
+        });
+    return sourcesData;
   }
 
   public ProviderReport buildReport(
       Exchange exchange,
       @Body ProviderResponse response,
-      @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree,
-      @ExchangeProperty(Constants.TRUSTED_CONTENT_PROVIDER) TrustedContentResponse tcResponse)
+      @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree)
       throws IOException {
     if (response.status() != null) {
       return new ProviderReport().status(response.status()).sources(Collections.emptyMap());
     }
     var providerName = getProviderName(exchange);
-    var sourcesIssues = splitIssuesBySource(response.issues());
-    if (sourcesIssues.isEmpty()
-        && (!tcResponse.recommendations().isEmpty()
-            || (response.unscanned() != null && !response.unscanned().isEmpty()))) {
-      sourcesIssues.put(providerName, Collections.emptyMap());
-    }
+    var sourcesData = groupPackageItemsBySource(response.pkgItems(), providerName);
+
     Map<String, Source> reports = new HashMap<>();
-    sourcesIssues
+    sourcesData
         .entrySet()
         .forEach(
-            k ->
-                reports.put(
-                    k.getKey(),
-                    buildReportForSource(k.getValue(), tree, tcResponse, response.unscanned())));
+            entry -> reports.put(entry.getKey(), buildReportForSource(entry.getValue(), tree)));
     return new ProviderReport().status(defaultOkStatus(providerName)).sources(reports);
   }
 
-  private Source buildReportForSource(
-      Map<String, List<Issue>> issuesData,
-      DependencyTree tree,
-      TrustedContentResponse tcResponse,
-      List<UnscannedDependency> unscanned) {
+  private Source buildReportForSource(Map<String, PackageItem> pkgItemsData, DependencyTree tree) {
     List<DependencyReport> sourceReport = new ArrayList<>();
+    Set<String> processedRefs = new HashSet<>();
+
+    // Process packages from the dependency tree
     tree.dependencies().entrySet().stream()
         .forEach(
             depEntry -> {
-              var recommendation = tcResponse.recommendations().get(depEntry.getKey());
-              var issues = getIssues(depEntry.getKey(), issuesData, recommendation);
-              var directReport = new DependencyReport().ref(depEntry.getKey());
-              directReport.issues(
-                  issues.stream()
-                      .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
-                      .collect(Collectors.toList()));
-              if (recommendation != null
-                  && !depEntry.getKey().isCoordinatesEquals(recommendation.packageName())) {
-                directReport.recommendation(recommendation.packageName());
+              var packageRef = depEntry.getKey();
+              processedRefs.add(packageRef.ref());
+              var packageItem = getPackageItem(packageRef, pkgItemsData);
+              var directReport = new DependencyReport().ref(packageRef);
+
+              // Set issues if available
+              if (packageItem != null
+                  && packageItem.issues() != null
+                  && !packageItem.issues().isEmpty()) {
+                var issues =
+                    packageItem.issues().stream()
+                        .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+                        .collect(Collectors.toList());
+                directReport.issues(issues);
+                directReport.setHighestVulnerability(issues.stream().findFirst().orElse(null));
               }
-              directReport.setHighestVulnerability(
-                  directReport.getIssues().stream().findFirst().orElse(null));
+
+              // Set recommendation if available (extract PackageRef from TcRecommendation)
+              if (packageItem != null
+                  && packageItem.recommendation() != null
+                  && packageItem.recommendation().packageName() != null) {
+                directReport.recommendation(packageItem.recommendation().packageName());
+              }
+
               List<TransitiveDependencyReport> transitiveReports =
                   depEntry.getValue().transitive().stream()
                       .map(
                           t -> {
-                            var tRecommendation = tcResponse.recommendations().get(t);
-                            var transitiveIssues = getIssues(t, issuesData, tRecommendation);
-                            transitiveIssues =
-                                transitiveIssues.stream()
-                                    .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
-                                    .collect(Collectors.toList());
+                            var transitiveItem = getPackageItem(t, pkgItemsData);
+                            List<Issue> transitiveIssues = Collections.emptyList();
+                            if (transitiveItem != null
+                                && transitiveItem.issues() != null
+                                && !transitiveItem.issues().isEmpty()) {
+                              transitiveIssues =
+                                  transitiveItem.issues().stream()
+                                      .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+                                      .collect(Collectors.toList());
+                            }
                             var highestTransitive = transitiveIssues.stream().findFirst();
                             if (highestTransitive.isPresent()) {
                               if (directReport.getHighestVulnerability() == null
@@ -343,10 +368,14 @@ public abstract class ProviderResponseHandler {
                                 directReport.setHighestVulnerability(highestTransitive.get());
                               }
                             }
-                            return new TransitiveDependencyReport()
-                                .ref(t)
-                                .issues(transitiveIssues)
-                                .highestVulnerability(highestTransitive.orElse(null));
+                            var transitiveReport =
+                                new TransitiveDependencyReport()
+                                    .ref(t)
+                                    .issues(transitiveIssues)
+                                    .highestVulnerability(highestTransitive.orElse(null));
+                            // Note: TransitiveDependencyReport doesn't have a recommendation field
+                            // Recommendations are only set on direct dependencies
+                            return transitiveReport;
                           })
                       .filter(transitiveReport -> !transitiveReport.getIssues().isEmpty())
                       .collect(Collectors.toList());
@@ -358,77 +387,47 @@ public abstract class ProviderResponseHandler {
               }
             });
 
+    // Process packages with recommendations-only that are not in the tree
+    // (these are recommendations for packages that might not be direct dependencies)
+    if (pkgItemsData != null) {
+      pkgItemsData.entrySet().stream()
+          .filter(
+              entry -> {
+                var packageItem = entry.getValue();
+                // Include if it has a recommendation but no issues and wasn't already processed
+                return !processedRefs.contains(entry.getKey())
+                    && (packageItem.issues() == null || packageItem.issues().isEmpty())
+                    && packageItem.recommendation() != null
+                    && packageItem.recommendation().packageName() != null;
+              })
+          .forEach(
+              entry -> {
+                try {
+                  var packageRef = new PackageRef(entry.getKey());
+                  var packageItem = entry.getValue();
+                  var directReport = new DependencyReport().ref(packageRef);
+                  directReport.recommendation(packageItem.recommendation().packageName());
+                  sourceReport.add(directReport);
+                } catch (Exception e) {
+                  // Skip if packageRef cannot be created from the string
+                  // This shouldn't happen but handle gracefully
+                }
+              });
+    }
+
     sourceReport.sort(Collections.reverseOrder(new DependencyScoreComparator()));
-    var summary = buildSummary(issuesData, tree, sourceReport, unscanned);
-    return new Source().summary(summary).dependencies(sourceReport).unscanned(unscanned);
+    var summary = buildSummary(pkgItemsData, tree, sourceReport);
+    return new Source().summary(summary).dependencies(sourceReport);
   }
 
-  private List<Issue> getIssues(
-      PackageRef ref, Map<String, List<Issue>> issuesData, IndexedRecommendation recommendation) {
-    var providerIssues = issuesData.get(ref.ref());
-    if (providerIssues == null) {
-      return Collections.emptyList();
-    }
-    if (recommendation == null) {
-      return providerIssues;
-    }
-    return providerIssues.stream()
-        .map(i -> setRemediation(i, recommendation))
-        .filter(i -> !isAffectedTrustedContent(ref, i, recommendation))
-        .toList();
-  }
-
-  private boolean isAffectedTrustedContent(
-      PackageRef ref, Issue issue, IndexedRecommendation recommendation) {
-    if (recommendation == null) {
-      return false;
-    }
-    if (!ref.isCoordinatesEquals(recommendation.packageName())) {
-      return false;
-    }
-    Vulnerability vuln;
-    if (issue.getCves() == null || issue.getCves().isEmpty()) {
-      vuln = recommendation.vulnerabilities().get(issue.getId());
-    } else {
-      vuln = recommendation.vulnerabilities().get(issue.getCves().get(0));
-    }
-    return !isAffected(vuln);
-  }
-
-  private Issue setRemediation(Issue i, IndexedRecommendation recommendation) {
-    if (i.getCves() == null || i.getCves().isEmpty()) {
-      return i;
-    }
-    var cve = i.getCves().get(0);
-    var vuln = recommendation.vulnerabilities().get(cve);
-    if (isAffected(vuln)) {
-      return i;
-    }
-    if (i.getRemediation() == null) {
-      i.remediation(new Remediation());
-    }
-
-    i.getRemediation()
-        .setTrustedContent(
-            new RemediationTrustedContent()
-                .justification(vuln.getJustification())
-                .status(vuln.getStatus())
-                .ref(recommendation.packageName()));
-    return i;
-  }
-
-  private boolean isAffected(Vulnerability vuln) {
-    if (vuln == null || vuln.getStatus() == null) {
-      return true;
-    }
-    return !FIXED_STATUSES.contains(vuln.getStatus());
+  private PackageItem getPackageItem(PackageRef ref, Map<String, PackageItem> pkgItemsData) {
+    return pkgItemsData.get(ref.ref());
   }
 
   private SourceSummary buildSummary(
-      Map<String, List<Issue>> issuesData,
+      Map<String, PackageItem> issuesData,
       DependencyTree tree,
-      List<DependencyReport> sourceReport,
-      List<UnscannedDependency> unscanned) {
+      List<DependencyReport> sourceReport) {
     var counter = new VulnerabilityCounter();
     var directRefs =
         tree.dependencies().keySet().stream().map(PackageRef::ref).collect(Collectors.toSet());
@@ -438,34 +437,39 @@ public abstract class ProviderResponseHandler {
     Long recommendationsCount =
         sourceReport.stream().filter(s -> s.getRecommendation() != null).count();
     counter.recommendations.set(recommendationsCount.intValue());
-    counter.unscanned.set(Optional.ofNullable(unscanned).map(List::size).orElse(0));
     return counter.getSummary();
   }
 
-  private void incrementCounter(
-      List<Issue> issues, VulnerabilityCounter counter, boolean isDirect) {
-    if (!issues.isEmpty()) {
+  private void incrementCounter(PackageItem item, VulnerabilityCounter counter, boolean isDirect) {
+    if (item != null && !item.issues().isEmpty()) {
       counter.dependencies.incrementAndGet();
     }
-    issues.forEach(
-        i -> {
-          var vulnerabilities = countVulnerabilities(i);
-          switch (i.getSeverity()) {
-            case CRITICAL -> counter.critical.addAndGet(vulnerabilities);
-            case HIGH -> counter.high.addAndGet(vulnerabilities);
-            case MEDIUM -> counter.medium.addAndGet(vulnerabilities);
-            case LOW -> counter.low.addAndGet(vulnerabilities);
-          }
-          counter.total.addAndGet(vulnerabilities);
-          if (isDirect) {
-            counter.direct.addAndGet(vulnerabilities);
-          }
-          if (i.getRemediation() != null
-              && i.getRemediation().getTrustedContent() != null
-              && i.getRemediation().getTrustedContent().getRef() != null) {
-            counter.remediations.incrementAndGet();
-          }
-        });
+    if (item.issues() == null) {
+      return;
+    }
+    item.issues().stream()
+        .filter(Objects::nonNull)
+        .forEach(
+            i -> {
+              var vulnerabilities = countVulnerabilities(i);
+              if (i.getSeverity() != null) {
+                switch (i.getSeverity()) {
+                  case CRITICAL -> counter.critical.addAndGet(vulnerabilities);
+                  case HIGH -> counter.high.addAndGet(vulnerabilities);
+                  case MEDIUM -> counter.medium.addAndGet(vulnerabilities);
+                  case LOW -> counter.low.addAndGet(vulnerabilities);
+                }
+              }
+              counter.total.addAndGet(vulnerabilities);
+              if (isDirect) {
+                counter.direct.addAndGet(vulnerabilities);
+              }
+              if (i.getRemediation() != null
+                  && i.getRemediation().getTrustedContent() != null
+                  && i.getRemediation().getTrustedContent().getRef() != null) {
+                counter.remediations.incrementAndGet();
+              }
+            });
   }
 
   // The number of vulnerabilities is the total count of public CVEs
@@ -489,12 +493,10 @@ public abstract class ProviderResponseHandler {
       AtomicInteger direct,
       AtomicInteger dependencies,
       AtomicInteger remediations,
-      AtomicInteger recommendations,
-      AtomicInteger unscanned) {
+      AtomicInteger recommendations) {
 
     VulnerabilityCounter() {
       this(
-          new AtomicInteger(),
           new AtomicInteger(),
           new AtomicInteger(),
           new AtomicInteger(),
@@ -517,9 +519,7 @@ public abstract class ProviderResponseHandler {
           .transitive(total.get() - direct.get())
           .dependencies(dependencies.get())
           .remediations(remediations.get())
-          // Will be calculated later when TC recommendations will be added.
-          .recommendations(recommendations.get())
-          .unscanned(unscanned.get());
+          .recommendations(recommendations.get());
     }
   }
 }

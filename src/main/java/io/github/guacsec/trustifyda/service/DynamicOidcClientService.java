@@ -200,7 +200,7 @@ public class DynamicOidcClientService {
 
     } catch (IOException | InterruptedException e) {
       LOGGER.error(
-          "Token introspection failed for provider " + providerKey + ": " + e.getMessage());
+          "Token introspection failed for provider " + providerKey + ": " + e.getMessage(), e);
       throw new ServerErrorException(
           "Token introspection failed for provider " + providerKey + ": " + e.getMessage(),
           Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());

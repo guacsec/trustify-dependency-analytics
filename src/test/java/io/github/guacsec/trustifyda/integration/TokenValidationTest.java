@@ -26,12 +26,15 @@ import org.hamcrest.text.MatchesPattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @QuarkusTest
+@QuarkusTestResource(OidcWiremockExtension.class)
 public class TokenValidationTest extends AbstractAnalysisTest {
 
   @BeforeEach

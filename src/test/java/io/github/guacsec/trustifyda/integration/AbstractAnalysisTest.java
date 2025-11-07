@@ -50,8 +50,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 import io.github.guacsec.trustifyda.extensions.InjectWireMock;
 import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
-import io.github.guacsec.trustifyda.extensions.WiremockExtension;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.config.DecoderConfig;
@@ -60,7 +58,8 @@ import io.restassured.config.EncoderConfig;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
-@QuarkusTestResource(WiremockExtension.class)
+// Note: Subclasses should specify their own @QuarkusTestResource
+// (e.g., OidcWiremockExtension.class for tests that need OIDC)
 public abstract class AbstractAnalysisTest {
 
   public static final String OK_TOKEN = "test-token";
@@ -176,7 +175,7 @@ public abstract class AbstractAnalysisTest {
   protected void stubAllProviders() {
     stubOsvRequests();
     stubTrustifyRequests();
-    stubTrustedContentRequests();
+    stubRecommendRequests();
   }
 
   protected void verifyProviders(Collection<String> providers, Map<String, String> credentials) {
@@ -185,21 +184,19 @@ public abstract class AbstractAnalysisTest {
             p -> {
               verifyTrustifyRequest(credentials.get(Constants.TRUSTIFY_TOKEN_HEADER));
             });
-    verifyTrustedContentRequest();
+    verifyRecommendRequest();
   }
 
-  protected void stubTrustedContentRequests() {
+  protected void stubRecommendRequests() {
     server.stubFor(
-        post(Constants.TRUSTED_CONTENT_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
             .willReturn(
                 aResponse()
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("trustedcontent/empty_report.json")));
     server.stubFor(
-        post(Constants.TRUSTED_CONTENT_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
             .withRequestBody(
                 equalToJson(
                     loadFileAsString("__files/trustedcontent/maven_request.json"), true, false))
@@ -209,8 +206,7 @@ public abstract class AbstractAnalysisTest {
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("trustedcontent/maven_report.json")));
     server.stubFor(
-        post(Constants.TRUSTED_CONTENT_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
             .withRequestBody(
                 equalToJson(
                     loadFileAsString("__files/trustedcontent/batch_request.json"), true, false))
@@ -329,7 +325,6 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubTokenValidationEndpoint() {
-
     server.stubFor(
         post(urlMatching(".*/realms/.*/token/introspect.*"))
             .withBasicAuth(OidcWiremockExtension.CLIENT_ID, OidcWiremockExtension.CLIENT_SECRET)
@@ -360,8 +355,8 @@ public abstract class AbstractAnalysisTest {
         + "&token_type_hint=access_token";
   }
 
-  protected void verifyTrustedContentRequest() {
-    server.verify(1, postRequestedFor(urlEqualTo(Constants.TRUSTED_CONTENT_PATH)));
+  protected void verifyRecommendRequest() {
+    server.verify(1, postRequestedFor(urlEqualTo(Constants.TRUSTIFY_RECOMMEND_PATH)));
   }
 
   protected void verifyOsvRequest() {
@@ -377,8 +372,8 @@ public abstract class AbstractAnalysisTest {
     verifyNoInteractionsWithTrustify();
   }
 
-  protected void verifyNoInteractionsWithTrustedContent() {
-    server.verify(0, postRequestedFor(urlEqualTo(Constants.TRUSTED_CONTENT_PATH)));
+  protected void verifyNoInteractionsWithRecommend() {
+    server.verify(0, postRequestedFor(urlEqualTo(Constants.TRUSTIFY_RECOMMEND_PATH)));
   }
 
   protected void verifyNoInteractionsWithOsv() {

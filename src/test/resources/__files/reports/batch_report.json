@@ -6,15 +6,6 @@
       "transitive": 7
     },
     "providers": {
-      "trusted-content": {
-        "status": {
-          "ok": true,
-          "name": "trusted-content",
-          "code": 200,
-          "message": "OK"
-        },
-        "sources": {}
-      },
       "osv": {
         "status": {
           "ok": true,
@@ -33,14 +24,13 @@
               "high": 3,
               "medium": 2,
               "low": 0,
-              "remediations": 2,
-              "recommendations": 2,
+              "remediations": 0,
+              "recommendations": 0,
               "unscanned": 0
             },
             "dependencies": [
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
@@ -69,12 +59,7 @@
                         "remediation": {
                           "fixedIn": [
                             "2.16.8.Final"
-                          ],
-                          "trustedContent": {
-                            "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                            "status": "NotAffected",
-                            "justification": "VulnerableCodeNotPresent"
-                          }
+                          ]
                         }
                       }
                     ],
@@ -102,12 +87,7 @@
                       "remediation": {
                         "fixedIn": [
                           "2.16.8.Final"
-                        ],
-                        "trustedContent": {
-                          "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                          "status": "NotAffected",
-                          "justification": "VulnerableCodeNotPresent"
-                        }
+                        ]
                       }
                     }
                   },
@@ -193,12 +173,7 @@
                           "fixedIn": [
                             "2.13.2.1",
                             "2.12.6.1"
-                          ],
-                          "trustedContent": {
-                            "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                            "status": "NotAffected",
-                            "justification": "VulnerableCodeNotPresent"
-                          }
+                          ]
                         }
                       }
                     ],
@@ -232,7 +207,6 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2023-2974",
                   "title": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
@@ -257,18 +231,12 @@
                   "remediation": {
                     "fixedIn": [
                       "2.16.8.Final"
-                    ],
-                    "trustedContent": {
-                      "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
-                      "status": "NotAffected",
-                      "justification": "VulnerableCodeNotPresent"
-                    }
+                    ]
                   }
                 }
               },
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
@@ -336,7 +304,6 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2022-41946",
                   "title": "TemporaryFolder on unix-like systems does not limit access to created files",
@@ -391,13 +358,12 @@
               "medium": 2,
               "low": 0,
               "remediations": 2,
-              "recommendations": 2,
+              "recommendations": 6,
               "unscanned": 0
             },
             "dependencies": [
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
@@ -438,7 +404,7 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2024-1597",
                   "title": "pgjdbc SQL Injection via line comment generation",
@@ -453,7 +419,6 @@
               },
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
@@ -470,7 +435,7 @@
                         "unique": false,
                         "remediation": {
                           "trustedContent": {
-                            "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                            "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                             "status": "NotAffected",
                             "justification": "VulnerableCodeNotPresent"
                           }
@@ -511,7 +476,7 @@
                       "unique": false,
                       "remediation": {
                         "trustedContent": {
-                          "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                          "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                           "status": "NotAffected",
                           "justification": "VulnerableCodeNotPresent"
                         }
@@ -544,7 +509,7 @@
                         "unique": false,
                         "remediation": {
                           "trustedContent": {
-                            "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                            "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                             "status": "NotAffected",
                             "justification": "VulnerableCodeNotPresent"
                           }
@@ -564,7 +529,7 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2020-36518",
                   "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
@@ -577,12 +542,28 @@
                   "unique": false,
                   "remediation": {
                     "trustedContent": {
-                      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.4.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                       "status": "NotAffected",
                       "justification": "VulnerableCodeNotPresent"
                     }
                   }
                 }
+              },
+              {
+                "ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+                "recommendation": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3.redhat-00002?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
+                "recommendation": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2.redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+                "recommendation": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5.redhat-00003?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
               }
             ]
           },
@@ -597,13 +578,12 @@
               "medium": 0,
               "low": 0,
               "remediations": 0,
-              "recommendations": 2,
+              "recommendations": 7,
               "unscanned": 0
             },
             "dependencies": [
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
@@ -633,7 +613,7 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2024-1597",
                   "title": "pgjdbc SQL Injection via line comment generation",
@@ -648,7 +628,6 @@
               },
               {
                 "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-                "issues": [],
                 "transitive": [
                   {
                     "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
@@ -678,7 +657,7 @@
                     }
                   }
                 ],
-                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.8.Final-redhat-00006?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                 "highestVulnerability": {
                   "id": "CVE-2024-2700",
                   "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
@@ -690,6 +669,26 @@
                   ],
                   "unique": false
                 }
+              },
+              {
+                "ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+                "recommendation": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3.redhat-00002?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
+                "recommendation": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2.redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+                "recommendation": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+                "recommendation": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+              },
+              {
+                "ref": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+                "recommendation": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5.redhat-00003?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
               }
             ]
           }
@@ -704,15 +703,6 @@
       "transitive": 0
     },
     "providers": {
-      "trusted-content": {
-        "status": {
-          "ok": true,
-          "name": "trusted-content",
-          "code": 200,
-          "message": "OK"
-        },
-        "sources": {}
-      },
       "osv": {
         "status": {
           "ok": true,
@@ -740,15 +730,6 @@
       "transitive": 0
     },
     "providers": {
-      "trusted-content": {
-        "status": {
-          "ok": true,
-          "name": "trusted-content",
-          "code": 200,
-          "message": "OK"
-        },
-        "sources": {}
-      },
       "osv": {
         "status": {
           "ok": true,
@@ -756,31 +737,7 @@
           "code": 200,
           "message": "OK"
         },
-        "sources": {
-          "osv": {
-            "summary": {
-              "direct": 0,
-              "transitive": 0,
-              "total": 0,
-              "dependencies": 0,
-              "critical": 0,
-              "high": 0,
-              "medium": 0,
-              "low": 0,
-              "remediations": 0,
-              "recommendations": 1,
-              "unscanned": 0
-            },
-            "dependencies": [
-              {
-                "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
-                "issues": [],
-                "transitive": [],
-                "recommendation": "pkg:oci/ubi@sha256%3Af5983f7c7878cc9b26a3962be7756e3c810e9831b0b9f9613e6f6b445f884e74?arch=amd64&repository_url=registry.access.redhat.com%2Fubi9%2Fubi&tag=9.3-1552"
-              }
-            ]
-          }
-        }
+        "sources": {}
       },
       "trustify": {
         "status": {
@@ -807,7 +764,6 @@
             "dependencies": [
               {
                 "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
-                "issues": [],
                 "transitive": [],
                 "recommendation": "pkg:oci/ubi@sha256%3Af5983f7c7878cc9b26a3962be7756e3c810e9831b0b9f9613e6f6b445f884e74?arch=amd64&repository_url=registry.access.redhat.com%2Fubi9%2Fubi&tag=9.3-1552"
               }

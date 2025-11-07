@@ -57,7 +57,6 @@ public final class Constants {
   public static final String SPDX_MEDIATYPE_JSON = "application/vnd.spdx+json";
   public static final String CYCLONEDX_MEDIATYPE_JSON = "application/vnd.cyclonedx+json";
 
-  public static final String TRUSTED_CONTENT_PROVIDER = "trusted-content";
   public static final String OSV_PROVIDER = "osv";
 
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
@@ -70,7 +69,6 @@ public final class Constants {
   public static final String API_VERSION_PROPERTY = "apiVersion";
   public static final String GZIP_RESPONSE_PROPERTY = "gzipResponse";
   public static final String SBOM_ID_PROPERTY = "sbomId";
-  public static final String UNSCANNED_REFS_PROPERTY = "unscannedRefs";
   public static final String CACHED_RECOMMENDATIONS_PROPERTY = "missedRecommendations";
   public static final String PROVIDER_CONFIG_PROPERTY = "providerConfig";
   public static final String PROVIDERS_PROPERTY = "providers";
@@ -78,7 +76,7 @@ public final class Constants {
   public static final String OSV_NVD_PURLS_PATH = "/purls";
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
-  public static final String TRUSTED_CONTENT_PATH = "/recommend";
+  public static final String TRUSTIFY_RECOMMEND_PATH = "/api/v2/purl/recommend";
   public static final String TRUSTIFY_ANALYZE_PATH = "/api/v2/vulnerability/analyze";
   public static final String TRUSTIFY_HEALTH_PATH = "/.well-known/trustify";
 

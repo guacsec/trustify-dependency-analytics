@@ -41,6 +41,7 @@ public class OidcWiremockExtension extends WiremockExtension {
     stubTrustifyClientToken();
     var oidcConfig = new HashMap<>(base);
 
+    // Use the server's base URL for keycloak.url to ensure consistency
     oidcConfig.put("keycloak.url", server.baseUrl());
     return oidcConfig;
   }
@@ -129,5 +130,14 @@ public class OidcWiremockExtension extends WiremockExtension {
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
                     .withBody(openIdConfigJson)));
+  }
+
+  @Override
+  public void inject(TestInjector testInjector) {
+    // Override to inject this extension's server instance (not the parent's)
+    // This ensures the same server is used for both keycloak.url and @InjectWireMock
+    testInjector.injectIntoFields(
+        server,
+        new TestInjector.AnnotatedAndMatchesType(InjectWireMock.class, WireMockServer.class));
   }
 }

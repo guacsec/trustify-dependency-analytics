@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import io.github.guacsec.trustifyda.integration.Constants;
-import io.github.guacsec.trustifyda.integration.trustedcontent.ubi.UBIRecommendation;
+import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.enterprise.context.ApplicationScoped;
