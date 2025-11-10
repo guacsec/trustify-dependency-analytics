@@ -65,10 +65,6 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public abstract class ProviderResponseHandler {
 
-  public static final String NOT_AFFECTED_STATUS = "NotAffected";
-  public static final String FIXED_STATUS = "Fixed";
-  public static final List<String> FIXED_STATUSES = List.of(NOT_AFFECTED_STATUS, FIXED_STATUS);
-
   private static final Logger LOGGER = Logger.getLogger(ProviderResponseHandler.class);
 
   @Inject MonitoringProcessor monitoringProcessor;
