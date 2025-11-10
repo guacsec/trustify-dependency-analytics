@@ -5,9 +5,7 @@
 
 ## Dependencies
 
-- Redis cache: Allows caching Red Hat recommendations and remediations. Can be configured with the `quarkus.redis.host` parameter
-- TrustedContent: Provides Red Hat recommendations and remediations.
-- External Vulnerability providers enabled.
+- Trustify: Provides vulnerability data and recommendations [Trustify](https://github.com/guacsec/trustify)
 - Postgres Database: Stores data needed for the Model Cards functionality. See [Model Cards](#model-cards)
 
 ## Vulnerability providers

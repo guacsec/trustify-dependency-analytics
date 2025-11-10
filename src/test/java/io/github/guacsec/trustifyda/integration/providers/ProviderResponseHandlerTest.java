@@ -50,9 +50,8 @@ import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.TrustedContentResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.Vulnerability;
+import io.github.guacsec.trustifyda.model.trustify.Recommendation;
+import io.github.guacsec.trustifyda.model.trustify.Vulnerability;
 
 import jakarta.ws.rs.core.Response;
 
@@ -61,8 +60,6 @@ public class ProviderResponseHandlerTest {
   private static final String NPM_PURL_TYPE = "npm";
   private static final String TEST_PROVIDER = "example";
   private static final String TEST_SOURCE = "test-source";
-  private static final TrustedContentResponse EMPTY_TRUSTED_CONTENT_RESPONSE =
-      new TrustedContentResponse(null, null);
 
   @ParameterizedTest
   @MethodSource("getSummaryValues")
@@ -390,8 +387,8 @@ public class ProviderResponseHandlerTest {
    * @param cves - the vulnerabilities map CVE -> Status
    * @return the tc recommendation
    */
-  private static TcRecommendation buildRecommendation(String ref, Map<String, String> cves) {
-    return new TcRecommendation(
+  private static Recommendation buildRecommendation(String ref, Map<String, String> cves) {
+    return new Recommendation(
         new PackageRef(ref),
         cves.entrySet().stream()
             .map(e -> new Vulnerability(e.getKey(), e.getValue(), e.getValue() + " justification"))

@@ -31,8 +31,8 @@ import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
+import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
+import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 
 public class RecommendationAggregation implements AggregationStrategy {
 
@@ -86,7 +86,7 @@ public class RecommendationAggregation implements AggregationStrategy {
     recommendations.forEach(
         (key, value) -> {
           var pkgItem = providerResponse.pkgItems().get(key.ref());
-          var tcRecommendation = toTcRecommendation(value);
+          var recommendation = toRecommendation(value);
           var issues = new ArrayList<Issue>();
           if (pkgItem != null && pkgItem.issues() != null) {
             issues.addAll(pkgItem.issues());
@@ -101,25 +101,25 @@ public class RecommendationAggregation implements AggregationStrategy {
                       if (vuln == null) {
                         return;
                       }
-                      var tcRemediation =
+                      var remediation =
                           new RemediationTrustedContent()
                               .ref(value.packageName())
                               .status(vuln.getStatus())
                               .justification(vuln.getJustification());
-                      issue.remediation(new Remediation().trustedContent(tcRemediation));
+                      issue.remediation(new Remediation().trustedContent(remediation));
                     });
           }
           providerResponse
               .pkgItems()
-              .put(key.ref(), new PackageItem(key.ref(), tcRecommendation, issues));
+              .put(key.ref(), new PackageItem(key.ref(), recommendation, issues));
         });
   }
 
-  private TcRecommendation toTcRecommendation(IndexedRecommendation recommendation) {
+  private Recommendation toRecommendation(IndexedRecommendation recommendation) {
     if (recommendation.vulnerabilities() == null) {
-      return new TcRecommendation(recommendation.packageName(), Collections.emptyList());
+      return new Recommendation(recommendation.packageName(), Collections.emptyList());
     }
-    return new TcRecommendation(
+    return new Recommendation(
         recommendation.packageName(), recommendation.vulnerabilities().values().stream().toList());
   }
 }

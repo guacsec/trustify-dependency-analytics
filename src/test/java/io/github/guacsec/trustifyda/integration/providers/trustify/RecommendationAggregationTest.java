@@ -46,8 +46,8 @@ import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.Vulnerability;
+import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
+import io.github.guacsec.trustifyda.model.trustify.Vulnerability;
 
 public class RecommendationAggregationTest {
 

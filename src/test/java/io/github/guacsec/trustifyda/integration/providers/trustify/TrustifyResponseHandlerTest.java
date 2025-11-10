@@ -49,12 +49,15 @@ import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
-import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
+import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
 
 public class TrustifyResponseHandlerTest {
 
   private TrustifyResponseHandler handler;
   private DependencyTree dependencyTree;
+
+  private TrustifyIntegration trustifyIntegration;
+  private UBIRecommendation ubiRecommendation;
 
   @BeforeEach
   void setUp() {
@@ -570,12 +573,6 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(result);
     assertTrue(result.pkgItems().isEmpty());
   }
-
-  // Tests for TrustifyIntegration.processRecommendations()
-  // These tests were migrated from TcResponseHandlerTest
-
-  private TrustifyIntegration trustifyIntegration;
-  private UBIRecommendation ubiRecommendation;
 
   @Test
   void testProcessRecommendationsAggregation() throws IOException {

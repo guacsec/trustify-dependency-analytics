@@ -38,12 +38,12 @@ import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
 import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.ProviderHealthCheckResult;
-import io.github.guacsec.trustifyda.model.trustedcontent.IndexedRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.Recommendations;
-import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
-import io.github.guacsec.trustifyda.model.trustedcontent.Vulnerability;
+import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
 import io.github.guacsec.trustifyda.model.trustify.ProviderConfig;
 import io.github.guacsec.trustifyda.model.trustify.ProvidersConfig;
+import io.github.guacsec.trustifyda.model.trustify.Recommendation;
+import io.github.guacsec.trustifyda.model.trustify.RecommendationsResponse;
+import io.github.guacsec.trustifyda.model.trustify.Vulnerability;
 import io.github.guacsec.trustifyda.service.DynamicOidcClientService;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -335,28 +335,28 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     byte[] tcResponse = exchange.getIn().getBody(byte[].class);
     String sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
 
-    var recommendations = mapper.readValue(tcResponse, Recommendations.class);
-    var mergedRecommendations = indexRecommendations(recommendations);
+    var response = mapper.readValue(tcResponse, RecommendationsResponse.class);
+    var mergedRecommendations = indexRecommendations(response);
     mergedRecommendations.putAll(getUBIRecommendation(sbomId));
 
     exchange.getMessage().setBody(mergedRecommendations);
   }
 
   private Map<PackageRef, IndexedRecommendation> indexRecommendations(
-      Recommendations recommendations) {
+      RecommendationsResponse response) {
     Map<PackageRef, IndexedRecommendation> result = new HashMap<>();
-    if (recommendations == null) {
+    if (response == null) {
       return result;
     }
-    recommendations.getMatchings().entrySet().stream()
+    response.getMatchings().entrySet().stream()
         .filter(e -> !e.getValue().isEmpty())
         .forEach(
             e -> {
-              List<TcRecommendation> tcRecommendations = e.getValue();
-              PackageRef pkgRef = tcRecommendations.get(0).packageName();
+              List<Recommendation> recommendations = e.getValue();
+              PackageRef pkgRef = recommendations.get(0).packageName();
               Map<String, Vulnerability> vulnerabilities =
-                  tcRecommendations.stream()
-                      .map(TcRecommendation::vulnerabilities)
+                  recommendations.stream()
+                      .map(Recommendation::vulnerabilities)
                       .flatMap(List::stream)
                       .collect(
                           Collectors.toMap(

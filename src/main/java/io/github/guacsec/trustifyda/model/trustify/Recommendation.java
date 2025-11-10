@@ -15,42 +15,40 @@
  * limitations under the License.
  */
 
-package io.github.guacsec.trustifyda.model.trustedcontent;
+package io.github.guacsec.trustifyda.model.trustify;
 
-import java.util.*;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record Recommendations(
-    @JsonProperty("recommendations") Map<String, List<TcRecommendation>> matchings) {
-
-  public Recommendations {
-    if (matchings == null) {
-      matchings = new HashMap<>();
-    }
-  }
-
-  public Map<String, List<TcRecommendation>> getMatchings() {
-    return matchings;
-  }
+public record Recommendation(
+    @JsonProperty("package") PackageRef packageName, List<Vulnerability> vulnerabilities) {
 
   public static Builder builder() {
     return new Builder();
   }
 
   public static class Builder {
-    public Map<String, List<TcRecommendation>> matchings;
+    public PackageRef packageName;
 
-    public Builder matchings(Map<String, List<TcRecommendation>> matchings) {
-      this.matchings = matchings;
+    public List<Vulnerability> vulnerabilities;
+
+    public Builder packageName(PackageRef packageName) {
+      this.packageName = packageName;
       return this;
     }
 
-    public Recommendations build() {
-      return new Recommendations(this.matchings);
+    public Builder vulnerabilities(List<Vulnerability> vulnerabilities) {
+      this.vulnerabilities = vulnerabilities;
+      return this;
+    }
+
+    public Recommendation build() {
+      return new Recommendation(packageName, vulnerabilities);
     }
   }
 }

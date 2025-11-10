@@ -20,6 +20,6 @@ package io.github.guacsec.trustifyda.model;
 import java.util.List;
 
 import io.github.guacsec.trustifyda.api.v5.Issue;
-import io.github.guacsec.trustifyda.model.trustedcontent.TcRecommendation;
+import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 
-public record PackageItem(String packageRef, TcRecommendation recommendation, List<Issue> issues) {}
+public record PackageItem(String packageRef, Recommendation recommendation, List<Issue> issues) {}

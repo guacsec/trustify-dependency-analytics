@@ -15,38 +15,44 @@
  * limitations under the License.
  */
 
-package io.github.guacsec.trustifyda.model.trustedcontent;
+package io.github.guacsec.trustifyda.model.trustify;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import io.github.guacsec.trustifyda.api.PackageRef;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record IndexedRecommendation(
-    PackageRef packageName, Map<String, Vulnerability> vulnerabilities) {
+public record RecommendationsResponse(
+    @JsonProperty("recommendations") Map<String, List<Recommendation>> matchings) {
+
+  public RecommendationsResponse {
+    if (matchings == null) {
+      matchings = new HashMap<>();
+    }
+  }
+
+  public Map<String, List<Recommendation>> getMatchings() {
+    return matchings;
+  }
 
   public static Builder builder() {
     return new Builder();
   }
 
   public static class Builder {
-    public PackageRef packageName;
+    public Map<String, List<Recommendation>> matchings;
 
-    public Map<String, Vulnerability> vulnerabilities;
-
-    public Builder packageName(PackageRef packageName) {
-      this.packageName = packageName;
+    public Builder matchings(Map<String, List<Recommendation>> matchings) {
+      this.matchings = matchings;
       return this;
     }
 
-    public Builder vulnerabilities(Map<String, Vulnerability> vulnerabilities) {
-      this.vulnerabilities = vulnerabilities;
-      return this;
-    }
-
-    public IndexedRecommendation build() {
-      return new IndexedRecommendation(packageName, vulnerabilities);
+    public RecommendationsResponse build() {
+      return new RecommendationsResponse(this.matchings);
     }
   }
 }

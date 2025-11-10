@@ -69,7 +69,6 @@ public final class Constants {
   public static final String API_VERSION_PROPERTY = "apiVersion";
   public static final String GZIP_RESPONSE_PROPERTY = "gzipResponse";
   public static final String SBOM_ID_PROPERTY = "sbomId";
-  public static final String CACHED_RECOMMENDATIONS_PROPERTY = "missedRecommendations";
   public static final String PROVIDER_CONFIG_PROPERTY = "providerConfig";
   public static final String PROVIDERS_PROPERTY = "providers";
 

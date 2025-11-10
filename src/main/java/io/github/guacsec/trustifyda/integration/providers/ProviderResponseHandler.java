@@ -147,11 +147,10 @@ public abstract class ProviderResponseHandler {
     var providerName = getProviderName(exchange);
     ProviderStatus status = new ProviderStatus().ok(false).name(providerName);
     Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
-    if (exception == null) {}
 
-    Throwable cause = exception.getCause();
+    Throwable cause = exception != null ? exception.getCause() : null;
 
-    while (cause instanceof RuntimeCamelException && cause != null) {
+    while (cause instanceof RuntimeCamelException) {
       cause = cause.getCause();
     }
     if (cause == null) {
@@ -327,55 +326,14 @@ public abstract class ProviderResponseHandler {
               var packageItem = getPackageItem(packageRef, pkgItemsData);
               var directReport = new DependencyReport().ref(packageRef);
 
-              // Set issues if available
-              if (packageItem != null
-                  && packageItem.issues() != null
-                  && !packageItem.issues().isEmpty()) {
-                var issues =
-                    packageItem.issues().stream()
-                        .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
-                        .collect(Collectors.toList());
-                directReport.issues(issues);
-                directReport.setHighestVulnerability(issues.stream().findFirst().orElse(null));
-              }
-
-              // Set recommendation if available (extract PackageRef from TcRecommendation)
-              if (packageItem != null
-                  && packageItem.recommendation() != null
-                  && packageItem.recommendation().packageName() != null) {
-                directReport.recommendation(packageItem.recommendation().packageName());
-              }
+              setIssues(packageItem, directReport);
+              setRecommendations(packageItem, directReport);
 
               List<TransitiveDependencyReport> transitiveReports =
                   depEntry.getValue().transitive().stream()
                       .map(
                           t -> {
-                            var transitiveItem = getPackageItem(t, pkgItemsData);
-                            List<Issue> transitiveIssues = Collections.emptyList();
-                            if (transitiveItem != null
-                                && transitiveItem.issues() != null
-                                && !transitiveItem.issues().isEmpty()) {
-                              transitiveIssues =
-                                  transitiveItem.issues().stream()
-                                      .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
-                                      .collect(Collectors.toList());
-                            }
-                            var highestTransitive = transitiveIssues.stream().findFirst();
-                            if (highestTransitive.isPresent()) {
-                              if (directReport.getHighestVulnerability() == null
-                                  || directReport.getHighestVulnerability().getCvssScore()
-                                      < highestTransitive.get().getCvssScore()) {
-                                directReport.setHighestVulnerability(highestTransitive.get());
-                              }
-                            }
-                            var transitiveReport =
-                                new TransitiveDependencyReport()
-                                    .ref(t)
-                                    .issues(transitiveIssues)
-                                    .highestVulnerability(highestTransitive.orElse(null));
-                            // Note: TransitiveDependencyReport doesn't have a recommendation field
-                            // Recommendations are only set on direct dependencies
-                            return transitiveReport;
+                            return getTransitiveReport(pkgItemsData, directReport, t);
                           })
                       .filter(transitiveReport -> !transitiveReport.getIssues().isEmpty())
                       .collect(Collectors.toList());
@@ -387,37 +345,91 @@ public abstract class ProviderResponseHandler {
               }
             });
 
-    // Process packages with recommendations-only that are not in the tree
-    // (these are recommendations for packages that might not be direct dependencies)
     if (pkgItemsData != null) {
-      pkgItemsData.entrySet().stream()
-          .filter(
-              entry -> {
-                var packageItem = entry.getValue();
-                // Include if it has a recommendation but no issues and wasn't already processed
-                return !processedRefs.contains(entry.getKey())
-                    && (packageItem.issues() == null || packageItem.issues().isEmpty())
-                    && packageItem.recommendation() != null
-                    && packageItem.recommendation().packageName() != null;
-              })
-          .forEach(
-              entry -> {
-                try {
-                  var packageRef = new PackageRef(entry.getKey());
-                  var packageItem = entry.getValue();
-                  var directReport = new DependencyReport().ref(packageRef);
-                  directReport.recommendation(packageItem.recommendation().packageName());
-                  sourceReport.add(directReport);
-                } catch (Exception e) {
-                  // Skip if packageRef cannot be created from the string
-                  // This shouldn't happen but handle gracefully
-                }
-              });
+      addRecommendationsWithoutIssues(pkgItemsData, sourceReport, processedRefs);
     }
 
     sourceReport.sort(Collections.reverseOrder(new DependencyScoreComparator()));
     var summary = buildSummary(pkgItemsData, tree, sourceReport);
     return new Source().summary(summary).dependencies(sourceReport);
+  }
+
+  private void addRecommendationsWithoutIssues(
+      Map<String, PackageItem> pkgItemsData,
+      List<DependencyReport> sourceReport,
+      Set<String> processedRefs) {
+    pkgItemsData.entrySet().stream()
+        .filter(
+            entry -> {
+              var packageItem = entry.getValue();
+              // Include if it has a recommendation but no issues and wasn't already processed
+              return !processedRefs.contains(entry.getKey())
+                  && (packageItem.issues() == null || packageItem.issues().isEmpty())
+                  && packageItem.recommendation() != null
+                  && packageItem.recommendation().packageName() != null;
+            })
+        .forEach(
+            entry -> {
+              try {
+                var packageRef = new PackageRef(entry.getKey());
+                var packageItem = entry.getValue();
+                var directReport = new DependencyReport().ref(packageRef);
+                directReport.recommendation(packageItem.recommendation().packageName());
+                sourceReport.add(directReport);
+              } catch (Exception e) {
+                // Skip if packageRef cannot be created from the string
+                // This shouldn't happen but handle gracefully
+              }
+            });
+  }
+
+  private TransitiveDependencyReport getTransitiveReport(
+      Map<String, PackageItem> pkgItemsData, DependencyReport directReport, PackageRef t) {
+    var transitiveItem = getPackageItem(t, pkgItemsData);
+    List<Issue> transitiveIssues = Collections.emptyList();
+    if (transitiveItem != null
+        && transitiveItem.issues() != null
+        && !transitiveItem.issues().isEmpty()) {
+      transitiveIssues =
+          transitiveItem.issues().stream()
+              .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+              .collect(Collectors.toList());
+    }
+    var highestTransitive = transitiveIssues.stream().findFirst();
+    if (highestTransitive.isPresent()) {
+      if (directReport.getHighestVulnerability() == null
+          || directReport.getHighestVulnerability().getCvssScore()
+              < highestTransitive.get().getCvssScore()) {
+        directReport.setHighestVulnerability(highestTransitive.get());
+      }
+    }
+    var transitiveReport =
+        new TransitiveDependencyReport()
+            .ref(t)
+            .issues(transitiveIssues)
+            .highestVulnerability(highestTransitive.orElse(null));
+    // Note: TransitiveDependencyReport doesn't have a recommendation field
+    // Recommendations are only set on direct dependencies
+    return transitiveReport;
+  }
+
+  private void setRecommendations(PackageItem packageItem, DependencyReport directReport) {
+    if (packageItem != null
+        && packageItem.recommendation() != null
+        && packageItem.recommendation().packageName() != null) {
+      directReport.recommendation(packageItem.recommendation().packageName());
+    }
+  }
+
+  private void setIssues(PackageItem packageItem, DependencyReport directReport) {
+    if (packageItem != null && packageItem.issues() != null && !packageItem.issues().isEmpty()) {
+      var issues =
+          packageItem.issues().stream()
+              .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+              .collect(Collectors.toList());
+      directReport.issues(issues);
+      directReport.setHighestVulnerability(issues.stream().findFirst().orElse(null));
+    }
   }
 
   private PackageItem getPackageItem(PackageRef ref, Map<String, PackageItem> pkgItemsData) {
@@ -452,8 +464,9 @@ public abstract class ProviderResponseHandler {
         .forEach(
             i -> {
               var vulnerabilities = countVulnerabilities(i);
-              if (i.getSeverity() != null) {
-                switch (i.getSeverity()) {
+              var severity = i.getSeverity();
+              if (severity != null) {
+                switch (severity) {
                   case CRITICAL -> counter.critical.addAndGet(vulnerabilities);
                   case HIGH -> counter.high.addAndGet(vulnerabilities);
                   case MEDIUM -> counter.medium.addAndGet(vulnerabilities);

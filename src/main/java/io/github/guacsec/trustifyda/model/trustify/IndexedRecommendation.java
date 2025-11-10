@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package io.github.guacsec.trustifyda.model.trustedcontent;
+package io.github.guacsec.trustifyda.model.trustify;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record TcRecommendation(
-    @JsonProperty("package") PackageRef packageName, List<Vulnerability> vulnerabilities) {
+public record IndexedRecommendation(
+    PackageRef packageName, Map<String, Vulnerability> vulnerabilities) {
 
   public static Builder builder() {
     return new Builder();
@@ -35,20 +33,20 @@ public record TcRecommendation(
   public static class Builder {
     public PackageRef packageName;
 
-    public List<Vulnerability> vulnerabilities;
+    public Map<String, Vulnerability> vulnerabilities;
 
     public Builder packageName(PackageRef packageName) {
       this.packageName = packageName;
       return this;
     }
 
-    public Builder vulnerabilities(List<Vulnerability> vulnerabilities) {
+    public Builder vulnerabilities(Map<String, Vulnerability> vulnerabilities) {
       this.vulnerabilities = vulnerabilities;
       return this;
     }
 
-    public TcRecommendation build() {
-      return new TcRecommendation(packageName, vulnerabilities);
+    public IndexedRecommendation build() {
+      return new IndexedRecommendation(packageName, vulnerabilities);
     }
   }
 }
