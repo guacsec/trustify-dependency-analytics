@@ -17,10 +17,10 @@ export const errorReport: AppData = {
           "message": "Another serious error"
         }
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": false,
-          "name": "tpa",
+          "name": "trustify",
           "code": 500,
           "message": "Unexpected error"
         }

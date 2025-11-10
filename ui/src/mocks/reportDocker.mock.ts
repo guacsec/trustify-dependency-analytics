@@ -10,18 +10,10 @@ export const dockerReport: AppData = {
         "transitive": 7
       },
       "providers": {
-        "trusted-content": {
+        "trustify": {
           "status": {
             "ok": true,
-            "name": "trusted-content",
-            "code": 200,
-            "message": "OK"
-          }
-        },
-        "tpa": {
-          "status": {
-            "ok": true,
-            "name": "tpa",
+            "name": "trustify",
             "code": 200,
             "message": "OK"
           },

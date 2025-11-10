@@ -17,10 +17,10 @@ export const unauthorizedReport: AppData = {
           "message": 'Unauthorized: Verify the provided credentials are valid.'
         }
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": false,
-          "name": 'tpa',
+          "name": 'trustify',
           "code": 401,
           "message": 'Unauthorized: Verify the provided credentials are valid.'
         }

@@ -23,9 +23,6 @@ const SIGN_UP_TAB_PROVIDERS = ['oss-index'];
 
 const OSS_SIGN_UP_LINK = 'https://ossindex.sonatype.org/user/register';
 
-const REDHAT_REPOSITORY = 'https://maven.repository.redhat.com/ga/';
-
-
 const ENCODED_CHAR_REGEX = /%[0-9A-Fa-f]{2}/;
 
 export const getSignUpLink = (provider: string): string => {
@@ -67,10 +64,20 @@ export const extractDependencyName = (name: string, showVersion: boolean) => {
 
 export const tcRemediationLink = (name: string) => {
   const pkgUrl = PackageURL.fromString(name);
-  let result = REDHAT_REPOSITORY;
+  if(pkgUrl.qualifiers && pkgUrl.qualifiers.has('repository_url')) {
+    let repositoryUrl = decodeURIComponent(pkgUrl.qualifiers.get('repository_url') || '');
+    if(repositoryUrl.endsWith('/')) {
+      repositoryUrl = repositoryUrl.substring(0, repositoryUrl.length - 1);
+    }
+    let namespace = pkgUrl.namespace;
+    if(namespace) {
+      namespace = namespace.replace(/\./g, "/");
+    }
+    return `${repositoryUrl}/${namespace}/${pkgUrl.name}/${pkgUrl.version}`;
+  }
+  let result = MAVEN_URL;
   if(pkgUrl.namespace) {
-    let namespace = pkgUrl.namespace?.replace(/\./g, "/");
-    return `${REDHAT_REPOSITORY}${namespace}/${pkgUrl.name}/${pkgUrl.version}`;
+    return `${MAVEN_URL}${pkgUrl.namespace}/${pkgUrl.name}/${pkgUrl.version}`;
   }
   return result;
 };
@@ -79,11 +86,6 @@ export const extractDependencyUrl = (name: string) => {
   const pkgUrl = PackageURL.fromString(name);
   switch(pkgUrl.type) {
     case MAVEN_TYPE:
-      const versionMvn = pkgUrl.version;
-      if(versionMvn?.includes("redhat")){
-        let namespace = pkgUrl.namespace?.replace(/\./g, "/");
-        return `${REDHAT_REPOSITORY}${namespace}/${pkgUrl.name}/${pkgUrl.version}`;
-      }
       return `${MAVEN_URL}${pkgUrl.namespace}/${pkgUrl.name}/${pkgUrl.version}`;
     case GOLANG_TYPE:
       const version = pkgUrl.version;
@@ -207,15 +209,18 @@ class PackageURL {
   readonly namespace: string | undefined | null;
   readonly name: string;
   readonly version: string | undefined | null;
+  readonly qualifiers: Map<string, string> | undefined | null;
 
   constructor(type: string,
     namespace: string | undefined | null,
     name: string,
-    version: string | undefined | null) {
+    version: string | undefined | null,
+    qualifiers: Map<string, string> | undefined | null) {
       this.type = type;
       this.namespace = namespace;
       this.name = name;
       this.version = version;
+      this.qualifiers = qualifiers;
     }
 
   toString(): string {
@@ -226,13 +231,18 @@ class PackageURL {
     if(this.namespace) {
       return `${PURL_PKG_PREFIX}${this.type}/${this.namespace}/${name}`;
     }
+    if(this.qualifiers) {
+      return `${PURL_PKG_PREFIX}${this.type}/${name}?${Array.from(this.qualifiers.entries()).map(([key, value]) => `${key}=${value}`).join('&')}`;
+    }
     return `${PURL_PKG_PREFIX}${this.type}/${name}`;
   }
 
   static fromString(purl: string): PackageURL {
     let value = purl.replace(PURL_PKG_PREFIX, '');
+    let qualifiers;
     const qualifiersIdx = value.indexOf('?');
       if(qualifiersIdx !== -1) {
+        qualifiers = value.substring(qualifiersIdx + 1);
         value = value.substring(0, qualifiersIdx);
       }
     const type = value.substring(0, value.indexOf('/'));
@@ -249,7 +259,7 @@ class PackageURL {
     if(version) {
       name = name.substring(0, name.indexOf('@'));
     }
-    return new PackageURL(type, namespace, name, version);
+    return new PackageURL(type, namespace, name, version, new Map(qualifiers?.split('&').map(q => q.split('=') as [string, string]) || []));
   }
 
 }

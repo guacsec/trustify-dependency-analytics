@@ -17,10 +17,10 @@ export const forbiddenReport: AppData = {
           "message": "Forbidden: The provided credentials don't have the required permissions."
         }
       },
-      "tpa": {
+      "trustify": {
         "status": {
           "ok": false,
-          "name": "tpa",
+          "name": "trustify",
           "code": 403,
           "message": "Forbidden: The provided credentials don't have the required permissions."
         }
