@@ -713,6 +713,12 @@ export const reportBasic: AppData = {
     "]",
   userId: 'testUser003',
   anonymousId: null,
-  writeKey: '',
-  rhdaSource: 'vscode'
+  brandingConfig : {
+    imageRecommendation: "Test container image recommendations for enhanced security.",
+    exploreDescription: "The Trustify project is a collection of software components that enables you to store and retrieve Software Bill of Materials (SBOMs), and advisory documents.",
+    imageRecommendationLink: "https://test-catalog.example.com/containers/",
+    displayName: "Trustify Test",
+    exploreTitle: "Learn more about Trustify",
+    exploreUrl: "https://guac.sh/trustify/"
+  }
 };

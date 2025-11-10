@@ -163,9 +163,9 @@ const isEncoded = (str: string): boolean => {
   return ENCODED_CHAR_REGEX.test(str);
 }
 
-export const imageRemediationLink = (purl: string, report: Report, imageMapping: string, imageRemediationLink?: string) => {
+export const imageRecommendationLink = (purl: string, report: Report, imageMapping: string, imageRecommendationLink?: string) => {
   const sources = getSources(report);
-  let result = imageRemediationLink || '';
+  let result = imageRecommendationLink || '';
 
   for (const key in sources) {
     const source = sources[key];
@@ -192,7 +192,7 @@ export const imageRemediationLink = (purl: string, report: Report, imageMapping:
       }
     }
   }
-  return result + "search";
+  return result;
 };
 
 const getCatalogUrlByPurl = (recommendPurl: string, imageMapping: string): string | undefined => {

@@ -19,7 +19,7 @@ export interface BrandingConfig {
   exploreTitle: string;
   exploreDescription: string;
   imageRecommendation: string;
-  imageRemediationLink: string;
+  imageRecommendationLink: string;
 }
 
 export interface ReportMap {

@@ -10,10 +10,10 @@ export const dockerReport: AppData = {
         "transitive": 7
       },
       "providers": {
-        "trustify": {
+        "rhtpa": {
           "status": {
             "ok": true,
-            "name": "trustify",
+            "name": "rhtpa",
             "code": 200,
             "message": "OK"
           },
@@ -751,31 +751,15 @@ export const dockerReport: AppData = {
         "transitive": 0
       },
       "providers": {
-        "oss-index": {
-          "status": {
-            "ok": false,
-            "name": "oss-index",
-            "code": 401,
-            "message": "Unauthorized: Verify the provided credentials are valid."
-          }
-        },
-        "trusted-content": {
+        "rhtpa": {
           "status": {
             "ok": true,
-            "name": "trusted-content",
-            "code": 200,
-            "message": "OK"
-          }
-        },
-        "tpa": {
-          "status": {
-            "ok": true,
-            "name": "tpa",
+            "name": "rhtpa",
             "code": 200,
             "message": "OK"
           },
           "sources": {
-            "tpa": {
+            "osv": {
               "summary": {
                 "direct": 0,
                 "transitive": 0,
@@ -793,37 +777,6 @@ export const dockerReport: AppData = {
                 {
                   "ref": "pkg:oci/alpine@sha256%3A1fafb0905264413501df60d90a92ca32df8a2011cbfb4876ddff5ceb20c8f165?arch=amd64&os=linux&repository_url=test.io%2Ftest%2Falpine&tag=test-version",
                   "recommendation": "pkg:oci/ubi-minimal@sha256%3A06d06f15f7b641a78f2512c8817cbecaa1bf549488e273f5ac27ff1654ed33f0?arch=amd64&repository_url=registry.access.redhat.com%2Fubi9%2Fubi-minimal&tag=9.3-1552"
-                }
-              ]
-            }
-          }
-        },
-        "snyk": {
-          "status": {
-            "ok": true,
-            "name": "snyk",
-            "code": 200,
-            "message": "OK"
-          },
-          "sources": {
-            "snyk": {
-              "summary": {
-                "direct": 0,
-                "transitive": 0,
-                "total": 0,
-                "dependencies": 0,
-                "critical": 0,
-                "high": 0,
-                "medium": 0,
-                "low": 0,
-                "remediations": 0,
-                "recommendations": 1,
-                "unscanned": 0
-              },
-              "dependencies": [
-                {
-                  "ref": "pkg:oci/quay.io/default-app@0.0.1",
-                  "recommendation": "pkg:oci/quay.io/test-app@0.0.2"
                 }
               ]
             }
@@ -847,5 +800,12 @@ export const dockerReport: AppData = {
   userId: 'testUser333',
   anonymousId: null,
   writeKey: '',
-  rhdaSource: 'trustify'
+  brandingConfig : {
+    imageRecommendation: "Test container image recommendations for enhanced security.",
+    exploreDescription: "The Trustify project is a collection of software components that enables you to store and retrieve Software Bill of Materials (SBOMs), and advisory documents.",
+    imageRecommendationLink: "https://test-catalog.example.com/containers/",
+    displayName: "Trustify Test",
+    exploreTitle: "Learn more about Trustify",
+    exploreUrl: "https://guac.sh/trustify/"
+  },
 };

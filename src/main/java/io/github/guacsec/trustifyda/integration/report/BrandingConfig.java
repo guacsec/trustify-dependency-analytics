@@ -31,5 +31,5 @@ public interface BrandingConfig {
 
   String imageRecommendation();
 
-  String imageRemediationLink();
+  String imageRecommendationLink();
 }
