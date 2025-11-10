@@ -46,11 +46,11 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class ReportTemplate {
 
-  @ConfigProperty(name = "report.nvd.issue.regex")
-  String nvdIssuePathRegex;
-
   @ConfigProperty(name = "report.cve.issue.regex")
   String cveIssuePathRegex;
+
+  @ConfigProperty(name = "report.remediation.template")
+  String remediationTemplate;
 
   @Inject UBIRecommendation ubiRecommendation;
 
@@ -72,8 +72,8 @@ public class ReportTemplate {
 
     Map<String, Object> params = new HashMap<>();
     params.put("report", report);
-    params.put("nvdIssueTemplate", nvdIssuePathRegex);
     params.put("cveIssueTemplate", cveIssuePathRegex);
+    params.put("remediationTemplate", remediationTemplate);
     params.put("imageMapping", getImageMapping());
     params.put("rhdaSource", rhdaSource);
     getBrandingConfig()

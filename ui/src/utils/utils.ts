@@ -114,12 +114,14 @@ export const extractDependencyVersion = (name: string): string => {
   return version ? decodeURIComponent(version) : '';
 };
 
-export const issueLink = (provider: string, issueId: string, appData: AppData) => {
-  return appData.nvdIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
-};
-
 export const cveLink = (issueId: string, appData: AppData) => {
   return appData.cveIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
+}
+
+export const remediationLink = (packageRef: string, appData: AppData) => {
+  const packageUrl = PackageURL.fromString(packageRef);
+  const name = encodeURIComponent(extractName(packageUrl));
+  return appData.remediationTemplate.replace('__PACKAGE_TYPE__', packageUrl.type).replace('__PACKAGE_NAME__', name).replace('__PACKAGE_VERSION__', packageUrl.version || '');
 }
 
 export const uppercaseFirstLetter = (val: string) => {

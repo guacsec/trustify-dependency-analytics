@@ -3,8 +3,8 @@ import {getSignUpLink} from "../utils/utils";
 export interface AppData {
   providerPrivateData?: string[] | null;
   report: Report | ReportMap;
-  nvdIssueTemplate: string;
   cveIssueTemplate: string;
+  remediationTemplate: string;
   imageMapping: string;
   userId?: string | null;
   anonymousId?: string | null;
