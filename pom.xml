@@ -49,7 +49,7 @@
 
     <!-- Dependencies -->
     <trustify-da-api.version>2.0.1</trustify-da-api.version>
-    <cyclonedx.version>11.0.0</cyclonedx.version>
+    <cyclonedx.version>11.0.1</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
     <spdx.version>2.0.2</spdx.version>
     <htmlunit.version>4.11.1</htmlunit.version>
