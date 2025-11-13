@@ -785,8 +785,8 @@ export const dockerReport: AppData = {
       }
     }
   },
-  nvdIssueTemplate: 'https://nvd.nist.gov/vuln/detail/__ISSUE_ID__',
-  cveIssueTemplate: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=__ISSUE_ID__',
+  remediationTemplate: 'https://deps.dev/__PACKAGE_TYPE__/__PACKAGE_NAME__/__PACKAGE_VERSION__',
+  cveIssueTemplate: 'https://nvd.nist.gov/vuln/detail/__ISSUE_ID__',
   imageMapping: "[\n" +
     "  {\n" +
     "    \"purl\": \"pkg:oci/ubi@sha256:f5983f7c7878cc9b26a3962be7756e3c810e9831b0b9f9613e6f6b445f884e74?repository_url=registry.access.redhat.com/ubi9/ubi&tag=9.3-1552&arch=amd64\",\n" +
