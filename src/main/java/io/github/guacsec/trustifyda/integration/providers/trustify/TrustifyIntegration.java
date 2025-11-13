@@ -106,24 +106,23 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .parallelProcessing()
         .transform()
         .method(requestBuilder, "buildRequest")
-        .circuitBreaker()
-          .faultToleranceConfiguration()
-            .timeoutEnabled(true)
-            .timeoutDuration(TIMEOUT_DURATION)
-          .end()
-
-          .to(direct("trustifyRequest"))
-        .onFallback()
-          .process(responseHandler::processResponseError);
+        .to(direct("trustifyRequest"));
 
     from(direct("recommendations"))
       .routeId("recommendations")
       .routePolicy(new ProviderRoutePolicy(registry))
       .choice()
         .when(exchangeProperty(Constants.RECOMMEND_PARAM).isEqualTo(Boolean.TRUE))
+        .circuitBreaker()
+          .faultToleranceConfiguration()
+            .timeoutEnabled(true)
+            .timeoutDuration(TIMEOUT_DURATION)
+          .end()
           .process(this::processRecommendationsRequest)
           .toD("${exchangeProperty.trustifyUrl}")
           .process(this::processRecommendations)
+        .onFallback()
+          .process(responseHandler::processResponseError)
       .endChoice()
       
       .end();
@@ -131,9 +130,16 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     from(direct("vulnerabilities"))
       .routeId("vulnerabilities")
       .routePolicy(new ProviderRoutePolicy(registry))
-      .process(this::processVulnerabilitiesRequest)
+      .circuitBreaker()
+        .faultToleranceConfiguration()
+          .timeoutEnabled(true)
+          .timeoutDuration(TIMEOUT_DURATION)
+        .end()
+        .process(this::processVulnerabilitiesRequest)
       .toD("${exchangeProperty.trustifyUrl}")
       .transform(method(responseHandler, "responseToIssues"))
+      .onFallback()
+        .process(responseHandler::processResponseError)
       .end();
     
     from(direct("trustifyRequest"))
@@ -141,7 +147,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .process(this::setProviderConfig)
       .process(this::addAuthentication)
       .multicast(new RecommendationAggregation())
-        .stopOnException()
         .parallelProcessing()
           .to(direct("vulnerabilities"))
           .to(direct("recommendations"))

@@ -20,6 +20,8 @@ package io.github.guacsec.trustifyda.integration.providers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -31,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -46,6 +49,7 @@ import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
+import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -70,7 +74,6 @@ public class ProviderResponseHandlerTest {
     ProviderResponseHandler handler = new TestResponseHandler();
     ProviderReport response =
         handler.buildReport(Mockito.mock(Exchange.class), new ProviderResponse(data, null), tree);
-    assertOkStatus(response);
     SourceSummary summary = getValidSource(response, sourceName).getSummary();
 
     assertEquals(expected.getDirect(), summary.getDirect());
@@ -192,7 +195,6 @@ public class ProviderResponseHandlerTest {
         handler.buildReport(
             Mockito.mock(Exchange.class), new ProviderResponse(data, null), buildTree());
 
-    assertOkStatus(response);
     DependencyReport reportHighest = getValidSource(response, TEST_SOURCE).getDependencies().get(0);
     assertEquals("ab", reportHighest.getRef().name());
 
@@ -224,7 +226,6 @@ public class ProviderResponseHandlerTest {
         handler.buildReport(
             Mockito.mock(Exchange.class), new ProviderResponse(data, null), buildTree());
 
-    assertOkStatus(response);
     DependencyReport highest = getValidSource(response, TEST_SOURCE).getDependencies().get(0);
     assertEquals("ISSUE-002", highest.getHighestVulnerability().getId());
     assertEquals(9f, highest.getHighestVulnerability().getCvssScore());
@@ -246,7 +247,6 @@ public class ProviderResponseHandlerTest {
         handler.buildReport(
             Mockito.mock(Exchange.class), new ProviderResponse(data, null), buildTree());
 
-    assertOkStatus(response);
     DependencyReport highest = getValidSource(response, TEST_SOURCE).getDependencies().get(0);
     assertEquals("ISSUE-002", highest.getHighestVulnerability().getId());
     assertEquals(9f, highest.getHighestVulnerability().getCvssScore());
@@ -426,9 +426,17 @@ public class ProviderResponseHandlerTest {
     }
 
     @Override
-    public ProviderResponse responseToIssues(byte[] response, DependencyTree tree)
-        throws IOException {
+    public ProviderResponse responseToIssues(Exchange exchange) throws IOException {
       throw new IllegalArgumentException("not implemented");
     }
+  }
+
+  public static Exchange buildExchange(byte[] response, DependencyTree tree) {
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(byte[].class)).thenReturn(response);
+    when(exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class))
+        .thenReturn(tree);
+    return exchange;
   }
 }

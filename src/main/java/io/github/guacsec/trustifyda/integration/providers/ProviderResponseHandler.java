@@ -71,8 +71,7 @@ public abstract class ProviderResponseHandler {
 
   protected abstract String getProviderName(Exchange exchange);
 
-  public abstract ProviderResponse responseToIssues(byte[] response, DependencyTree tree)
-      throws IOException;
+  public abstract ProviderResponse responseToIssues(Exchange exchange) throws IOException;
 
   public ProviderResponse aggregateSplit(ProviderResponse oldExchange, ProviderResponse newExchange)
       throws IOException {
@@ -111,7 +110,7 @@ public abstract class ProviderResponseHandler {
     return exchange;
   }
 
-  protected ProviderStatus defaultOkStatus(String provider) {
+  public ProviderStatus defaultOkStatus(String provider) {
     return new ProviderStatus()
         .name(provider)
         .ok(Boolean.TRUE)
@@ -204,7 +203,7 @@ public abstract class ProviderResponseHandler {
   private static String prettifyHttpError(HttpOperationFailedException httpException) {
     String text = httpException.getStatusText();
     String defaultReason =
-        httpException.getResponseBody() != null
+        httpException.getResponseBody() != null && !httpException.getResponseBody().isBlank()
             ? httpException.getResponseBody()
             : httpException.getMessage();
     return text
@@ -216,9 +215,8 @@ public abstract class ProviderResponseHandler {
         };
   }
 
-  public ProviderResponse emptyResponse(
-      @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree) {
-    return new ProviderResponse(Collections.emptyMap(), null);
+  public ProviderResponse emptyResponse(Exchange exchange) {
+    return new ProviderResponse(Collections.emptyMap(), defaultOkStatus(getProviderName(exchange)));
   }
 
   /**
@@ -295,7 +293,7 @@ public abstract class ProviderResponseHandler {
       @Body ProviderResponse response,
       @ExchangeProperty(Constants.DEPENDENCY_TREE_PROPERTY) DependencyTree tree)
       throws IOException {
-    if (response.status() != null) {
+    if (response.status() != null && response.pkgItems() == null) {
       return new ProviderReport().status(response.status()).sources(Collections.emptyMap());
     }
     var providerName = getProviderName(exchange);
@@ -306,7 +304,7 @@ public abstract class ProviderResponseHandler {
         .entrySet()
         .forEach(
             entry -> reports.put(entry.getKey(), buildReportForSource(entry.getValue(), tree)));
-    return new ProviderReport().status(defaultOkStatus(providerName)).sources(reports);
+    return new ProviderReport().status(response.status()).sources(reports);
   }
 
   private Source buildReportForSource(Map<String, PackageItem> pkgItemsData, DependencyTree tree) {

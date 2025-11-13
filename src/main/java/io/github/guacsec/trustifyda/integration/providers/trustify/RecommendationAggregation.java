@@ -24,9 +24,11 @@ import java.util.Map;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
+import org.jboss.logging.Logger;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
+import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -36,23 +38,58 @@ import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 
 public class RecommendationAggregation implements AggregationStrategy {
 
+  private static final Logger LOGGER = Logger.getLogger(RecommendationAggregation.class);
+
   @Override
   public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
     if (oldExchange == null) {
       return newExchange;
     }
+    var worstStatus = getWorstStatus(oldExchange, newExchange);
+
     var providerResponse = getProviderResponse(oldExchange, newExchange);
-    var recommendations = getRecommendations(oldExchange, newExchange);
+    if (providerResponse == null) {
+      providerResponse = new ProviderResponse(new HashMap<>(), worstStatus);
+    }
+    Map<PackageRef, IndexedRecommendation> recommendations = null;
+    try {
+      recommendations = getRecommendations(oldExchange, newExchange);
+    } catch (Exception e) {
+      LOGGER.warn("Error getting recommendations", e);
+    }
 
     if (providerResponse.pkgItems() == null) {
-      providerResponse = new ProviderResponse(new HashMap<>(), providerResponse.status());
+      providerResponse = new ProviderResponse(new HashMap<>(), worstStatus);
     }
     if (recommendations != null && !recommendations.isEmpty()) {
       setTrustedContent(recommendations, providerResponse);
     }
 
-    oldExchange.getIn().setBody(providerResponse);
+    oldExchange.getIn().setBody(new ProviderResponse(providerResponse.pkgItems(), worstStatus));
     return oldExchange;
+  }
+
+  private ProviderStatus getWorstStatus(Exchange oldExchange, Exchange newExchange) {
+    ProviderStatus oldStatus = getStatus(oldExchange);
+    ProviderStatus newStatus = getStatus(newExchange);
+
+    if (oldStatus == null && newStatus == null) {
+      return null;
+    }
+    if (oldStatus == null) {
+      return newStatus;
+    }
+    if (newStatus == null) {
+      return oldStatus;
+    }
+    return Boolean.FALSE.equals(oldStatus.getOk()) ? oldStatus : newStatus;
+  }
+
+  private ProviderStatus getStatus(Exchange exchange) {
+    if (exchange.getIn().getBody() instanceof ProviderResponse response) {
+      return response.status();
+    }
+    return null;
   }
 
   private ProviderResponse getProviderResponse(Exchange oldExchange, Exchange newExchange) {

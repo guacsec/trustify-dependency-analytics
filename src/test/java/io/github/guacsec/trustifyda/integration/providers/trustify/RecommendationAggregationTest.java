@@ -42,6 +42,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
+import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -257,6 +258,112 @@ public class RecommendationAggregationTest {
                   assertNotNull(resultItem);
                   assertEquals(1, resultItem.issues().size());
                   assertNull(resultItem.recommendation());
+                })),
+
+        // Status aggregation tests for getWorstStatus
+        Arguments.of(
+            "StatusAggregation_BothNull_ReturnsNull",
+            new TestCase(
+                "StatusAggregation_BothNull_ReturnsNull",
+                new ProviderResponse(new HashMap<>(), null),
+                new ProviderResponse(new HashMap<>(), null),
+                result -> assertNull(result.status()))),
+        Arguments.of(
+            "StatusAggregation_OldNull_NewOk_ReturnsNew",
+            new TestCase(
+                "StatusAggregation_OldNull_NewOk_ReturnsNew",
+                new ProviderResponse(new HashMap<>(), null),
+                new ProviderResponse(new HashMap<>(), createOkStatus("provider")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertTrue(result.status().getOk());
+                  assertEquals("provider", result.status().getName());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldNull_NewNotOk_ReturnsNew",
+            new TestCase(
+                "StatusAggregation_OldNull_NewNotOk_ReturnsNew",
+                new ProviderResponse(new HashMap<>(), null),
+                new ProviderResponse(new HashMap<>(), createNotOkStatus("provider", 500, "Error")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertEquals(Boolean.FALSE, result.status().getOk());
+                  assertEquals("provider", result.status().getName());
+                  assertEquals(500, result.status().getCode());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldOk_NewNull_ReturnsOld",
+            new TestCase(
+                "StatusAggregation_OldOk_NewNull_ReturnsOld",
+                new ProviderResponse(new HashMap<>(), createOkStatus("oldProvider")),
+                new ProviderResponse(new HashMap<>(), null),
+                result -> {
+                  assertNotNull(result.status());
+                  assertTrue(result.status().getOk());
+                  assertEquals("oldProvider", result.status().getName());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldNotOk_NewNull_ReturnsOld",
+            new TestCase(
+                "StatusAggregation_OldNotOk_NewNull_ReturnsOld",
+                new ProviderResponse(
+                    new HashMap<>(), createNotOkStatus("oldProvider", 500, "Error")),
+                new ProviderResponse(new HashMap<>(), null),
+                result -> {
+                  assertNotNull(result.status());
+                  assertEquals(Boolean.FALSE, result.status().getOk());
+                  assertEquals("oldProvider", result.status().getName());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldOk_NewOk_ReturnsNew",
+            new TestCase(
+                "StatusAggregation_OldOk_NewOk_ReturnsNew",
+                new ProviderResponse(new HashMap<>(), createOkStatus("oldProvider")),
+                new ProviderResponse(new HashMap<>(), createOkStatus("newProvider")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertTrue(result.status().getOk());
+                  assertEquals("newProvider", result.status().getName());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldOk_NewNotOk_ReturnsNew",
+            new TestCase(
+                "StatusAggregation_OldOk_NewNotOk_ReturnsNew",
+                new ProviderResponse(new HashMap<>(), createOkStatus("oldProvider")),
+                new ProviderResponse(
+                    new HashMap<>(), createNotOkStatus("newProvider", 500, "Error")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertEquals(Boolean.FALSE, result.status().getOk());
+                  assertEquals("newProvider", result.status().getName());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldNotOk_NewOk_ReturnsOld",
+            new TestCase(
+                "StatusAggregation_OldNotOk_NewOk_ReturnsOld",
+                new ProviderResponse(
+                    new HashMap<>(), createNotOkStatus("oldProvider", 500, "Error")),
+                new ProviderResponse(new HashMap<>(), createOkStatus("newProvider")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertEquals(Boolean.FALSE, result.status().getOk());
+                  assertEquals("oldProvider", result.status().getName());
+                  assertEquals(500, result.status().getCode());
+                })),
+        Arguments.of(
+            "StatusAggregation_OldNotOk_NewNotOk_ReturnsOld",
+            new TestCase(
+                "StatusAggregation_OldNotOk_NewNotOk_ReturnsOld",
+                new ProviderResponse(
+                    new HashMap<>(), createNotOkStatus("oldProvider", 500, "Old Error")),
+                new ProviderResponse(
+                    new HashMap<>(), createNotOkStatus("newProvider", 404, "New Error")),
+                result -> {
+                  assertNotNull(result.status());
+                  assertEquals(Boolean.FALSE, result.status().getOk());
+                  assertEquals("oldProvider", result.status().getName());
+                  assertEquals(500, result.status().getCode());
+                  assertEquals("Old Error", result.status().getMessage());
                 })));
   }
 
@@ -320,6 +427,14 @@ public class RecommendationAggregationTest {
     Issue issue = new Issue().id(id).title(title).cvssScore(cvssScore);
     issue.setSeverity(SeverityUtils.fromScore(cvssScore));
     return issue;
+  }
+
+  private static ProviderStatus createOkStatus(String providerName) {
+    return new ProviderStatus().name(providerName).ok(Boolean.TRUE).code(200).message("OK");
+  }
+
+  private static ProviderStatus createNotOkStatus(String providerName, int code, String message) {
+    return new ProviderStatus().name(providerName).ok(Boolean.FALSE).code(code).message(message);
   }
 
   @Test

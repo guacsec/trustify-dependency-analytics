@@ -188,8 +188,39 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubRecommendRequests() {
+    // Missing token
+    server.stubFor(post(Constants.TRUSTIFY_RECOMMEND_PATH).willReturn(aResponse().withStatus(401)));
+
+    // Invalid token
     server.stubFor(
         post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + INVALID_TOKEN))
+            .willReturn(
+                aResponse()
+                    .withStatus(401)
+                    .withBody(
+                        "{\"error\": \"Unauthorized\", \"message\": \"Verify the provided"
+                            + " credentials are valid.\"}}")));
+    // Internal Error
+    server.stubFor(
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
+            .willReturn(aResponse().withStatus(500).withBody("Unexpected error")));
+    // Forbidden
+    server.stubFor(
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + UNAUTH_TOKEN))
+            .willReturn(
+                aResponse()
+                    .withStatus(403)
+                    .withBody(
+                        "{\"error\": \"Forbidden\", \"message\": \"The provided credentials don't"
+                            + " have the required permissions.\"}}")));
+    server.stubFor(
+        post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TRUSTIFY_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -197,6 +228,9 @@ public abstract class AbstractAnalysisTest {
                     .withBodyFile("trustedcontent/empty_report.json")));
     server.stubFor(
         post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TRUSTIFY_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .withRequestBody(
                 equalToJson(
                     loadFileAsString("__files/trustedcontent/maven_request.json"), true, false))
@@ -207,6 +241,9 @@ public abstract class AbstractAnalysisTest {
                     .withBodyFile("trustedcontent/maven_report.json")));
     server.stubFor(
         post(Constants.TRUSTIFY_RECOMMEND_PATH)
+            .withHeader(
+                Constants.AUTHORIZATION_HEADER,
+                equalTo("Bearer " + TRUSTIFY_TOKEN).or(equalTo("Bearer " + OK_TOKEN)))
             .withRequestBody(
                 equalToJson(
                     loadFileAsString("__files/trustedcontent/batch_request.json"), true, false))

@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.providers.osv;
 
+import static io.github.guacsec.trustifyda.integration.providers.ProviderResponseHandlerTest.buildExchange;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,7 +58,7 @@ public class OsvResponseHandlerTest {
     deps.put(jacksonRef, new DirectDependency(jacksonRef, null));
     var dependencyTree = new DependencyTree(deps);
 
-    var report = handler.responseToIssues(providerResponse, dependencyTree);
+    var report = handler.responseToIssues(buildExchange(providerResponse, dependencyTree));
 
     assertFalse(report.pkgItems().isEmpty());
     assertEquals(2, report.pkgItems().size());

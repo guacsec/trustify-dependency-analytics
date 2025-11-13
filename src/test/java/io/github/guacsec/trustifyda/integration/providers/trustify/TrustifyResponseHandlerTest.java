@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify;
 
+import static io.github.guacsec.trustifyda.integration.providers.ProviderResponseHandlerTest.buildExchange;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -188,7 +189,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     assertNotNull(result.pkgItems());
@@ -272,7 +274,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
@@ -289,7 +292,8 @@ public class TrustifyResponseHandlerTest {
     String jsonResponse = "{}";
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     assertNotNull(result.pkgItems());
@@ -306,7 +310,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -330,7 +335,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -355,7 +361,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -395,7 +402,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -446,7 +454,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
@@ -509,7 +518,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
@@ -568,7 +578,8 @@ public class TrustifyResponseHandlerTest {
     """;
 
     byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result = handler.responseToIssues(responseBytes, dependencyTree);
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
     assertNotNull(result);
     assertTrue(result.pkgItems().isEmpty());
