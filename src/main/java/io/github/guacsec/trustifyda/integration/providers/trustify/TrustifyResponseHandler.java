@@ -81,16 +81,23 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
         .filter(ref -> response.has(ref))
         .collect(
             Collectors.toMap(
-                ref -> ref,
-                ref -> new PackageItem(ref, null, toIssues((ArrayNode) response.get(ref)))));
+                ref -> ref, ref -> new PackageItem(ref, null, toIssues(response.get(ref)))));
   }
 
-  private List<Issue> toIssues(ArrayNode response) {
+  private List<Issue> toIssues(JsonNode response) {
     if (response.isEmpty()) {
       return Collections.emptyList();
     }
+    ArrayNode details = (ArrayNode) response.get("details");
+    if (details == null) {
+      details = (ArrayNode) response;
+    }
+    if (details.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     List<Issue> issues = new ArrayList<>();
-    response.forEach(
+    details.forEach(
         vuln -> {
           var status = (ObjectNode) vuln.get("status");
           if (status == null || !status.hasNonNull("affected")) {
