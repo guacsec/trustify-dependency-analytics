@@ -14,7 +14,8 @@ export const forbiddenReport: AppData = {
           "ok": false,
           "name": "osv",
           "code": 403,
-          "message": "Forbidden: The provided credentials don't have the required permissions."
+          "message": "Forbidden: The provided credentials don't have the required permissions.",
+          "warnings": {}
         }
       },
       "trustify": {
@@ -22,7 +23,8 @@ export const forbiddenReport: AppData = {
           "ok": false,
           "name": "trustify",
           "code": 403,
-          "message": "Forbidden: The provided credentials don't have the required permissions."
+          "message": "Forbidden: The provided credentials don't have the required permissions.",
+          "warnings": {}
         }
       }
     }

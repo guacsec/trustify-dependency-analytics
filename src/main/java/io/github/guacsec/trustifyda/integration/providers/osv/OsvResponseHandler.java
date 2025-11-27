@@ -74,7 +74,12 @@ public class OsvResponseHandler extends ProviderResponseHandler {
         .collect(
             Collectors.toMap(
                 ref -> ref,
-                ref -> new PackageItem(ref, null, toIssues((ArrayNode) response.get(ref)))));
+                ref ->
+                    new PackageItem(
+                        ref,
+                        null,
+                        toIssues((ArrayNode) response.get(ref)),
+                        Collections.emptyList())));
   }
 
   private List<Issue> toIssues(ArrayNode response) {

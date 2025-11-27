@@ -17,6 +17,9 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify;
 
+import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.JustificationEnum.NotProvided;
+import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.StatusEnum.Fixed;
+import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.StatusEnum.NotAffected;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -58,8 +61,7 @@ public class RecommendationAggregationTest {
       String name, Object oldMessage, Object newMessage, Consumer<ProviderResponse> verifier) {}
 
   static Stream<Arguments> provideTestCases() {
-    return Stream.of(
-        // ProviderResponse in oldExchange, recommendations in newExchange, no issues
+    return Stream.of( // ProviderResponse in oldExchange, recommendations in newExchange, no issues
         Arguments.of(
             "ProviderResponseInOldExchange_RecommendationsInNewExchange_NoIssues",
             new TestCase(
@@ -115,8 +117,7 @@ public class RecommendationAggregationTest {
                 createRecommendations(
                     "pkg:npm/package1@1.0.0",
                     "pkg:npm/package1@2.0.0",
-                    Map.of(
-                        "CVE-001", new Vulnerability("CVE-001", "Fixed", "Fixed justification"))),
+                    Map.of("CVE-001", new Vulnerability("CVE-001", Fixed, NotProvided))),
                 result -> {
                   assertEquals(1, result.pkgItems().size());
                   PackageItem resultItem = result.pkgItems().get("pkg:npm/package1@1.0.0");
@@ -136,8 +137,7 @@ public class RecommendationAggregationTest {
                 createRecommendations(
                     "pkg:npm/package1@1.0.0",
                     "pkg:npm/package1@2.0.0",
-                    Map.of(
-                        "CVE-002", new Vulnerability("CVE-002", "Fixed", "Fixed justification"))),
+                    Map.of("CVE-002", new Vulnerability("CVE-002", Fixed, NotProvided))),
                 result -> {
                   assertEquals(1, result.pkgItems().size());
                   PackageItem resultItem = result.pkgItems().get("pkg:npm/package1@1.0.0");
@@ -161,9 +161,9 @@ public class RecommendationAggregationTest {
                     "pkg:npm/package1@2.0.0",
                     Map.of(
                         "CVE-001",
-                        new Vulnerability("CVE-001", "Fixed", "Fixed justification"),
+                        new Vulnerability("CVE-001", Fixed, NotProvided),
                         "CVE-002",
-                        new Vulnerability("CVE-002", "NotAffected", "Not affected"))),
+                        new Vulnerability("CVE-002", NotAffected, NotProvided))),
                 result -> {
                   assertEquals(1, result.pkgItems().size());
                   PackageItem resultItem = result.pkgItems().get("pkg:npm/package1@1.0.0");
@@ -184,7 +184,7 @@ public class RecommendationAggregationTest {
                   assertNotNull(ref);
                   assertEquals("pkg:npm/package1@2.0.0", ref.ref());
                   assertEquals("Fixed", tcRemediation.getStatus());
-                  assertEquals("Fixed justification", tcRemediation.getJustification());
+                  assertEquals("NotProvided", tcRemediation.getJustification());
 
                   // CVE-002 should have remediation (even though status is "NotAffected")
                   Issue issue2Result =
@@ -382,7 +382,7 @@ public class RecommendationAggregationTest {
     // Recommendation for package1 with matching vulnerability
     PackageRef recPkgRef1 = new PackageRef("pkg:npm/package1@1.0.0");
     Map<String, Vulnerability> vulnerabilities1 = new HashMap<>();
-    vulnerabilities1.put("CVE-001", new Vulnerability("CVE-001", "Fixed", "Fixed justification"));
+    vulnerabilities1.put("CVE-001", new Vulnerability("CVE-001", Fixed, NotProvided));
     IndexedRecommendation recommendation1 =
         new IndexedRecommendation(new PackageRef("pkg:npm/package1@2.0.0"), vulnerabilities1);
     recommendations.put(recPkgRef1, recommendation1);
@@ -390,7 +390,7 @@ public class RecommendationAggregationTest {
     // Recommendation for package2 without matching vulnerability
     PackageRef recPkgRef2 = new PackageRef("pkg:npm/package2@2.0.0");
     Map<String, Vulnerability> vulnerabilities2 = new HashMap<>();
-    vulnerabilities2.put("CVE-003", new Vulnerability("CVE-003", "Fixed", "Fixed justification"));
+    vulnerabilities2.put("CVE-003", new Vulnerability("CVE-003", Fixed, NotProvided));
     IndexedRecommendation recommendation2 =
         new IndexedRecommendation(new PackageRef("pkg:npm/package2@3.0.0"), vulnerabilities2);
     recommendations.put(recPkgRef2, recommendation2);
@@ -405,7 +405,8 @@ public class RecommendationAggregationTest {
 
   private static ProviderResponse createProviderResponseWithIssues(List<Issue> issues) {
     Map<String, PackageItem> pkgItems = new HashMap<>();
-    PackageItem item1 = new PackageItem("pkg:npm/package1@1.0.0", null, issues);
+    PackageItem item1 =
+        new PackageItem("pkg:npm/package1@1.0.0", null, issues, Collections.emptyList());
     pkgItems.put("pkg:npm/package1@1.0.0", item1);
     return new ProviderResponse(pkgItems, null);
   }
@@ -413,11 +414,13 @@ public class RecommendationAggregationTest {
   private static ProviderResponse createProviderResponseWithMultiplePackages() {
     Map<String, PackageItem> pkgItems = new HashMap<>();
     Issue issue1 = createIssue("CVE-001", "Issue 1", 5.0f);
-    PackageItem item1 = new PackageItem("pkg:npm/package1@1.0.0", null, List.of(issue1));
+    PackageItem item1 =
+        new PackageItem("pkg:npm/package1@1.0.0", null, List.of(issue1), Collections.emptyList());
     pkgItems.put("pkg:npm/package1@1.0.0", item1);
 
     Issue issue2 = createIssue("CVE-002", "Issue 2", 7.0f);
-    PackageItem item2 = new PackageItem("pkg:npm/package2@2.0.0", null, List.of(issue2));
+    PackageItem item2 =
+        new PackageItem("pkg:npm/package2@2.0.0", null, List.of(issue2), Collections.emptyList());
     pkgItems.put("pkg:npm/package2@2.0.0", item2);
 
     return new ProviderResponse(pkgItems, null);

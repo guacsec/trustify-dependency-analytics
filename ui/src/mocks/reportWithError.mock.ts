@@ -14,7 +14,8 @@ export const errorReport: AppData = {
           "ok": false,
           "name": "osv",
           "code": 500,
-          "message": "Another serious error"
+          "message": "Another serious error",
+          "warnings": {}
         }
       },
       "trustify": {
@@ -22,7 +23,8 @@ export const errorReport: AppData = {
           "ok": false,
           "name": "trustify",
           "code": 500,
-          "message": "Unexpected error"
+          "message": "Unexpected error",
+          "warnings": {}
         }
       }
     }

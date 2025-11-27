@@ -1,7 +1,7 @@
 {
   "scanned": {
-    "total": 9,
-    "direct": 2,
+    "total": 10,
+    "direct": 3,
     "transitive": 7
   },
   "providers": {
@@ -10,7 +10,8 @@
         "ok": true,
         "name": "osv",
         "code": 200,
-        "message": "OK"
+        "message": "OK",
+        "warnings": {}
       },
       "sources": {
         "osv": {
@@ -343,7 +344,12 @@
         "ok": true,
         "name": "trustify",
         "code": 200,
-        "message": "OK"
+        "message": "OK",
+        "warnings": {
+          "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar": [
+            "I don't like this package"
+          ]
+        }
       },
       "sources": {
         "osv": {

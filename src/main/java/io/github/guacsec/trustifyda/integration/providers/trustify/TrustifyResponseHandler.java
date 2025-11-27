@@ -81,7 +81,10 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
         .filter(ref -> response.has(ref))
         .collect(
             Collectors.toMap(
-                ref -> ref, ref -> new PackageItem(ref, null, toIssues(response.get(ref)))));
+                ref -> ref,
+                ref ->
+                    new PackageItem(
+                        ref, null, toIssues(response.get(ref)), getWarnings(response.get(ref)))));
   }
 
   private List<Issue> toIssues(JsonNode response) {
@@ -134,6 +137,20 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
         });
 
     return issues;
+  }
+
+  private List<String> getWarnings(JsonNode entryValue) {
+    var warnings = entryValue.get("warnings");
+    if (warnings == null || !warnings.isArray()) {
+      return Collections.emptyList();
+    }
+    List<String> warningsSet = new ArrayList<>();
+    ((ArrayNode) warnings)
+        .forEach(
+            warning -> {
+              warningsSet.add(warning.asText());
+            });
+    return warningsSet;
   }
 
   private void setCvssData(Issue issue, JsonNode node) {

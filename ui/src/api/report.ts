@@ -47,6 +47,9 @@ export interface ProviderStatus {
   name: string;
   code: number;
   message: string | null;
+  warnings: {
+    [key: string]: string[];
+  };
 }
 
 export interface Summary {

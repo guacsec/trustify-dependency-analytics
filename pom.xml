@@ -48,7 +48,7 @@
     <deploy-plugin.version>3.1.1</deploy-plugin.version>
 
     <!-- Dependencies -->
-    <trustify-da-api.version>2.0.1</trustify-da-api.version>
+    <trustify-da-api.version>2.0.2</trustify-da-api.version>
     <cyclonedx.version>11.0.1</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
     <spdx.version>2.0.2</spdx.version>

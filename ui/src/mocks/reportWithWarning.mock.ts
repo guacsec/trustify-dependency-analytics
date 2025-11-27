@@ -1,6 +1,6 @@
 import {AppData} from '@app/api/report';
 
-export const reportBasic: AppData = {
+export const reportWithWarning: AppData = {
   providerPrivateData: null,
   report: {
     "scanned": {
@@ -349,7 +349,11 @@ export const reportBasic: AppData = {
           "name": "trustify",
           "code": 200,
           "message": "OK",
-          "warnings": {}
+          "warnings": {
+            "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar": [
+              "I don't like this package"
+            ]
+          }
         },
         "sources": {
           "osv": {

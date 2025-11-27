@@ -14,7 +14,8 @@ export const unauthorizedReport: AppData = {
           "ok": false,
           "name": 'osv',
           "code": 401,
-          "message": 'Unauthorized: Verify the provided credentials are valid.'
+          "message": 'Unauthorized: Verify the provided credentials are valid.',
+          "warnings": {}
         }
       },
       "trustify": {
@@ -22,7 +23,8 @@ export const unauthorizedReport: AppData = {
           "ok": false,
           "name": 'trustify',
           "code": 401,
-          "message": 'Unauthorized: Verify the provided credentials are valid.'
+          "message": 'Unauthorized: Verify the provided credentials are valid.',
+          "warnings": {}
         }
       }
     },

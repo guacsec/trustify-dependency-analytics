@@ -78,6 +78,30 @@
     "primaryPackagePurpose" : "LIBRARY",
     "versionInfo" : "2.13.5.Final"
   }, {
+    "SPDXID" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-h2-2.13.5.Final-type-jar",
+    "annotations" : [ {
+      "annotationDate" : "2023-07-26T09:04:52Z",
+      "annotationType" : "OTHER",
+      "annotator" : "Tool: CycloneToSpdx",
+      "comment" : "MISSING_CDX_PROPERTY:componentType=\"LIBRARY\""
+    } ],
+    "copyrightText" : "NOASSERTION",
+    "description" : "Connect to the H2 database via JDBC",
+    "downloadLocation" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/",
+    "externalRefs" : [ {
+      "referenceCategory" : "PACKAGE-MANAGER",
+      "referenceLocator" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
+      "referenceType" : "purl"
+    }],
+    "filesAnalyzed" : false,
+    "homepage" : "https://github.com/quarkusio/quarkus",
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "Apache-2.0",
+    "name" : "io.quarkus:quarkus-jdbc-h2",
+    "originator" : "Organization: JBoss by Red Hat",
+    "primaryPackagePurpose" : "LIBRARY",
+    "versionInfo" : "2.13.5.Final"
+  }, {
     "SPDXID" : "SPDXRef-pkg-maven-io.quarkus-quarkus-hibernate-orm-2.13.5.Final-type-jar",
     "annotations" : [ {
       "annotationDate" : "2023-07-26T09:04:52Z",
@@ -591,6 +615,10 @@
     "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
     "relationshipType" : "DEPENDS_ON",
     "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-postgresql-2.13.5.Final-type-jar"
+  }, {
+    "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-pkg-maven-io.quarkus-quarkus-jdbc-h2-2.13.5.Final-type-jar"
   }, {
     "spdxElementId" : "SPDXRef-pkg-maven-org.acme.dbaas-postgresql-orm-quarkus-1.0.0-SNAPSHOT-type-jar",
     "relationshipType" : "DEPENDS_ON",

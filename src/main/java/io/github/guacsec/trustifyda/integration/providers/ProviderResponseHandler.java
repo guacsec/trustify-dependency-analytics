@@ -256,7 +256,10 @@ public abstract class ProviderResponseHandler {
                         sourceItems.put(
                             packageRef,
                             new PackageItem(
-                                packageRef, recommendation, new ArrayList<>(List.of(issue))));
+                                packageRef,
+                                recommendation,
+                                new ArrayList<>(List.of(issue)),
+                                packageItem.warnings()));
                       } else {
                         // Add issue to existing PackageItem if not already present
                         if (!existingItem.issues().contains(issue)) {
@@ -265,7 +268,11 @@ public abstract class ProviderResponseHandler {
 
                           sourceItems.put(
                               packageRef,
-                              new PackageItem(packageRef, recommendation, updatedIssues));
+                              new PackageItem(
+                                  packageRef,
+                                  recommendation,
+                                  updatedIssues,
+                                  packageItem.warnings()));
                         }
                       }
                     });
@@ -279,9 +286,16 @@ public abstract class ProviderResponseHandler {
           recommendations.forEach(
               (packageRef, recommendation) -> {
                 if (!items.containsKey(packageRef)) {
+                  var originalItem = pkgItems.get(packageRef);
                   items.put(
                       packageRef,
-                      new PackageItem(packageRef, recommendation, Collections.emptyList()));
+                      new PackageItem(
+                          packageRef,
+                          recommendation,
+                          Collections.emptyList(),
+                          originalItem != null
+                              ? originalItem.warnings()
+                              : Collections.emptyList()));
                 }
               });
         });
@@ -304,7 +318,17 @@ public abstract class ProviderResponseHandler {
         .entrySet()
         .forEach(
             entry -> reports.put(entry.getKey(), buildReportForSource(entry.getValue(), tree)));
+    var warnings = getWarnings(response.pkgItems());
+    if (response.status() != null) {
+      response.status().warnings(warnings);
+    }
     return new ProviderReport().status(response.status()).sources(reports);
+  }
+
+  private Map<String, List<String>> getWarnings(Map<String, PackageItem> pkgItems) {
+    return pkgItems.entrySet().stream()
+        .filter(item -> item.getValue().warnings() != null && !item.getValue().warnings().isEmpty())
+        .collect(Collectors.toMap(Map.Entry::getKey, item -> item.getValue().warnings()));
   }
 
   private Source buildReportForSource(Map<String, PackageItem> pkgItemsData, DependencyTree tree) {
@@ -447,7 +471,10 @@ public abstract class ProviderResponseHandler {
   }
 
   private void incrementCounter(PackageItem item, VulnerabilityCounter counter, boolean isDirect) {
-    if (item != null && !item.issues().isEmpty()) {
+    if (item == null) {
+      return;
+    }
+    if (!item.issues().isEmpty()) {
       counter.dependencies.incrementAndGet();
     }
     if (item.issues() == null) {

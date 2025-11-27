@@ -17,6 +17,8 @@
 
 package io.github.guacsec.trustifyda.integration.providers;
 
+import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.JustificationEnum.NotProvided;
+import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.StatusEnum.Fixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -43,6 +45,7 @@ import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
+import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
@@ -70,7 +73,8 @@ public class ProviderResponseHandlerTest {
 
     ProviderResponseHandler handler = new TestResponseHandler();
     ProviderReport response =
-        handler.buildReport(Mockito.mock(Exchange.class), new ProviderResponse(data, null), tree);
+        handler.buildReport(
+            Mockito.mock(Exchange.class), new ProviderResponse(data, new ProviderStatus()), tree);
     SourceSummary summary = getValidSource(response, sourceName).getSummary();
 
     assertEquals(expected.getDirect(), summary.getDirect());
@@ -83,6 +87,8 @@ public class ProviderResponseHandlerTest {
     assertEquals(expected.getRecommendations(), summary.getRecommendations());
     assertEquals(expected.getRemediations(), summary.getRemediations());
     assertEquals(expected.getDependencies(), summary.getDependencies());
+
+    assertEquals(expected.getUnscanned(), response.getStatus().getWarnings().size());
   }
 
   private static Stream<Arguments> getSummaryValues() {
@@ -94,25 +100,65 @@ public class ProviderResponseHandlerTest {
                     new PackageItem(
                         "pkg:npm/aa@1",
                         buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                        Collections.emptyList(),
                         Collections.emptyList()),
                 "pkg:npm/ab@1",
                     new PackageItem(
                         "pkg:npm/ab@1",
                         buildRecommendation("pkg:npm/ab@2", Collections.emptyMap()),
+                        Collections.emptyList(),
                         Collections.emptyList())),
             tree().direct("aa").direct("ab").build(),
             new SourceSummary().direct(0).total(0).dependencies(0).recommendations(2),
             TEST_PROVIDER),
-        // Case 2: 2 issues 0 recommendations
+        // Case 2: 2 issues 0 recommendations 3 unscanned
         Arguments.of(
             Map.of(
-                "pkg:npm/aa@1", new PackageItem("pkg:npm/aa@1", null, List.of(buildIssue(1, 5f))),
-                "pkg:npm/ab@1", new PackageItem("pkg:npm/ab@1", null, List.of(buildIssue(2, 8f))),
-                "pkg:npm/aaa@1", new PackageItem("pkg:npm/aaa@1", null, List.of(buildIssue(3, 4f))),
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1", null, List.of(buildIssue(1, 5f)), Collections.emptyList()),
+                "pkg:npm/ab@1",
+                new PackageItem(
+                    "pkg:npm/ab@1", null, List.of(buildIssue(2, 8f)), Collections.emptyList()),
+                "pkg:npm/aaa@1",
+                new PackageItem(
+                    "pkg:npm/aaa@1", null, List.of(buildIssue(3, 4f)), Collections.emptyList()),
                 "pkg:npm/aba@1",
-                    new PackageItem("pkg:npm/aba@1", null, List.of(buildIssue(4, 7f)))),
-            tree().direct("aa").withTransitive("aaa").direct("ab").withTransitive("aab").build(),
-            new SourceSummary().direct(2).transitive(2).total(4).high(2).medium(2).dependencies(4),
+                new PackageItem(
+                    "pkg:npm/aba@1", null, List.of(buildIssue(4, 7f)), Collections.emptyList()),
+                "pkg:npm/abc@1",
+                new PackageItem(
+                    "pkg:npm/abc",
+                    null,
+                    Collections.emptyList(),
+                    List.of("missing version component")),
+                "pkg:npm/abd@1",
+                new PackageItem(
+                    "pkg:npm/abd",
+                    null,
+                    Collections.emptyList(),
+                    List.of("missing version component")),
+                "pkg:npm/ac@1",
+                new PackageItem(
+                    "pkg:npm/ac",
+                    null,
+                    Collections.emptyList(),
+                    List.of("missing version component"))),
+            tree()
+                .direct("aa")
+                .withTransitive("aaa")
+                .direct("ab")
+                .withTransitive("aab", "abc", "abd")
+                .direct("ac")
+                .build(),
+            new SourceSummary()
+                .direct(2)
+                .transitive(2)
+                .total(4)
+                .high(2)
+                .medium(2)
+                .dependencies(4)
+                .unscanned(3),
             TEST_SOURCE),
         // Case 3: 2 issues with 1 remediation and 1 recommendation
         Arguments.of(
@@ -121,14 +167,14 @@ public class ProviderResponseHandlerTest {
                     new PackageItem(
                         "pkg:npm/aa@1",
                         buildRecommendation("pkg:npm/aa@2", Map.of("ISSUE-001", "Fixed")),
-                        List.of(
-                            buildIssueWithTcRemediation(
-                                1, 5f, "pkg:npm/aa@2-redhat-00001"))), // Issue with remediation (ID
+                        List.of(buildIssueWithTcRemediation(1, 5f, "pkg:npm/aa@2-redhat-00001")),
+                        Collections.emptyList()), // Issue with remediation (ID
                 // matches)
                 "pkg:npm/ab@1",
                     new PackageItem(
                         "pkg:npm/ab@1",
                         buildRecommendation("pkg:npm/ab@2", Collections.emptyMap()),
+                        Collections.emptyList(),
                         Collections.emptyList())), // Recommendation only
             tree().direct("aa").direct("ab").build(),
             new SourceSummary()
@@ -142,13 +188,27 @@ public class ProviderResponseHandlerTest {
         // Case 4: 2 direct issues with 4 transitive
         Arguments.of(
             Map.of(
-                "pkg:npm/aa@1", new PackageItem("pkg:npm/aa@1", null, List.of(buildIssue(1, 5f))),
-                "pkg:npm/ab@1", new PackageItem("pkg:npm/ab@1", null, List.of(buildIssue(2, 7f))),
-                "pkg:npm/aaa@1", new PackageItem("pkg:npm/aaa@1", null, List.of(buildIssue(3, 4f))),
-                "pkg:npm/aab@1", new PackageItem("pkg:npm/aab@1", null, List.of(buildIssue(4, 6f))),
-                "pkg:npm/aba@1", new PackageItem("pkg:npm/aba@1", null, List.of(buildIssue(5, 3f))),
+                "pkg:npm/aa@1",
+                    new PackageItem(
+                        "pkg:npm/aa@1", null, List.of(buildIssue(1, 5f)), Collections.emptyList()),
+                "pkg:npm/ab@1",
+                    new PackageItem(
+                        "pkg:npm/ab@1", null, List.of(buildIssue(2, 7f)), Collections.emptyList()),
+                "pkg:npm/aaa@1",
+                    new PackageItem(
+                        "pkg:npm/aaa@1", null, List.of(buildIssue(3, 4f)), Collections.emptyList()),
+                "pkg:npm/aab@1",
+                    new PackageItem(
+                        "pkg:npm/aab@1", null, List.of(buildIssue(4, 6f)), Collections.emptyList()),
+                "pkg:npm/aba@1",
+                    new PackageItem(
+                        "pkg:npm/aba@1", null, List.of(buildIssue(5, 3f)), Collections.emptyList()),
                 "pkg:npm/abb@1",
-                    new PackageItem("pkg:npm/abb@1", null, List.of(buildIssue(6, 8f)))),
+                    new PackageItem(
+                        "pkg:npm/abb@1",
+                        null,
+                        List.of(buildIssue(6, 8f)),
+                        Collections.emptyList())),
             tree()
                 .direct("aa")
                 .withTransitive("aaa", "aab")
@@ -167,9 +227,15 @@ public class ProviderResponseHandlerTest {
         // Case 5: 0 direct issues, 2 transitive
         Arguments.of(
             Map.of(
-                "pkg:npm/aaa@1", new PackageItem("pkg:npm/aaa@1", null, List.of(buildIssue(1, 5f))),
+                "pkg:npm/aaa@1",
+                    new PackageItem(
+                        "pkg:npm/aaa@1", null, List.of(buildIssue(1, 5f)), Collections.emptyList()),
                 "pkg:npm/aab@1",
-                    new PackageItem("pkg:npm/aab@1", null, List.of(buildIssue(2, 7f)))),
+                    new PackageItem(
+                        "pkg:npm/aab@1",
+                        null,
+                        List.of(buildIssue(2, 7f)),
+                        Collections.emptyList())),
             tree().direct("aa").withTransitive("aaa").direct("ab").withTransitive("aab").build(),
             new SourceSummary().direct(0).transitive(2).total(2).high(1).medium(1).dependencies(2),
             TEST_SOURCE));
@@ -179,13 +245,27 @@ public class ProviderResponseHandlerTest {
   public void testSorted() throws IOException {
     Map<String, PackageItem> data =
         Map.of(
-            "pkg:npm/aa@1", new PackageItem("pkg:npm/aa@1", null, List.of(buildIssue(1, 4f))),
-            "pkg:npm/aaa@1", new PackageItem("pkg:npm/aaa@1", null, List.of(buildIssue(2, 3f))),
-            "pkg:npm/aab@1", new PackageItem("pkg:npm/aab@1", null, List.of(buildIssue(3, 1f))),
-            "pkg:npm/ab@1", new PackageItem("pkg:npm/ab@1", null, List.of(buildIssue(4, 2f))),
-            "pkg:npm/aba@1", new PackageItem("pkg:npm/aba@1", null, List.of(buildIssue(5, 3f))),
-            "pkg:npm/abb@1", new PackageItem("pkg:npm/abb@1", null, List.of(buildIssue(6, 9f))),
-            "pkg:npm/abc@1", new PackageItem("pkg:npm/abc@1", null, List.of(buildIssue(7, 6f))));
+            "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1", null, List.of(buildIssue(1, 4f)), Collections.emptyList()),
+            "pkg:npm/aaa@1",
+                new PackageItem(
+                    "pkg:npm/aaa@1", null, List.of(buildIssue(2, 3f)), Collections.emptyList()),
+            "pkg:npm/aab@1",
+                new PackageItem(
+                    "pkg:npm/aab@1", null, List.of(buildIssue(3, 1f)), Collections.emptyList()),
+            "pkg:npm/ab@1",
+                new PackageItem(
+                    "pkg:npm/ab@1", null, List.of(buildIssue(4, 2f)), Collections.emptyList()),
+            "pkg:npm/aba@1",
+                new PackageItem(
+                    "pkg:npm/aba@1", null, List.of(buildIssue(5, 3f)), Collections.emptyList()),
+            "pkg:npm/abb@1",
+                new PackageItem(
+                    "pkg:npm/abb@1", null, List.of(buildIssue(6, 9f)), Collections.emptyList()),
+            "pkg:npm/abc@1",
+                new PackageItem(
+                    "pkg:npm/abc@1", null, List.of(buildIssue(7, 6f)), Collections.emptyList()));
     ProviderResponseHandler handler = new TestResponseHandler();
 
     ProviderReport response =
@@ -216,7 +296,8 @@ public class ProviderResponseHandlerTest {
             new PackageItem(
                 "pkg:npm/aa@1",
                 null,
-                List.of(buildIssue(1, 4f), buildIssue(2, 9f), buildIssue(3, 1f))));
+                List.of(buildIssue(1, 4f), buildIssue(2, 9f), buildIssue(3, 1f)),
+                Collections.emptyList()));
     ProviderResponseHandler handler = new TestResponseHandler();
 
     ProviderReport response =
@@ -232,12 +313,15 @@ public class ProviderResponseHandlerTest {
   public void testHighestVulnerabilityInTransitiveDependency() throws IOException {
     Map<String, PackageItem> data =
         Map.of(
-            "pkg:npm/aa@1", new PackageItem("pkg:npm/aa@1", null, Collections.emptyList()),
+            "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1", null, Collections.emptyList(), Collections.emptyList()),
             "pkg:npm/aaa@1",
                 new PackageItem(
                     "pkg:npm/aaa@1",
                     null,
-                    List.of(buildIssue(1, 4f), buildIssue(2, 9f), buildIssue(3, 1f))));
+                    List.of(buildIssue(1, 4f), buildIssue(2, 9f), buildIssue(3, 1f)),
+                    Collections.emptyList()));
     ProviderResponseHandler handler = new TestResponseHandler();
 
     ProviderReport response =
@@ -378,7 +462,7 @@ public class ProviderResponseHandlerTest {
     return new Recommendation(
         new PackageRef(ref),
         cves.entrySet().stream()
-            .map(e -> new Vulnerability(e.getKey(), e.getValue(), e.getValue() + " justification"))
+            .map(e -> new Vulnerability(e.getKey(), Fixed, NotProvided))
             .toList());
   }
 

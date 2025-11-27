@@ -823,5 +823,116 @@ public class TrustifyResponseHandlerTest {
     assertEquals(recommendation, recommendations.get(sbomRef));
   }
 
+  @Test
+  void testResponseToIssuesWithUnscannedRefs() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": {
+        "details": [],
+        "warnings": ["Unable to process: missing version component"]
+      },
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "Test CVE",
+            "status": {
+              "affected": [
+                {
+                  "labels": {
+                    "type": "csaf"
+                  },
+                  "scores": [
+                    {
+                      "type": "3.1",
+                      "value": 9.8,
+                      "severity": "critical"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "warnings": []
+      },
+      "pkg:maven/com.example/package@1.0.0": {
+        "details": [],
+        "warnings": ["Some warning message"]
+      },
+      "pkg:maven/com.other/package@2.0.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1234",
+            "title": "Test CVE",
+            "status": {
+              "affected": [
+                {
+                  "labels": {
+                    "type": "csaf"
+                  },
+                  "scores": [
+                    {
+                      "type": "3.1",
+                      "value": 7.5,
+                      "severity": "high"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+    """;
+
+    // Build dependency tree with all packages
+    var packageRef1 = new PackageRef("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
+    var packageRef2 = new PackageRef("pkg:maven/org.postgresql/postgresql@42.5.0");
+    var packageRef3 = new PackageRef("pkg:maven/com.example/package@1.0.0");
+    var packageRef4 = new PackageRef("pkg:maven/com.other/package@2.0.0");
+    var dependencies = new HashMap<PackageRef, DirectDependency>();
+    dependencies.put(packageRef1, new DirectDependency(packageRef1, Collections.emptySet()));
+    dependencies.put(packageRef2, new DirectDependency(packageRef2, Collections.emptySet()));
+    dependencies.put(packageRef3, new DirectDependency(packageRef3, Collections.emptySet()));
+    dependencies.put(packageRef4, new DirectDependency(packageRef4, Collections.emptySet()));
+    var testDependencyTree = new DependencyTree(dependencies);
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, testDependencyTree));
+
+    assertNotNull(result);
+    assertNotNull(result.pkgItems());
+    assertEquals(4, result.pkgItems().size());
+
+    // Package with empty details and warnings with data should be marked as unscanned
+    PackageItem packageItem1 =
+        result.pkgItems().get("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
+    assertNotNull(packageItem1);
+    assertTrue(
+        packageItem1.warnings().contains("Unable to process: missing version component"),
+        "Package with empty details and warnings should be marked as unscanned");
+
+    // Package with details and warnings with data should be marked as unscanned
+    PackageItem packageItem2 = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem2);
+    assertTrue(packageItem2.warnings().isEmpty());
+
+    // Package with empty warnings should not be marked as unscanned
+    PackageItem packageItem3 = result.pkgItems().get("pkg:maven/com.example/package@1.0.0");
+    assertNotNull(packageItem3);
+    assertTrue(packageItem3.warnings().contains("Some warning message"));
+
+    // Package without warnings should not be marked as unscanned
+    PackageItem packageItem4 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
+    assertNotNull(packageItem4);
+    assertTrue(
+        packageItem4.warnings().isEmpty(),
+        "Package without warnings should not be marked as unscanned");
+  }
+
   private static final record ExpectedRecommendation(String version, Set<String> cves) {}
 }

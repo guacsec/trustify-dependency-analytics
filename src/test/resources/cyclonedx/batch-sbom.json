@@ -433,6 +433,24 @@
         "bom-ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar"
       },
       {
+        "publisher" : "JBoss by Red Hat",
+        "group" : "io.quarkus",
+        "name" : "quarkus-jdbc-h2",
+        "version" : "2.13.5.Final",
+        "description" : "Connect to the H2 database via JDBC",
+        "scope" : "optional",
+        "licenses" : [
+          {
+            "license" : {
+              "id" : "Apache-2.0"
+            }
+          }
+        ],
+        "purl" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
+        "type" : "library",
+        "bom-ref" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
+      },
+      {
         "publisher": "PostgreSQL Global Development Group",
         "group": "org.postgresql",
         "name": "postgresql",
@@ -749,7 +767,8 @@
         "ref": "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar",
         "dependsOn": [
           "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-          "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar"
+          "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+          "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
         ]
       },
       {
@@ -786,6 +805,10 @@
         "dependsOn": [
           "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar"
         ]
+      },
+      {
+        "ref" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
+        "dependsOn" : [ ]
       },
       {
         "ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",

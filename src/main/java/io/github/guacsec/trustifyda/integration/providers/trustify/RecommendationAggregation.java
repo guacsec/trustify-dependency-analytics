@@ -35,6 +35,7 @@ import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
 import io.github.guacsec.trustifyda.model.trustify.Recommendation;
+import io.github.guacsec.trustifyda.model.trustify.Vulnerability;
 
 public class RecommendationAggregation implements AggregationStrategy {
 
@@ -138,17 +139,25 @@ public class RecommendationAggregation implements AggregationStrategy {
                       if (vuln == null) {
                         return;
                       }
+
                       var remediation =
                           new RemediationTrustedContent()
                               .ref(value.packageName())
-                              .status(vuln.getStatus())
-                              .justification(vuln.getJustification());
+                              .status(Vulnerability.Status.toString(vuln.getStatus()))
+                              .justification(
+                                  Vulnerability.Justification.toString(vuln.getJustification()));
                       issue.remediation(new Remediation().trustedContent(remediation));
                     });
           }
           providerResponse
               .pkgItems()
-              .put(key.ref(), new PackageItem(key.ref(), recommendation, issues));
+              .put(
+                  key.ref(),
+                  new PackageItem(
+                      key.ref(),
+                      recommendation,
+                      issues,
+                      pkgItem != null ? pkgItem.warnings() : Collections.emptyList()));
         });
   }
 

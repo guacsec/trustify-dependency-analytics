@@ -188,7 +188,7 @@ public class SbomParserTest {
     return getMediaTypes()
         .mapMulti(
             (t, consumer) -> {
-              consumer.accept(arguments(t, MAVEN_PURL_TYPE, 2, 7));
+              consumer.accept(arguments(t, MAVEN_PURL_TYPE, 3, 7));
               consumer.accept(arguments(t, GOLANG_PURL_TYPE, 2, 3));
               consumer.accept(arguments(t, NPM_PURL_TYPE, 2, 3));
               consumer.accept(arguments(t, PYPI_PURL_TYPE, 2, 1));

@@ -555,9 +555,9 @@ public class AnalysisTest extends AbstractAnalysisTest {
   }
 
   private void assertScanned(Scanned scanned) {
-    assertEquals(2, scanned.getDirect());
+    assertEquals(3, scanned.getDirect());
     assertEquals(7, scanned.getTransitive());
-    assertEquals(9, scanned.getTotal());
+    assertEquals(10, scanned.getTotal());
   }
 
   private void assertOsvSummary(Source source) {

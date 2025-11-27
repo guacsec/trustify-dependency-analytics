@@ -15,7 +15,8 @@ export const dockerReport: AppData = {
             "ok": true,
             "name": "rhtpa",
             "code": 200,
-            "message": "OK"
+            "message": "OK",
+            "warnings": {}
           },
           "sources": {
             "osv": {
@@ -756,7 +757,8 @@ export const dockerReport: AppData = {
             "ok": true,
             "name": "rhtpa",
             "code": 200,
-            "message": "OK"
+            "message": "OK",
+            "warnings": {}
           },
           "sources": {
             "osv": {

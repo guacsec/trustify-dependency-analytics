@@ -1,633 +1,648 @@
 {
-  "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar": [
-    {
-      "normative": true,
-      "identifier": "CVE-2020-36518",
-      "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
-      "description": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
-      "reserved": "2022-03-11T00:00:00Z",
-      "published": "2022-03-11T00:00:00Z",
-      "modified": "2025-05-01T03:55:10.091Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:6466bd7c-1996-4c47-a5c6-23b77acf12ed",
-            "identifier": "GHSA-57j2-w4cx-62h2",
-            "document_id": "GHSA-57j2-w4cx-62h2",
-            "issuer": null,
-            "published": "2022-03-12T00:00:36Z",
-            "modified": "2024-03-15T00:24:56Z",
-            "withdrawn": null,
-            "title": "Deeply nested json in jackson-databind",
-            "labels": {
-              "file": "github-reviewed/2022/03/GHSA-57j2-w4cx-62h2/GHSA-57j2-w4cx-62h2.json",
-              "importer": "osv-github",
-              "source": "https://github.com/github/advisory-database",
-              "type": "osv"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 8.2,
-                "severity": "high"
-              }
-            ]
-          }
-        ]
+  "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar": {
+    "details": [
+      {
+        "normative": true,
+        "identifier": "CVE-2020-36518",
+        "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
+        "description": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
+        "reserved": "2022-03-11T00:00:00Z",
+        "published": "2022-03-11T00:00:00Z",
+        "modified": "2025-05-01T03:55:10.091Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:6466bd7c-1996-4c47-a5c6-23b77acf12ed",
+              "identifier": "GHSA-57j2-w4cx-62h2",
+              "document_id": "GHSA-57j2-w4cx-62h2",
+              "issuer": null,
+              "published": "2022-03-12T00:00:36Z",
+              "modified": "2024-03-15T00:24:56Z",
+              "withdrawn": null,
+              "title": "Deeply nested json in jackson-databind",
+              "labels": {
+                "file": "github-reviewed/2022/03/GHSA-57j2-w4cx-62h2/GHSA-57j2-w4cx-62h2.json",
+                "importer": "osv-github",
+                "source": "https://github.com/github/advisory-database",
+                "type": "osv"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 8.2,
+                  "severity": "high"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "normative": true,
+        "identifier": "CVE-2022-42003",
+        "title": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.12.17.1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled.",
+        "description": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.12.17.1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled.",
+        "reserved": "2022-10-02T00:00:00Z",
+        "published": "2022-10-02T00:00:00Z",
+        "modified": "2024-08-03T12:56:39.107Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:355800f5-7dc0-4ccd-9b67-4a3376c9aa27",
+              "identifier": "GHSA-jjjh-jjxp-wpff",
+              "document_id": "GHSA-jjjh-jjxp-wpff",
+              "issuer": null,
+              "published": "2022-10-03T00:00:31Z",
+              "modified": "2024-09-13T18:29:13Z",
+              "withdrawn": null,
+              "title": "Uncontrolled Resource Consumption in Jackson-databind",
+              "labels": {
+                "source": "https://github.com/github/advisory-database",
+                "type": "osv",
+                "file": "github-reviewed/2022/10/GHSA-jjjh-jjxp-wpff/GHSA-jjjh-jjxp-wpff.json",
+                "importer": "osv-github"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 8.2,
+                  "severity": "high"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "normative": true,
+        "identifier": "CVE-2022-42004",
+        "title": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
+        "description": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
+        "reserved": "2022-10-02T00:00:00Z",
+        "published": "2022-10-02T00:00:00Z",
+        "modified": "2024-08-03T12:56:39.182Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:c81dee15-f217-4f82-9341-4c33fe3329ff",
+              "identifier": "GHSA-rgv9-q543-rqg4",
+              "document_id": "GHSA-rgv9-q543-rqg4",
+              "issuer": null,
+              "published": "2022-10-03T00:00:31Z",
+              "modified": "2024-12-02T16:17:21Z",
+              "withdrawn": null,
+              "title": "Uncontrolled Resource Consumption in FasterXML jackson-databind",
+              "labels": {
+                "importer": "osv-github",
+                "source": "https://github.com/github/advisory-database",
+                "file": "github-reviewed/2022/10/GHSA-rgv9-q543-rqg4/GHSA-rgv9-q543-rqg4.json",
+                "type": "osv"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 8.2,
+                  "severity": "high"
+                }
+              ]
+            }
+          ]
+        }
       }
-    },
-    {
-      "normative": true,
-      "identifier": "CVE-2022-42003",
-      "title": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.12.17.1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled.",
-      "description": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.12.17.1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled.",
-      "reserved": "2022-10-02T00:00:00Z",
-      "published": "2022-10-02T00:00:00Z",
-      "modified": "2024-08-03T12:56:39.107Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:355800f5-7dc0-4ccd-9b67-4a3376c9aa27",
-            "identifier": "GHSA-jjjh-jjxp-wpff",
-            "document_id": "GHSA-jjjh-jjxp-wpff",
-            "issuer": null,
-            "published": "2022-10-03T00:00:31Z",
-            "modified": "2024-09-13T18:29:13Z",
-            "withdrawn": null,
-            "title": "Uncontrolled Resource Consumption in Jackson-databind",
-            "labels": {
-              "source": "https://github.com/github/advisory-database",
-              "type": "osv",
-              "file": "github-reviewed/2022/10/GHSA-jjjh-jjxp-wpff/GHSA-jjjh-jjxp-wpff.json",
-              "importer": "osv-github"
+    ]
+  },
+  "warnings": [],
+  "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": {
+    "details": [
+      {
+        "normative": true,
+        "identifier": "CVE-2023-2974",
+        "title": "Quarkus-core: tls protocol configured with quarkus.http.ssl.protocols is not enforced, client can enforce weaker supported tls protocol",
+        "description": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
+        "reserved": "2023-05-30T10:06:53.993Z",
+        "published": "2023-07-04T13:24:29.648Z",
+        "modified": "2024-08-02T06:41:03.976Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [
+          "CWE-757"
+        ],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:79474942-d60c-4e59-a876-4c2cbc04649c",
+              "identifier": "GHSA-3fhx-3vvg-2j84",
+              "document_id": "GHSA-3fhx-3vvg-2j84",
+              "issuer": null,
+              "published": "2023-07-04T15:30:18Z",
+              "modified": "2023-07-06T15:32:02Z",
+              "withdrawn": null,
+              "title": "quarkus-core vulnerable to client driven TLS cipher downgrading",
+              "labels": {
+                "importer": "osv-github",
+                "file": "github-reviewed/2023/07/GHSA-3fhx-3vvg-2j84/GHSA-3fhx-3vvg-2j84.json",
+                "source": "https://github.com/github/advisory-database",
+                "type": "osv"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 6.7,
+                  "severity": "medium"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "normative": true,
+        "identifier": "CVE-2024-2700",
+        "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
+        "description": "A vulnerability was found in the quarkus-core component. Quarkus captures local environment variables from the Quarkus namespace during the application's build, therefore, running the resulting application inherits the values captured at build time. Some local environment variables may have been set by the developer or CI environment for testing purposes, such as dropping the database during application startup or trusting all TLS certificates to accept self-signed certificates. If these properties are configured using environment variables or the .env facility, they are captured into the built application, which can lead to dangerous behavior if the application does not override these values. This behavior only happens for configuration properties from the `quarkus.*` namespace. Application-specific properties are not captured.",
+        "reserved": "2024-03-20T01:39:49.992Z",
+        "published": "2024-04-04T13:46:39.956Z",
+        "modified": "2025-06-18T18:10:39.526Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [
+          "CWE-526"
+        ],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:3bfc1236-c7fd-4b2d-b483-ac8a8d98d5f0",
+              "identifier": "GHSA-f8h5-v2vg-46rr",
+              "document_id": "GHSA-f8h5-v2vg-46rr",
+              "issuer": null,
+              "published": "2024-04-04T15:30:34Z",
+              "modified": "2024-12-13T00:30:50Z",
+              "withdrawn": null,
+              "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
+              "labels": {
+                "type": "osv",
+                "source": "https://github.com/github/advisory-database",
+                "file": "github-reviewed/2024/04/GHSA-f8h5-v2vg-46rr/GHSA-f8h5-v2vg-46rr.json",
+                "importer": "osv-github"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 7,
+                  "severity": "high"
+                }
+              ]
             },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 8.2,
-                "severity": "high"
-              }
-            ]
-          }
-        ]
+            {
+              "uuid": "urn:uuid:71539fc2-a170-4189-90b7-3584119ae418",
+              "identifier": "https://www.redhat.com/#CVE-2024-2700",
+              "document_id": "CVE-2024-2700",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-03T00:00:00Z",
+              "modified": "2025-06-18T18:10:32Z",
+              "withdrawn": null,
+              "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+              "labels": {
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
+                "file": "2024/cve-2024-2700.json",
+                "type": "csaf",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 7,
+                  "severity": "high"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:8cd936a2-4583-40dd-ac1b-2c2eea038e7d",
+              "identifier": "https://www.redhat.com/#CVE-2024-2700",
+              "document_id": "CVE-2024-2700",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-03T00:00:00Z",
+              "modified": "2025-03-03T16:41:17Z",
+              "withdrawn": null,
+              "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+              "labels": {
+                "file": "2024/cve-2024-2700.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
+                "type": "csaf",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 7,
+                  "severity": "high"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:8d11d8c4-b7ac-4520-ac55-f0b4251b496e",
+              "identifier": "https://www.redhat.com/#RHSA-2024_2705",
+              "document_id": "RHSA-2024:2705",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-05-09T11:56:56Z",
+              "modified": "2025-06-26T02:53:02Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
+              "labels": {
+                "importer": "redhat-csaf",
+                "file": "2024/rhsa-2024_2705.json",
+                "type": "csaf",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 7,
+                  "severity": "high"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:c7ccfee4-2723-4aa5-9968-fd6e6b744102",
+              "identifier": "https://www.redhat.com/#RHSA-2024_2106",
+              "document_id": "RHSA-2024:2106",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-05-07T16:21:20Z",
+              "modified": "2025-06-26T02:53:20Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.8.4 release",
+              "labels": {
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "file": "2024/rhsa-2024_2106.json",
+                "type": "csaf",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 7,
+                  "severity": "high"
+                }
+              ]
+            }
+          ]
+        }
       }
-    },
-    {
-      "normative": true,
-      "identifier": "CVE-2022-42004",
-      "title": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
-      "description": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
-      "reserved": "2022-10-02T00:00:00Z",
-      "published": "2022-10-02T00:00:00Z",
-      "modified": "2024-08-03T12:56:39.182Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:c81dee15-f217-4f82-9341-4c33fe3329ff",
-            "identifier": "GHSA-rgv9-q543-rqg4",
-            "document_id": "GHSA-rgv9-q543-rqg4",
-            "issuer": null,
-            "published": "2022-10-03T00:00:31Z",
-            "modified": "2024-12-02T16:17:21Z",
-            "withdrawn": null,
-            "title": "Uncontrolled Resource Consumption in FasterXML jackson-databind",
-            "labels": {
-              "importer": "osv-github",
-              "source": "https://github.com/github/advisory-database",
-              "file": "github-reviewed/2022/10/GHSA-rgv9-q543-rqg4/GHSA-rgv9-q543-rqg4.json",
-              "type": "osv"
+    ],
+    "warnings": []
+  },
+  "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar": {
+    "details": [
+      {
+        "normative": true,
+        "identifier": "CVE-2022-41946",
+        "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
+        "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
+        "reserved": "2022-09-30T00:00:00Z",
+        "published": "2022-11-23T00:00:00Z",
+        "modified": "2024-08-03T12:56:38.648Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [
+          "CWE-200",
+          "CWE-377"
+        ],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
+              "identifier": "GHSA-562r-vg33-8x8h",
+              "document_id": "GHSA-562r-vg33-8x8h",
+              "issuer": null,
+              "published": "2022-11-23T22:17:25Z",
+              "modified": "2024-03-29T15:42:58Z",
+              "withdrawn": null,
+              "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+              "labels": {
+                "type": "osv",
+                "importer": "osv-github",
+                "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
+                "source": "https://github.com/github/advisory-database"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 5.8,
+                  "severity": "medium"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "normative": true,
+        "identifier": "CVE-2024-1597",
+        "title": "pgjdbc SQL Injection via line comment generation",
+        "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
+        "reserved": "2024-02-16T22:29:21.969Z",
+        "published": "2024-02-19T12:58:48.62Z",
+        "modified": "2025-06-12T15:37:51.979Z",
+        "withdrawn": null,
+        "discovered": null,
+        "released": null,
+        "cwes": [
+          "CWE-89"
+        ],
+        "status": {
+          "affected": [
+            {
+              "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
+              "identifier": "https://www.redhat.com/#RHSA-2024_1797",
+              "document_id": "RHSA-2024:1797",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-22T10:59:06Z",
+              "modified": "2025-06-26T02:54:07Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+              "labels": {
+                "type": "csaf",
+                "file": "2024/rhsa-2024_1797.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
             },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 8.2,
-                "severity": "high"
-              }
-            ]
-          }
-        ]
+            {
+              "uuid": "urn:uuid:0aeb82c2-3bdd-41dd-a3e3-c30480726986",
+              "identifier": "https://www.redhat.com/#CVE-2024-1597",
+              "document_id": "CVE-2024-1597",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-02-19T00:00:00Z",
+              "modified": "2025-07-10T09:23:53Z",
+              "withdrawn": null,
+              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+              "labels": {
+                "file": "2024/cve-2024-1597.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
+                "importer": "redhat-csaf",
+                "type": "csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:35c6db3d-ddcc-4c6b-9c65-4fe823937971",
+              "identifier": "https://www.redhat.com/#CVE-2024-1597",
+              "document_id": "CVE-2024-1597",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-02-19T00:00:00Z",
+              "modified": "2025-06-25T01:49:37Z",
+              "withdrawn": null,
+              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+              "labels": {
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
+                "type": "csaf",
+                "importer": "redhat-csaf",
+                "file": "2024/cve-2024-1597.json"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:6b500ddc-8971-482a-a56d-b835a77904dd",
+              "identifier": "https://www.redhat.com/#CVE-2024-1597",
+              "document_id": "CVE-2024-1597",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-02-19T00:00:00Z",
+              "modified": "2025-05-20T16:30:50Z",
+              "withdrawn": null,
+              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+              "labels": {
+                "file": "2024/cve-2024-1597.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
+                "importer": "redhat-csaf",
+                "type": "csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:7a3fa444-f1c7-4c70-9276-25ba4a25bf59",
+              "identifier": "https://www.redhat.com/#RHSA-2024_1662",
+              "document_id": "RHSA-2024:1662",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-03T10:53:02Z",
+              "modified": "2025-06-26T02:52:45Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+              "labels": {
+                "type": "csaf",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "file": "2024/rhsa-2024_1662.json",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:9ba57b5f-e234-4a3e-b5a3-7b64cd2bf3a3",
+              "identifier": "https://www.redhat.com/#CVE-2024-1597",
+              "document_id": "CVE-2024-1597",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-02-19T00:00:00Z",
+              "modified": "2025-06-24T18:27:58Z",
+              "withdrawn": null,
+              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+              "labels": {
+                "file": "2024/cve-2024-1597.json",
+                "type": "csaf",
+                "importer": "redhat-csaf",
+                "source": "https://security.access.redhat.com/data/csaf/v2/vex/"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:b8be1866-e7a2-4e12-8c61-8b06ec95fdc7",
+              "identifier": "https://www.redhat.com/#RHSA-2024_1797",
+              "document_id": "RHSA-2024:1797",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-22T10:59:06Z",
+              "modified": "2025-07-10T09:25:47Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+              "labels": {
+                "type": "csaf",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "importer": "redhat-csaf",
+                "file": "2024/rhsa-2024_1797.json"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:d5b874f9-7dde-409a-98bc-15c68f1bc52c",
+              "identifier": "GHSA-24rp-q3w6-vc56",
+              "document_id": "GHSA-24rp-q3w6-vc56",
+              "issuer": null,
+              "published": "2024-02-21T23:33:43Z",
+              "modified": "2024-02-21T23:33:43Z",
+              "withdrawn": null,
+              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation",
+              "labels": {
+                "type": "osv",
+                "source": "https://github.com/github/advisory-database",
+                "importer": "osv-github",
+                "file": "github-reviewed/2024/02/GHSA-24rp-q3w6-vc56/GHSA-24rp-q3w6-vc56.json"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 10,
+                  "severity": "critical"
+                }
+              ]
+            },
+            {
+              "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
+              "identifier": "https://www.redhat.com/#RHSA-2024_1662",
+              "document_id": "RHSA-2024:1662",
+              "issuer": {
+                "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                "name": "Red Hat Product Security",
+                "cpe_key": null,
+                "website": null
+              },
+              "published": "2024-04-03T10:53:02Z",
+              "modified": "2025-07-10T09:24:30Z",
+              "withdrawn": null,
+              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+              "labels": {
+                "type": "csaf",
+                "file": "2024/rhsa-2024_1662.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "importer": "redhat-csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ]
+            }
+          ]
+        }
       }
-    }
-  ],
-  "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": [
-    {
-      "normative": true,
-      "identifier": "CVE-2023-2974",
-      "title": "Quarkus-core: tls protocol configured with quarkus.http.ssl.protocols is not enforced, client can enforce weaker supported tls protocol",
-      "description": "A vulnerability was found in quarkus-core. This vulnerability occurs because the TLS protocol configured with quarkus.http.ssl.protocols is not enforced, and the client can force the selection of the weaker supported TLS protocol.",
-      "reserved": "2023-05-30T10:06:53.993Z",
-      "published": "2023-07-04T13:24:29.648Z",
-      "modified": "2024-08-02T06:41:03.976Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [
-        "CWE-757"
-      ],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:79474942-d60c-4e59-a876-4c2cbc04649c",
-            "identifier": "GHSA-3fhx-3vvg-2j84",
-            "document_id": "GHSA-3fhx-3vvg-2j84",
-            "issuer": null,
-            "published": "2023-07-04T15:30:18Z",
-            "modified": "2023-07-06T15:32:02Z",
-            "withdrawn": null,
-            "title": "quarkus-core vulnerable to client driven TLS cipher downgrading",
-            "labels": {
-              "importer": "osv-github",
-              "file": "github-reviewed/2023/07/GHSA-3fhx-3vvg-2j84/GHSA-3fhx-3vvg-2j84.json",
-              "source": "https://github.com/github/advisory-database",
-              "type": "osv"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 6.7,
-                "severity": "medium"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "normative": true,
-      "identifier": "CVE-2024-2700",
-      "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-      "description": "A vulnerability was found in the quarkus-core component. Quarkus captures local environment variables from the Quarkus namespace during the application's build, therefore, running the resulting application inherits the values captured at build time. Some local environment variables may have been set by the developer or CI environment for testing purposes, such as dropping the database during application startup or trusting all TLS certificates to accept self-signed certificates. If these properties are configured using environment variables or the .env facility, they are captured into the built application, which can lead to dangerous behavior if the application does not override these values. This behavior only happens for configuration properties from the `quarkus.*` namespace. Application-specific properties are not captured.",
-      "reserved": "2024-03-20T01:39:49.992Z",
-      "published": "2024-04-04T13:46:39.956Z",
-      "modified": "2025-06-18T18:10:39.526Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [
-        "CWE-526"
-      ],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:3bfc1236-c7fd-4b2d-b483-ac8a8d98d5f0",
-            "identifier": "GHSA-f8h5-v2vg-46rr",
-            "document_id": "GHSA-f8h5-v2vg-46rr",
-            "issuer": null,
-            "published": "2024-04-04T15:30:34Z",
-            "modified": "2024-12-13T00:30:50Z",
-            "withdrawn": null,
-            "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build",
-            "labels": {
-              "type": "osv",
-              "source": "https://github.com/github/advisory-database",
-              "file": "github-reviewed/2024/04/GHSA-f8h5-v2vg-46rr/GHSA-f8h5-v2vg-46rr.json",
-              "importer": "osv-github"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 7,
-                "severity": "high"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:71539fc2-a170-4189-90b7-3584119ae418",
-            "identifier": "https://www.redhat.com/#CVE-2024-2700",
-            "document_id": "CVE-2024-2700",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-03T00:00:00Z",
-            "modified": "2025-06-18T18:10:32Z",
-            "withdrawn": null,
-            "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
-            "labels": {
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
-              "file": "2024/cve-2024-2700.json",
-              "type": "csaf",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 7,
-                "severity": "high"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:8cd936a2-4583-40dd-ac1b-2c2eea038e7d",
-            "identifier": "https://www.redhat.com/#CVE-2024-2700",
-            "document_id": "CVE-2024-2700",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-03T00:00:00Z",
-            "modified": "2025-03-03T16:41:17Z",
-            "withdrawn": null,
-            "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
-            "labels": {
-              "file": "2024/cve-2024-2700.json",
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
-              "type": "csaf",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 7,
-                "severity": "high"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:8d11d8c4-b7ac-4520-ac55-f0b4251b496e",
-            "identifier": "https://www.redhat.com/#RHSA-2024_2705",
-            "document_id": "RHSA-2024:2705",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-05-09T11:56:56Z",
-            "modified": "2025-06-26T02:53:02Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
-            "labels": {
-              "importer": "redhat-csaf",
-              "file": "2024/rhsa-2024_2705.json",
-              "type": "csaf",
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 7,
-                "severity": "high"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:c7ccfee4-2723-4aa5-9968-fd6e6b744102",
-            "identifier": "https://www.redhat.com/#RHSA-2024_2106",
-            "document_id": "RHSA-2024:2106",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-05-07T16:21:20Z",
-            "modified": "2025-06-26T02:53:20Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.8.4 release",
-            "labels": {
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-              "file": "2024/rhsa-2024_2106.json",
-              "type": "csaf",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 7,
-                "severity": "high"
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ],
-  "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar": [
-    {
-      "normative": true,
-      "identifier": "CVE-2022-41946",
-      "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
-      "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
-      "reserved": "2022-09-30T00:00:00Z",
-      "published": "2022-11-23T00:00:00Z",
-      "modified": "2024-08-03T12:56:38.648Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [
-        "CWE-200",
-        "CWE-377"
-      ],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
-            "identifier": "GHSA-562r-vg33-8x8h",
-            "document_id": "GHSA-562r-vg33-8x8h",
-            "issuer": null,
-            "published": "2022-11-23T22:17:25Z",
-            "modified": "2024-03-29T15:42:58Z",
-            "withdrawn": null,
-            "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-            "labels": {
-              "type": "osv",
-              "importer": "osv-github",
-              "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-              "source": "https://github.com/github/advisory-database"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 5.8,
-                "severity": "medium"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "normative": true,
-      "identifier": "CVE-2024-1597",
-      "title": "pgjdbc SQL Injection via line comment generation",
-      "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
-      "reserved": "2024-02-16T22:29:21.969Z",
-      "published": "2024-02-19T12:58:48.62Z",
-      "modified": "2025-06-12T15:37:51.979Z",
-      "withdrawn": null,
-      "discovered": null,
-      "released": null,
-      "cwes": [
-        "CWE-89"
-      ],
-      "status": {
-        "affected": [
-          {
-            "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
-            "identifier": "https://www.redhat.com/#RHSA-2024_1797",
-            "document_id": "RHSA-2024:1797",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-22T10:59:06Z",
-            "modified": "2025-06-26T02:54:07Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-            "labels": {
-              "type": "csaf",
-              "file": "2024/rhsa-2024_1797.json",
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:0aeb82c2-3bdd-41dd-a3e3-c30480726986",
-            "identifier": "https://www.redhat.com/#CVE-2024-1597",
-            "document_id": "CVE-2024-1597",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-02-19T00:00:00Z",
-            "modified": "2025-07-10T09:23:53Z",
-            "withdrawn": null,
-            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-            "labels": {
-              "file": "2024/cve-2024-1597.json",
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
-              "importer": "redhat-csaf",
-              "type": "csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:35c6db3d-ddcc-4c6b-9c65-4fe823937971",
-            "identifier": "https://www.redhat.com/#CVE-2024-1597",
-            "document_id": "CVE-2024-1597",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-02-19T00:00:00Z",
-            "modified": "2025-06-25T01:49:37Z",
-            "withdrawn": null,
-            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-            "labels": {
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
-              "type": "csaf",
-              "importer": "redhat-csaf",
-              "file": "2024/cve-2024-1597.json"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:6b500ddc-8971-482a-a56d-b835a77904dd",
-            "identifier": "https://www.redhat.com/#CVE-2024-1597",
-            "document_id": "CVE-2024-1597",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-02-19T00:00:00Z",
-            "modified": "2025-05-20T16:30:50Z",
-            "withdrawn": null,
-            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-            "labels": {
-              "file": "2024/cve-2024-1597.json",
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/",
-              "importer": "redhat-csaf",
-              "type": "csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:7a3fa444-f1c7-4c70-9276-25ba4a25bf59",
-            "identifier": "https://www.redhat.com/#RHSA-2024_1662",
-            "document_id": "RHSA-2024:1662",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-03T10:53:02Z",
-            "modified": "2025-06-26T02:52:45Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-            "labels": {
-              "type": "csaf",
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-              "file": "2024/rhsa-2024_1662.json",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:9ba57b5f-e234-4a3e-b5a3-7b64cd2bf3a3",
-            "identifier": "https://www.redhat.com/#CVE-2024-1597",
-            "document_id": "CVE-2024-1597",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-02-19T00:00:00Z",
-            "modified": "2025-06-24T18:27:58Z",
-            "withdrawn": null,
-            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-            "labels": {
-              "file": "2024/cve-2024-1597.json",
-              "type": "csaf",
-              "importer": "redhat-csaf",
-              "source": "https://security.access.redhat.com/data/csaf/v2/vex/"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:b8be1866-e7a2-4e12-8c61-8b06ec95fdc7",
-            "identifier": "https://www.redhat.com/#RHSA-2024_1797",
-            "document_id": "RHSA-2024:1797",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-22T10:59:06Z",
-            "modified": "2025-07-10T09:25:47Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-            "labels": {
-              "type": "csaf",
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-              "importer": "redhat-csaf",
-              "file": "2024/rhsa-2024_1797.json"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:d5b874f9-7dde-409a-98bc-15c68f1bc52c",
-            "identifier": "GHSA-24rp-q3w6-vc56",
-            "document_id": "GHSA-24rp-q3w6-vc56",
-            "issuer": null,
-            "published": "2024-02-21T23:33:43Z",
-            "modified": "2024-02-21T23:33:43Z",
-            "withdrawn": null,
-            "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation",
-            "labels": {
-              "type": "osv",
-              "source": "https://github.com/github/advisory-database",
-              "importer": "osv-github",
-              "file": "github-reviewed/2024/02/GHSA-24rp-q3w6-vc56/GHSA-24rp-q3w6-vc56.json"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 10,
-                "severity": "critical"
-              }
-            ]
-          },
-          {
-            "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
-            "identifier": "https://www.redhat.com/#RHSA-2024_1662",
-            "document_id": "RHSA-2024:1662",
-            "issuer": {
-              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-              "name": "Red Hat Product Security",
-              "cpe_key": null,
-              "website": null
-            },
-            "published": "2024-04-03T10:53:02Z",
-            "modified": "2025-07-10T09:24:30Z",
-            "withdrawn": null,
-            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-            "labels": {
-              "type": "csaf",
-              "file": "2024/rhsa-2024_1662.json",
-              "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-              "importer": "redhat-csaf"
-            },
-            "scores": [
-              {
-                "type": "3.1",
-                "value": 9.8,
-                "severity": "critical"
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
+    ],
+    "warnings": []
+  },
+  "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar": {
+    "details": [],
+    "warnings": [
+      "I don't like this package"
+    ]
+  }
 }
