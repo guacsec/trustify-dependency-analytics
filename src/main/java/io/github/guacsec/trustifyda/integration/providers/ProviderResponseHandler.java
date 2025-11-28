@@ -474,7 +474,7 @@ public abstract class ProviderResponseHandler {
     if (item == null) {
       return;
     }
-    if (!item.issues().isEmpty()) {
+    if (item.issues() != null && !item.issues().isEmpty()) {
       counter.dependencies.incrementAndGet();
     }
     if (item.issues() == null) {

@@ -140,17 +140,17 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
   }
 
   private List<String> getWarnings(JsonNode entryValue) {
-    var warnings = entryValue.get("warnings");
-    if (warnings == null || !warnings.isArray()) {
+    var values = entryValue.get("warnings");
+    if (values == null || !values.isArray()) {
       return Collections.emptyList();
     }
-    List<String> warningsSet = new ArrayList<>();
-    ((ArrayNode) warnings)
+    List<String> warnings = new ArrayList<>();
+    ((ArrayNode) values)
         .forEach(
             warning -> {
-              warningsSet.add(warning.asText());
+              warnings.add(warning.asText());
             });
-    return warningsSet;
+    return warnings;
   }
 
   private void setCvssData(Issue issue, JsonNode node) {

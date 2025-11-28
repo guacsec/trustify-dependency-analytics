@@ -4,16 +4,27 @@ import {hasSignUpTab, uppercaseFirstLetter} from '../utils/utils';
 import {ProviderStatus, Report} from '../api/report';
 
 export const ReportErrorAlert = ({report}: { report: Report }) => {
+  
+  const isWarning = (e: ProviderStatus) => {
+    return e.code >= 400 || Object.keys(e.warnings).length > 0;
+  }
 
   const errorReports = Object.keys(report.providers)
     .map(name => {
       return report.providers[name].status;
     })
-    .filter(e => (!e.ok || Object.keys(e.warnings).length > 0) && !hasSignUpTab(e));
-  
+    .filter(e => (!e.ok || isWarning(e)) && !hasSignUpTab(e));
+
+  const getVariant = (e: ProviderStatus) => {
+    if(e.ok && !isWarning(e)) {
+      return AlertVariant.info;
+    }
+    return e.code >= 500 ? AlertVariant.danger : AlertVariant.warning;
+  }
+
   const getMessage = (e: ProviderStatus) => {
     let message = e.message;
-    if(e.ok && Object.keys(e.warnings).length > 0) {
+    if(e.ok && isWarning(e)) {
       return `${uppercaseFirstLetter(e.name)}: ${Object.keys(e.warnings).length} package(s) could not be analyzed`;
     }
 
@@ -25,9 +36,7 @@ export const ReportErrorAlert = ({report}: { report: Report }) => {
       {errorReports.map((e, index) => {
         return <Alert
           key={index}
-          variant={
-            e.code >= 500 ? AlertVariant.danger : e.code >= 400 ? AlertVariant.warning : undefined
-          }
+          variant={getVariant(e)}
           title={getMessage(e)}
         />
       })}
