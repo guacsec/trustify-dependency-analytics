@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.providers.trustify;
 
 import static io.github.guacsec.trustifyda.integration.providers.ProviderResponseHandlerTest.buildExchange;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -761,6 +762,8 @@ public class TrustifyResponseHandlerTest {
             });
   }
 
+  private static final record ExpectedRecommendation(String version, Set<String> cves) {}
+
   @Test
   void testProcessRecommendationsEmpty() throws IOException {
     Exchange exchange = mock(Exchange.class);
@@ -934,5 +937,98 @@ public class TrustifyResponseHandlerTest {
         "Package without warnings should not be marked as unscanned");
   }
 
-  private static final record ExpectedRecommendation(String version, Set<String> cves) {}
+  @Test
+  void testResponseToIssuesWithInvalidSeverity() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "Test CVE",
+            "status": {
+              "affected": [
+                {
+                  "labels": {
+                    "type": "csaf"
+                  },
+                  "scores": [
+                    {
+                      "type": "3.1",
+                      "value": 0.0,
+                      "severity": "none"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "warnings": []
+      },
+      "pkg:maven/com.other/package@2.0.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1234",
+            "title": "Test CVE",
+            "status": {
+              "affected": [
+                {
+                  "labels": {
+                    "type": "csaf"
+                  },
+                  "scores": [
+                    {
+                      "type": "3.1",
+                      "value": 7.5,
+                      "severity": "high"
+                    },
+                    {
+                      "type": "3.1",
+                      "value": 0.0,
+                      "severity": "none"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+    """;
+
+    // Build dependency tree with all packages
+    var packageRef1 = new PackageRef("pkg:maven/org.postgresql/postgresql@42.5.0");
+    var packageRef2 = new PackageRef("pkg:maven/com.other/package@2.0.0");
+    var dependencies = new HashMap<PackageRef, DirectDependency>();
+    dependencies.put(packageRef1, new DirectDependency(packageRef1, Collections.emptySet()));
+    dependencies.put(packageRef2, new DirectDependency(packageRef2, Collections.emptySet()));
+    var testDependencyTree = new DependencyTree(dependencies);
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, testDependencyTree));
+
+    assertNotNull(result);
+    assertNotNull(result.pkgItems());
+    assertEquals(2, result.pkgItems().size());
+
+    // Package with empty details and warnings with data should be marked as unscanned
+    PackageItem packageItem1 = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem1, "Package with no valid scores should be ignored");
+    List<Issue> issues = packageItem1.issues();
+    assertTrue(issues.isEmpty(), "Package with no valid scores should have no issues");
+
+    // Package with invalid severity should be marked as unscanned
+    PackageItem packageItem2 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
+    assertNotNull(packageItem2);
+    issues = packageItem2.issues();
+    assertFalse(issues.isEmpty(), "Package should have an issue");
+    assertEquals(issues.size(), 1, "Package should have one issue");
+    assertEquals(issues.get(0).getCvssScore(), 7.5f, "Issue should have the correct CVSS score");
+    assertEquals(
+        issues.get(0).getSeverity(), Severity.HIGH, "Issue should have the correct severity");
+  }
 }

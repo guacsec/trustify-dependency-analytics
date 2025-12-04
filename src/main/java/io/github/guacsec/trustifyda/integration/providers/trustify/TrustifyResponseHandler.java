@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
+import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +53,8 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 @RegisterForReflection
 public class TrustifyResponseHandler extends ProviderResponseHandler {
+
+  private static final Logger LOGGER = Logger.getLogger(TrustifyResponseHandler.class);
 
   private static final Map<ScoreType, Integer> SCORE_TYPE_ORDER =
       Map.of(
@@ -191,12 +194,16 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     var result = new ArrayList<AdvisoryScore>();
     scores.forEach(
         score -> {
-          var scoreType = ScoreType.fromValue(getTextValue(score, "type"));
-          var severity = getTextValue(score, "severity");
-          var scoreValue = score.get("value").asDouble();
-          result.add(
-              new AdvisoryScore(
-                  scoreType, SeverityUtils.fromValue(severity.toUpperCase()), scoreValue));
+          try {
+            var scoreType = ScoreType.fromValue(getTextValue(score, "type"));
+            var severity = getTextValue(score, "severity");
+            var scoreValue = score.get("value").asDouble();
+            result.add(
+                new AdvisoryScore(
+                    scoreType, SeverityUtils.fromValue(severity.toUpperCase()), scoreValue));
+          } catch (IllegalArgumentException e) {
+            LOGGER.infof("Error parsing advisory score: %s", score.toString(), e);
+          }
         });
 
     result.sort(
