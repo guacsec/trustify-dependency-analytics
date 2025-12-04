@@ -355,7 +355,7 @@
                     }
                 },
                 "sources": {
-                    "osv": {
+                    "osv-github": {
                         "summary": {
                             "direct": 0,
                             "transitive": 7,
@@ -379,7 +379,7 @@
                                             {
                                                 "id": "CVE-2024-1597",
                                                 "title": "pgjdbc SQL Injection via line comment generation",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 10.0,
                                                 "severity": "CRITICAL",
                                                 "cves": [
@@ -390,7 +390,7 @@
                                             {
                                                 "id": "CVE-2022-41946",
                                                 "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 5.8,
                                                 "severity": "MEDIUM",
                                                 "cves": [
@@ -402,7 +402,7 @@
                                         "highestVulnerability": {
                                             "id": "CVE-2024-1597",
                                             "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "osv",
+                                            "source": "osv-github",
                                             "cvssScore": 10.0,
                                             "severity": "CRITICAL",
                                             "cves": [
@@ -416,7 +416,7 @@
                                 "highestVulnerability": {
                                     "id": "CVE-2024-1597",
                                     "title": "pgjdbc SQL Injection via line comment generation",
-                                    "source": "osv",
+                                    "source": "osv-github",
                                     "cvssScore": 10.0,
                                     "severity": "CRITICAL",
                                     "cves": [
@@ -434,7 +434,7 @@
                                             {
                                                 "id": "CVE-2020-36518",
                                                 "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 8.2,
                                                 "severity": "HIGH",
                                                 "cves": [
@@ -452,7 +452,7 @@
                                             {
                                                 "id": "CVE-2022-42003",
                                                 "title": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.12.17.1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when the UNWRAP_SINGLE_VALUE_ARRAYS feature is enabled.",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 8.2,
                                                 "severity": "HIGH",
                                                 "cves": [
@@ -463,7 +463,7 @@
                                             {
                                                 "id": "CVE-2022-42004",
                                                 "title": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 8.2,
                                                 "severity": "HIGH",
                                                 "cves": [
@@ -475,7 +475,7 @@
                                         "highestVulnerability": {
                                             "id": "CVE-2020-36518",
                                             "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
-                                            "source": "osv",
+                                            "source": "osv-github",
                                             "cvssScore": 8.2,
                                             "severity": "HIGH",
                                             "cves": [
@@ -497,7 +497,7 @@
                                             {
                                                 "id": "CVE-2024-2700",
                                                 "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 7.0,
                                                 "severity": "HIGH",
                                                 "cves": [
@@ -508,7 +508,7 @@
                                             {
                                                 "id": "CVE-2023-2974",
                                                 "title": "Quarkus-core: tls protocol configured with quarkus.http.ssl.protocols is not enforced, client can enforce weaker supported tls protocol",
-                                                "source": "osv",
+                                                "source": "osv-github",
                                                 "cvssScore": 6.7,
                                                 "severity": "MEDIUM",
                                                 "cves": [
@@ -527,7 +527,7 @@
                                         "highestVulnerability": {
                                             "id": "CVE-2024-2700",
                                             "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                            "source": "osv",
+                                            "source": "osv-github",
                                             "cvssScore": 7.0,
                                             "severity": "HIGH",
                                             "cves": [
@@ -541,7 +541,7 @@
                                 "highestVulnerability": {
                                     "id": "CVE-2020-36518",
                                     "title": "jackson-databind before 2.13.0 allows a Java StackOverflow exception and denial of service via a large depth of nested objects.",
-                                    "source": "osv",
+                                    "source": "osv-github",
                                     "cvssScore": 8.2,
                                     "severity": "HIGH",
                                     "cves": [
@@ -575,7 +575,7 @@
                             }
                         ]
                     },
-                    "csaf": {
+                    "redhat-csaf": {
                         "summary": {
                             "direct": 0,
                             "transitive": 2,
@@ -599,7 +599,7 @@
                                             {
                                                 "id": "CVE-2024-1597",
                                                 "title": "pgjdbc SQL Injection via line comment generation",
-                                                "source": "csaf",
+                                                "source": "redhat-csaf",
                                                 "cvssScore": 9.8,
                                                 "severity": "CRITICAL",
                                                 "cves": [
@@ -611,7 +611,7 @@
                                         "highestVulnerability": {
                                             "id": "CVE-2024-1597",
                                             "title": "pgjdbc SQL Injection via line comment generation",
-                                            "source": "csaf",
+                                            "source": "redhat-csaf",
                                             "cvssScore": 9.8,
                                             "severity": "CRITICAL",
                                             "cves": [
@@ -625,7 +625,7 @@
                                 "highestVulnerability": {
                                     "id": "CVE-2024-1597",
                                     "title": "pgjdbc SQL Injection via line comment generation",
-                                    "source": "csaf",
+                                    "source": "redhat-csaf",
                                     "cvssScore": 9.8,
                                     "severity": "CRITICAL",
                                     "cves": [
@@ -643,7 +643,7 @@
                                             {
                                                 "id": "CVE-2024-2700",
                                                 "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                                "source": "csaf",
+                                                "source": "redhat-csaf",
                                                 "cvssScore": 7.0,
                                                 "severity": "HIGH",
                                                 "cves": [
@@ -655,7 +655,7 @@
                                         "highestVulnerability": {
                                             "id": "CVE-2024-2700",
                                             "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                            "source": "csaf",
+                                            "source": "redhat-csaf",
                                             "cvssScore": 7.0,
                                             "severity": "HIGH",
                                             "cves": [
@@ -669,7 +669,7 @@
                                 "highestVulnerability": {
                                     "id": "CVE-2024-2700",
                                     "title": "Quarkus-core: leak of local configuration properties into quarkus applications",
-                                    "source": "csaf",
+                                    "source": "redhat-csaf",
                                     "cvssScore": 7.0,
                                     "severity": "HIGH",
                                     "cves": [

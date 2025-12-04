@@ -75,21 +75,21 @@ public class HtmlReportTest extends AbstractAnalysisTest {
 
     var webClient = initWebClient();
     HtmlPage page = extractPage(webClient, body);
-    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify/csaf source']");
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify/redhat-csaf source']");
     assertNotNull(srcBtn);
 
     page = click(webClient, srcBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size()); // osv | trustify/osv | trustify/csaf
-    DomElement table = tables.get(1); // trustify/osv
+    assertEquals(3, tables.size()); // osv | trustify/osv-github | trustify/redhat-csaf
+    DomElement table = tables.get(1); // trustify/osv-github
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
     assertNotNull(tbody);
     page = expandTransitiveTableDataCell(webClient, tbody);
 
     table =
         page.getFirstByXPath(
-            "//table[contains(@aria-label, 'trustify/osv transitive vulnerabilities')]");
+            "//table[contains(@aria-label, 'trustify/osv-github transitive vulnerabilities')]");
     List<HtmlTableBody> tbodies = table.getByXPath(".//tbody");
     List<HtmlTableBody> issues =
         tbodies.stream()

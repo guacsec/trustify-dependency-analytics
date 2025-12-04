@@ -74,8 +74,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
   private static final String CYCLONEDX = "cyclonedx";
   private static final String SPDX = "spdx";
   private static final String DEFAULT_TRUST_DA_TOKEN = "example-trust-da-token";
-  private static final String OSV_SOURCE = "osv";
-  private static final String CSAF_SOURCE = "csaf";
+  private static final String OSV_SOURCE = "osv-github";
+  private static final String CSAF_SOURCE = "redhat-csaf";
 
   @Override
   @AfterEach

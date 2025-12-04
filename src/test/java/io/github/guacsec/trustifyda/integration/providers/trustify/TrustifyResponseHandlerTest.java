@@ -951,7 +951,8 @@ public class TrustifyResponseHandlerTest {
               "affected": [
                 {
                   "labels": {
-                    "type": "csaf"
+                    "type": "csaf",
+                    "importer": "redhat-csaf"
                   },
                   "scores": [
                     {
@@ -976,7 +977,8 @@ public class TrustifyResponseHandlerTest {
               "affected": [
                 {
                   "labels": {
-                    "type": "csaf"
+                    "type": "csaf",
+                    "importer": "redhat-csaf"
                   },
                   "scores": [
                     {

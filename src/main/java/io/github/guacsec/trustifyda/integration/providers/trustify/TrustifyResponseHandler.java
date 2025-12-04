@@ -223,6 +223,6 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     if (labels == null) {
       return null;
     }
-    return getTextValue(labels, "type");
+    return getTextValue(labels, "importer");
   }
 }
