@@ -30,6 +30,22 @@ spec:
             memory: "5120Mi"
             cpu: "500m"
         env:
+        - name: DB_REDIS_HOST
+          value: redis
+        - name: DB_REDIS_PORT
+          value: 6379
+        - name: DB_POSTGRES_HOST
+          value: postgres
+        - name: DB_POSTGRES_PORT
+          value: 5432
+        - name: DB_POSTGRES_DATABASE
+          value: trustify
+        - name: DB_POSTGRES_USER
+          value: trustify
+        - name: DB_POSTGRES_PASSWORD
+          value: trustify123
+        - name: API_ONGUARD_DISABLED
+          value: true
         - name: MONITORING_ENABLED
           value: "false"
         - name: TRUSTIFY_HOST

@@ -73,7 +73,7 @@ public class RedisCacheService implements CacheService {
                         v.ref(), null, Collections.emptyList(), Collections.emptyList()));
               }
             });
-    LOGGER.infof("Cached %d items", misses.size());
+    LOGGER.debugf("Cached %d items", misses.size());
   }
 
   @Override
@@ -83,7 +83,7 @@ public class RedisCacheService implements CacheService {
     }
     var result =
         itemsCommands.mget(purls.stream().map(p -> "items:" + p.ref()).toArray(String[]::new));
-    LOGGER.infof("Got %d cached items for %d purls", result.size(), purls.size());
+    LOGGER.debugf("Got %d cached items for %d purls", result.size(), purls.size());
     return result.values().stream()
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(v -> new PackageRef(v.packageRef()), Function.identity()));
