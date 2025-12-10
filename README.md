@@ -7,6 +7,7 @@
 
 - Trustify: Provides vulnerability data and recommendations [Trustify](https://github.com/guacsec/trustify)
 - Postgres Database: Stores data needed for the Model Cards functionality. See [Model Cards](#model-cards)
+- Redis cache: Allows caching recommendations and remediations. Can be configured with the `quarkus.redis.host` parameter
 
 ## Vulnerability providers
 

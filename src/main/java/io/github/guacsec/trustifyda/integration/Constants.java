@@ -72,6 +72,9 @@ public final class Constants {
   public static final String PROVIDER_CONFIG_PROPERTY = "providerConfig";
   public static final String PROVIDERS_PROPERTY = "providers";
 
+  public static final String CACHE_MISSES_PROPERTY = "cacheMisses";
+  public static final String CACHE_HITS_PROPERTY = "cacheHits";
+
   public static final String OSV_NVD_PURLS_PATH = "/purls";
   public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 

@@ -45,16 +45,19 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 import io.github.guacsec.trustifyda.extensions.InjectWireMock;
 import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
+import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.config.DecoderConfig;
 import io.restassured.config.EncoderConfig;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
@@ -74,12 +77,21 @@ public abstract class AbstractAnalysisTest {
 
   @InjectWireMock WireMockServer server;
 
+  @Inject RedisDataSource redisDataSource;
+
   static {
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     RestAssured.config()
         .encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
     RestAssured.config()
         .decoderConfig(DecoderConfig.decoderConfig().defaultContentCharset("UTF-8"));
+  }
+
+  @BeforeEach
+  void clearCache() {
+    if (redisDataSource != null) {
+      redisDataSource.flushall();
+    }
   }
 
   @AfterEach

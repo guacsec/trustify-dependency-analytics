@@ -20,8 +20,10 @@ package io.github.guacsec.trustifyda.integration.providers.trustify;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
@@ -35,9 +37,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.cache.CacheService;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
 import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
+import io.github.guacsec.trustifyda.model.DependencyTree;
+import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderHealthCheckResult;
+import io.github.guacsec.trustifyda.model.ProviderResponse;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
 import io.github.guacsec.trustifyda.model.trustify.ProviderConfig;
 import io.github.guacsec.trustifyda.model.trustify.ProvidersConfig;
@@ -75,6 +81,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Inject ObjectMapper mapper;
   @Inject UBIRecommendation ubiRecommendation;
   @Inject MeterRegistry registry;
+  @Inject CacheService cacheService;
 
   // Other values are Affected and UnderInvestigation
   // see https://www.cisa.gov/sites/default/files/2023-01/VEX_Status_Justification_Jun22.pdf
@@ -101,12 +108,16 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     // Generic split request route
     from(direct("trustifySplitRequest"))
       .routeId("trustifySplitRequest")
-      .transform(method(TrustifyRequestBuilder.class, "split"))
+      .process(this::lookupCachedItems)
+      .transform(method(requestBuilder, "splitMisses"))
       .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
       .parallelProcessing()
         .transform()
         .method(requestBuilder, "buildRequest")
-        .to(direct("trustifyRequest"));
+        .to(direct("trustifyRequest"))
+        .bean(cacheService, "cacheItems")
+      .end()
+      .process(this::aggregateCacheHits);
 
     from(direct("recommendations"))
       .routeId("recommendations")
@@ -395,5 +406,66 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       return a;
     }
     return b;
+  }
+
+  /**
+   * Looks up cached items before the split. Stores cache hits in CACHE_HITS_PROPERTY and cache
+   * misses in CACHE_MISSES_PROPERTY.
+   */
+  private void lookupCachedItems(Exchange exchange) {
+    DependencyTree tree =
+        exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class);
+    if (tree == null || tree.dependencies().isEmpty()) {
+      exchange.setProperty(Constants.CACHE_MISSES_PROPERTY, Collections.emptySet());
+      exchange.setProperty(Constants.CACHE_HITS_PROPERTY, Collections.emptyMap());
+      return;
+    }
+
+    Set<PackageRef> allPurls = tree.getAll();
+    Map<PackageRef, PackageItem> cachedItems = cacheService.getCachedItems(allPurls);
+
+    // Store cache hits for later aggregation
+    exchange.setProperty(Constants.CACHE_HITS_PROPERTY, cachedItems);
+
+    // Calculate cache misses - items not found in cache
+    Set<PackageRef> misses = new HashSet<>(allPurls);
+    misses.removeAll(cachedItems.keySet());
+    exchange.setProperty(Constants.CACHE_MISSES_PROPERTY, misses);
+
+    LOGGER.debugf(
+        "Cache lookup: %d hits, %d misses out of %d total",
+        cachedItems.size(), misses.size(), allPurls.size());
+  }
+
+  /** Aggregates cache hits with the Trustify response. Called after all split requests complete. */
+  @SuppressWarnings("unchecked")
+  private void aggregateCacheHits(Exchange exchange) {
+    Map<PackageRef, PackageItem> cacheHits =
+        exchange.getProperty(Constants.CACHE_HITS_PROPERTY, Map.class);
+
+    if (cacheHits == null || cacheHits.isEmpty()) {
+      return;
+    }
+
+    ProviderResponse response = exchange.getIn().getBody(ProviderResponse.class);
+    if (response == null) {
+      // If no response from Trustify, create one from cache hits only
+      String providerName = exchange.getProperty(Constants.PROVIDER_NAME_PROPERTY, String.class);
+      Map<String, PackageItem> pkgItems = new HashMap<>();
+      cacheHits.forEach((ref, item) -> pkgItems.put(ref.ref(), item));
+      exchange
+          .getIn()
+          .setBody(new ProviderResponse(pkgItems, responseHandler.defaultOkStatus(providerName)));
+      return;
+    }
+
+    // Merge cache hits into the response
+    Map<String, PackageItem> mergedItems = new HashMap<>();
+    if (response.pkgItems() != null) {
+      mergedItems.putAll(response.pkgItems());
+    }
+    cacheHits.forEach((ref, item) -> mergedItems.put(ref.ref(), item));
+
+    exchange.getIn().setBody(new ProviderResponse(mergedItems, response.status()));
   }
 }
