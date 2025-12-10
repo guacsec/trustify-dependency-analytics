@@ -151,21 +151,30 @@ public abstract class ProviderResponseHandler {
     if (cause == null) {
       cause = exception;
     }
-    if (cause instanceof HttpOperationFailedException httpException) {
-      String message = prettifyHttpError(httpException);
-      status.message(message).code(httpException.getStatusCode());
-      LOGGER.warn("Unable to process request: {}", message, cause);
-    } else if (cause instanceof IllegalArgumentException
-        || cause instanceof UnexpectedProviderException
-        || cause instanceof PackageValidationException) {
-      status.message(cause.getMessage()).code(422);
-      LOGGER.debug("Unable to process request to: {}", providerName, exception);
-    } else {
-      status
-          .message(cause.getMessage())
-          .code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-      LOGGER.warn("Unable to process request to: {}", providerName, cause);
+    switch (cause) {
+      case null -> {
+        status.message("Unknown error").code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        LOGGER.warnf("Unable to process request to: {}", providerName);
+      }
+
+      case HttpOperationFailedException httpException -> {
+        String message = prettifyHttpError(httpException);
+        status.message(message).code(httpException.getStatusCode());
+        LOGGER.warnf("Unable to process request: {}", message, httpException);
+      }
+
+      case IllegalArgumentException ex -> handle422(ex, status, providerName);
+      case UnexpectedProviderException ex -> handle422(ex, status, providerName);
+      case PackageValidationException ex -> handle422(ex, status, providerName);
+
+      default -> {
+        status
+            .message(cause.getMessage())
+            .code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        LOGGER.warnf("Unable to process request to: {}", providerName, cause);
+      }
     }
+
     ProviderResponse response = new ProviderResponse(null, status);
     monitoringProcessor.processProviderError(exchange, exception, providerName);
     exchange.getMessage().setBody(response);
@@ -504,6 +513,11 @@ public abstract class ProviderResponseHandler {
                 counter.remediations.incrementAndGet();
               }
             });
+  }
+
+  private void handle422(Exception ex, ProviderStatus status, String providerName) {
+    status.message(ex.getMessage()).code(422);
+    LOGGER.debugf("Unable to process request to: {}", providerName, ex);
   }
 
   // The number of vulnerabilities is the total count of public CVEs
