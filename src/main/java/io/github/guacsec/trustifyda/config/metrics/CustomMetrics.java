@@ -38,6 +38,11 @@ public class CustomMetrics {
 
   private static final Collection<String> MONITORED_ROUTES =
       List.of(
+          "batchAnalysis",
+          "analysis",
+          "validateToken",
+          "restModelCard",
+          "restListModelCards",
           "getTrustedContent",
           "trustifyScan",
           // See ProviderRoutePolicy for more details
