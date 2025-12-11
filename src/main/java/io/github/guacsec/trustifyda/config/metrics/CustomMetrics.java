@@ -38,8 +38,8 @@ public class CustomMetrics {
 
   private static final Collection<String> MONITORED_ROUTES =
       List.of(
-          "batchAnalysis",
-          "analysis",
+          "batchDependencyAnalysis",
+          "dependencyAnalysis",
           "validateToken",
           "restModelCard",
           "restListModelCards",
