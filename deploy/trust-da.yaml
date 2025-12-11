@@ -44,8 +44,6 @@ spec:
           value: trustify
         - name: DB_POSTGRES_PASSWORD
           value: trustify123
-        - name: API_ONGUARD_DISABLED
-          value: true
         - name: MONITORING_ENABLED
           value: "false"
         - name: TRUSTIFY_HOST

@@ -81,8 +81,8 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     page = click(webClient, srcBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size()); // osv | trustify/osv-github | trustify/redhat-csaf
-    DomElement table = tables.get(1); // trustify/osv-github
+    assertEquals(2, tables.size()); // dependencies table and vulnerabilities table
+    DomElement table = tables.get(0); // dependencies table
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
     assertNotNull(tbody);
     page = expandTransitiveTableDataCell(webClient, tbody);

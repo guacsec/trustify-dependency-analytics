@@ -11,15 +11,7 @@
 
 ## Vulnerability providers
 
-It is possible to integrate with any number of vulnerability providers that follow the [Trustify](https://github.com/guacsec/trustify).
-Besides it allows users to integrate with [ONGuard](https://github.com/trustification/onguard) service to retrieve OSV vulnerabilities.
-
-### Configure the ONGuard vulnerability provider
-
-- `api.onguard.host` - The base URL of the ONGuard service endpoint (e.g., `https://api.onguard.example.com`)
-- `api.onguard.disabled` - Boolean flag to disable the ONGuard provider (default: `false`)
-- `api.onguard.timeout` - Request timeout duration for ONGuard API calls (default: `60s`)
-- `api.onguard.management.host` - Management endpoint URL for health checks and monitoring
+It is possible to integrate with any number of vulnerability providers that follow the [Trustify](https://github.com/guacsec/trustify) API specification.
 
 ### Configure a Trustify Vulnerability provider
 

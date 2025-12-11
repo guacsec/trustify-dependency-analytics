@@ -268,12 +268,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
         .parallelProcessing()
         .process(this::setProviderConfiguration)
         .setBody(exchangeProperty("originalBody"))
-        .choice()
-          .when(exchangeProperty(Constants.PROVIDER_NAME_PROPERTY).isEqualTo(Constants.OSV_PROVIDER))
-            .toD("direct:osvScan")
-          .otherwise()
-            .toD("direct:trustifyScan")
-        .end();
+        .toD("direct:trustifyScan");
 
     from(direct("validateToken"))
       .routeId("validateToken")
@@ -411,8 +406,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     if (providersQuery != null && !providersQuery.isEmpty()) {
       for (String provider : providersQuery.split(",")) {
         providers.add(provider.trim());
-        if (!vulnerabilityProvider.isProviderEnabled(provider)
-            && !Constants.OSV_PROVIDER.equals(provider)) {
+        if (!vulnerabilityProvider.isProviderEnabled(provider)) {
           throw new ClientErrorException(
               "Provider " + provider + " is not enabled", Response.Status.BAD_REQUEST);
         }

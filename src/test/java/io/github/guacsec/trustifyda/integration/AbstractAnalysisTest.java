@@ -25,7 +25,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static io.github.guacsec.trustifyda.extensions.WiremockExtension.TRUSTIFY_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -186,7 +185,6 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubAllProviders() {
-    stubOsvRequests();
     stubTrustifyRequests();
     stubRecommendRequests();
   }
@@ -265,38 +263,6 @@ public abstract class AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                     .withBodyFile("trustedcontent/maven_report.json")));
-  }
-
-  protected void stubOsvRequests() {
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/empty_report.json")));
-
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/onguard/maven_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/maven_report.json")));
-    server.stubFor(
-        post(Constants.OSV_NVD_PURLS_PATH)
-            .withHeader(Exchange.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON))
-            .withRequestBody(
-                equalToJson(loadFileAsString("__files/onguard/batch_request.json"), true, false))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBodyFile("onguard/maven_report.json")));
   }
 
   protected void stubTrustifyRequests() {
@@ -420,25 +386,12 @@ public abstract class AbstractAnalysisTest {
     server.verify(1, postRequestedFor(urlEqualTo(Constants.TRUSTIFY_RECOMMEND_PATH)));
   }
 
-  protected void verifyOsvRequest() {
-    verifyOsvRequest(1);
-  }
-
-  protected void verifyOsvRequest(int count) {
-    server.verify(count, postRequestedFor(urlEqualTo(Constants.OSV_NVD_PURLS_PATH)));
-  }
-
   protected void verifyNoInteractions() {
-    verifyNoInteractionsWithOsv();
     verifyNoInteractionsWithTrustify();
   }
 
   protected void verifyNoInteractionsWithRecommend() {
     server.verify(0, postRequestedFor(urlEqualTo(Constants.TRUSTIFY_RECOMMEND_PATH)));
-  }
-
-  protected void verifyNoInteractionsWithOsv() {
-    server.verify(0, postRequestedFor(urlPathEqualTo(Constants.OSV_NVD_PURLS_PATH)));
   }
 
   protected void verifyNoInteractionsWithTrustify() {

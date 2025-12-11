@@ -19,7 +19,6 @@ services:
       DB_POSTGRES_DATABASE: trustify
       DB_POSTGRES_USER: trustify
       DB_POSTGRES_PASSWORD: trustify123
-      API_ONGUARD_DISABLED: true
       
       # Trustify
       PROVIDER_TRUSTIFY_HOST: ${TRUSTIFY_HOST:-https://trustify.example.com/api/v2/}

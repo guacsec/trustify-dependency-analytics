@@ -19,18 +19,15 @@ package io.github.guacsec.trustifyda.integration.providers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.ExchangeBuilder;
 import org.apache.camel.health.HealthCheckRegistry;
 import org.apache.camel.health.HealthCheckResultBuilder;
 import org.apache.camel.impl.health.AbstractHealthCheck;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.ProviderHealthCheckResult;
-import io.github.guacsec.trustifyda.model.trustify.ProviderAuthConfig;
 import io.github.guacsec.trustifyda.model.trustify.ProviderConfig;
 import io.github.guacsec.trustifyda.model.trustify.ProvidersConfig;
 import io.quarkus.runtime.Startup;
@@ -49,12 +46,6 @@ public class ProviderHealthCheckManager {
 
   @Inject ProvidersConfig configuration;
 
-  @ConfigProperty(name = "api.onguard.disabled", defaultValue = "false")
-  boolean onguardDisabled;
-
-  @ConfigProperty(name = "api.onguard.management.host", defaultValue = "http://onguard:9000/")
-  String onguardManagementHost;
-
   @Startup
   public void registerHealthChecks() {
     configuration
@@ -63,8 +54,6 @@ public class ProviderHealthCheckManager {
             (name, config) -> {
               registry().register(new ProviderHealthCheck(name, config, "trustifyHealthCheck"));
             });
-
-    registerOsvHealthCheck();
   }
 
   private static class ProviderHealthCheck extends AbstractHealthCheck {
@@ -105,27 +94,5 @@ public class ProviderHealthCheckManager {
         builder.details(details);
       }
     }
-  }
-
-  private void registerOsvHealthCheck() {
-    ProviderConfig osvConfig =
-        new ProviderConfig() {
-          @Override
-          public boolean disabled() {
-            return onguardDisabled;
-          }
-
-          @Override
-          public String host() {
-            return onguardManagementHost;
-          }
-
-          @Override
-          public Optional<ProviderAuthConfig> auth() {
-            return Optional.empty();
-          }
-        };
-    registry()
-        .register(new ProviderHealthCheck(Constants.OSV_PROVIDER, osvConfig, "osvHealthCheck"));
   }
 }
