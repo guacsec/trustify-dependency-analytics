@@ -9,15 +9,6 @@ export const forbiddenReport: AppData = {
       "transitive": 7
     },
     "providers": {
-      "osv": {
-        "status": {
-          "ok": false,
-          "name": "osv",
-          "code": 403,
-          "message": "Forbidden: The provided credentials don't have the required permissions.",
-          "warnings": {}
-        }
-      },
       "trustify": {
         "status": {
           "ok": false,

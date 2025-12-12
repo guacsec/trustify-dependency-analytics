@@ -9,15 +9,6 @@ export const errorReport: AppData = {
       "transitive": 7
     },
     "providers": {
-      "osv": {
-        "status": {
-          "ok": false,
-          "name": "osv",
-          "code": 500,
-          "message": "Another serious error",
-          "warnings": {}
-        }
-      },
       "trustify": {
         "status": {
           "ok": false,
