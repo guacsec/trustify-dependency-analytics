@@ -37,7 +37,6 @@ import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.component.micrometer.MicrometerConstants;
 import org.apache.camel.component.micrometer.routepolicy.MicrometerRoutePolicyFactory;
@@ -262,13 +261,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("findVulnerabilities"))
       .routeId("findVulnerabilities")
-      .process(this::setProviders)
-      .setProperty("originalBody", body())
-      .split(exchangeProperty(Constants.PROVIDERS_PROPERTY), AggregationStrategies.beanAllowNull(ProviderAggregationStrategy.class, "aggregate"))
-        .parallelProcessing()
-        .process(this::setProviderConfiguration)
-        .setBody(exchangeProperty("originalBody"))
-        .toD("direct:trustifyScan");
+      .process(this::setProviderConfiguration)
+      .toD("direct:trustifyScan")
+      .process(this::wrapSingleProviderResult);
 
     from(direct("validateToken"))
       .routeId("validateToken")
@@ -421,9 +416,23 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   }
 
   private void setProviderConfiguration(Exchange exchange) {
-    var provider = exchange.getIn().getBody(String.class);
+    @SuppressWarnings("unchecked")
+    List<String> providers = exchange.getProperty(Constants.PROVIDERS_PARAM, List.class);
+
+    String provider = (providers != null && !providers.isEmpty()) ? providers.get(0) : "trustify";
+
     var config = vulnerabilityProvider.getProviderConfig(provider);
     exchange.setProperty(Constants.PROVIDER_NAME_PROPERTY, provider);
     exchange.setProperty(Constants.PROVIDER_CONFIG_PROPERTY, config);
+  }
+
+  private void wrapSingleProviderResult(Exchange exchange) {
+    var providerReport =
+        exchange.getIn().getBody(io.github.guacsec.trustifyda.api.v5.ProviderReport.class);
+    if (providerReport != null) {
+      Map<String, io.github.guacsec.trustifyda.api.v5.ProviderReport> result = new HashMap<>();
+      result.put(providerReport.getStatus().getName(), providerReport);
+      exchange.getIn().setBody(result);
+    }
   }
 }
