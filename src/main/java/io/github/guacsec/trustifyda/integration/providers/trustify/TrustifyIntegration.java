@@ -377,8 +377,12 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
                       .collect(
                           Collectors.toMap(
                               v -> v.getId().toUpperCase(), v -> v, this::filterFixed));
-              result.put(
-                  new PackageRef(e.getKey()), new IndexedRecommendation(pkgRef, vulnerabilities));
+              var sourcePkgRef = new PackageRef(e.getKey()).toGav();
+              var recommendationPkgRef = pkgRef.toGav();
+              if (!sourcePkgRef.equals(recommendationPkgRef)) {
+                result.put(
+                    new PackageRef(e.getKey()), new IndexedRecommendation(pkgRef, vulnerabilities));
+              }
             });
     return result;
   }

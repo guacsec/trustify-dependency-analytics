@@ -762,6 +762,34 @@ public class TrustifyResponseHandlerTest {
             });
   }
 
+  @Test
+  void testResponseToIssuesWithIdentityRecommendation() throws IOException {
+    Exchange exchange = mock(Exchange.class);
+    Message inMessage = mock(Message.class);
+    Message outMessage = mock(Message.class);
+
+    when(exchange.getIn()).thenReturn(inMessage);
+    when(exchange.getMessage()).thenReturn(outMessage);
+    when(exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class)).thenReturn(null);
+
+    byte[] responseBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("__files/trustedcontent/identity_report.json")
+            .readAllBytes();
+    when(inMessage.getBody(byte[].class)).thenReturn(responseBytes);
+
+    trustifyIntegration.processRecommendations(exchange);
+
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<Map> bodyCaptor = forClass(Map.class);
+    verify(outMessage).setBody(bodyCaptor.capture());
+    @SuppressWarnings("unchecked")
+    Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
+    assertNotNull(recommendations);
+    assertEquals(0, recommendations.size());
+  }
+
   private static final record ExpectedRecommendation(String version, Set<String> cves) {}
 
   @Test

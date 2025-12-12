@@ -1,0 +1,23 @@
+{
+  "recommendations": {
+    "pkg:maven/org.apache.commons/commons-compress@1.26.1.redhat-00003": [
+      {
+        "package": "pkg:maven/org.apache.commons/commons-compress@1.26.1.redhat-00003?repository_url=https://maven.repository.redhat.com/ga/&type=jar",
+        "vulnerabilities": [
+          {
+            "id": "CVE-2024-25710",
+            "status": {
+              "Other": "unknown"
+            }
+          },
+          {
+            "id": "CVE-2024-25710",
+            "status": {
+              "Other": "unknown"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
