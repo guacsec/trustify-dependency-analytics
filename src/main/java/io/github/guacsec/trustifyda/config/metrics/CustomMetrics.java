@@ -50,8 +50,7 @@ public class CustomMetrics {
           // "trustifyRequest"
           // "trustifyValidateCredentials"
           "processFailedRequests",
-          "processInternalError",
-          "osvHealthCheck");
+          "processInternalError");
 
   @Produces
   @Singleton

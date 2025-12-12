@@ -9,15 +9,6 @@ export const unauthorizedReport: AppData = {
       "transitive": 7
     },
     "providers": {
-      "osv": {
-        "status": {
-          "ok": false,
-          "name": 'osv',
-          "code": 401,
-          "message": 'Unauthorized: Verify the provided credentials are valid.',
-          "warnings": {}
-        }
-      },
       "trustify": {
         "status": {
           "ok": false,
