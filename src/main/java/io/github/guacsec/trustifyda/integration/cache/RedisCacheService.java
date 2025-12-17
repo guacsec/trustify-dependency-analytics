@@ -56,7 +56,8 @@ public class RedisCacheService implements CacheService {
         || response.status() == null
         || response.pkgItems() == null
         || misses == null
-        || misses.isEmpty()) {
+        || misses.isEmpty()
+        || Boolean.FALSE.equals(response.status().getOk())) {
       return;
     }
     misses.stream()

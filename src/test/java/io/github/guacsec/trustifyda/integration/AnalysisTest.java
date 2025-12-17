@@ -667,4 +667,63 @@ public class AnalysisTest extends AbstractAnalysisTest {
         secondOsvSource.getSummary().getTotal(),
         "Both responses should have the same total vulnerabilities");
   }
+
+  @Test
+  public void testCachingBehaviorWithErrors() {
+    stubAllProviders();
+
+    // First request - cache should be empty, Trustify should be called
+    var firstResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, ERROR_TOKEN)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    // Verify Trustify was called on first request
+    verifyTrustifyRequest(ERROR_TOKEN, 1);
+
+    // Reset WireMock request count but keep stubs
+    server.resetRequests();
+
+    // Second request - cache should be populated, Trustify should NOT be called
+    var secondResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    // Verify Trustify was NOT called on second request (everything from cache)
+    verifyTrustifyRequest(TRUSTIFY_TOKEN, 1);
+    // Verify both responses have the same vulnerability data
+    assertEquals(false, firstResponse.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getOk());
+    assertEquals(true, secondResponse.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getOk());
+    assertNull(
+        firstResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE),
+        "First response should NOT have OSV source");
+    var secondOsvSource =
+        secondResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+
+    assertNotNull(secondOsvSource, "Second response should have OSV source");
+    assertEquals(
+        7, secondOsvSource.getSummary().getTotal(), "Second request should have vulnerabilities");
+  }
 }

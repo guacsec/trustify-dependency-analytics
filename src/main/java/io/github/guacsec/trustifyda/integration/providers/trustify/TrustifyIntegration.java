@@ -406,16 +406,12 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   }
 
   private Vulnerability filterFixed(Vulnerability a, Vulnerability b) {
-    if (a.getStatus() != null && !FIXED_STATUSES.contains(a.getStatus())) {
+    if (a.getStatus() != null && !FIXED_STATUSES.contains(a.getStatus().toString())) {
       return a;
     }
     return b;
   }
 
-  /**
-   * Looks up cached items before the split. Stores cache hits in CACHE_HITS_PROPERTY and cache
-   * misses in CACHE_MISSES_PROPERTY.
-   */
   private void lookupCachedItems(Exchange exchange) {
     DependencyTree tree =
         exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class);
@@ -431,7 +427,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     // Store cache hits for later aggregation
     exchange.setProperty(Constants.CACHE_HITS_PROPERTY, cachedItems);
 
-    // Calculate cache misses - items not found in cache
     Set<PackageRef> misses = new HashSet<>(allPurls);
     misses.removeAll(cachedItems.keySet());
     exchange.setProperty(Constants.CACHE_MISSES_PROPERTY, misses);
@@ -441,7 +436,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         cachedItems.size(), misses.size(), allPurls.size());
   }
 
-  /** Aggregates cache hits with the Trustify response. Called after all split requests complete. */
   @SuppressWarnings("unchecked")
   private void aggregateCacheHits(Exchange exchange) {
     Map<PackageRef, PackageItem> cacheHits =
@@ -453,7 +447,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
 
     ProviderResponse response = exchange.getIn().getBody(ProviderResponse.class);
     if (response == null) {
-      // If no response from Trustify, create one from cache hits only
       String providerName = exchange.getProperty(Constants.PROVIDER_NAME_PROPERTY, String.class);
       Map<String, PackageItem> pkgItems = new HashMap<>();
       cacheHits.forEach((ref, item) -> pkgItems.put(ref.ref(), item));
@@ -463,7 +456,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       return;
     }
 
-    // Merge cache hits into the response
     Map<String, PackageItem> mergedItems = new HashMap<>();
     if (response.pkgItems() != null) {
       mergedItems.putAll(response.pkgItems());

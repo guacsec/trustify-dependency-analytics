@@ -160,7 +160,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     var scores = (ArrayNode) node.get("scores");
 
     if (scores != null && !scores.isEmpty()) {
-      var advisoryScores = getAdvisoryScore(scores);
+      var advisoryScores = getAdvisoryScore(issue.getId(), scores);
       if (!advisoryScores.isEmpty()) {
         var score = advisoryScores.get(0);
         issue.cvssScore(score.score().floatValue());
@@ -190,7 +190,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     issue.setRemediation(r);
   }
 
-  private List<AdvisoryScore> getAdvisoryScore(ArrayNode scores) {
+  private List<AdvisoryScore> getAdvisoryScore(String cveId, ArrayNode scores) {
     var result = new ArrayList<AdvisoryScore>();
     scores.forEach(
         score -> {
@@ -202,7 +202,9 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
                 new AdvisoryScore(
                     scoreType, SeverityUtils.fromValue(severity.toUpperCase()), scoreValue));
           } catch (IllegalArgumentException e) {
-            LOGGER.infof("Error parsing advisory score: %s", score.toString(), e);
+            LOGGER.infof(
+                "Unable to parse advisory score: %s for CVE %s: %s",
+                score.toString(), cveId, e.getMessage());
           }
         });
 
