@@ -69,6 +69,7 @@ public abstract class AbstractAnalysisTest {
   public static final String ERROR_TOKEN = "fail";
   public static final String INVALID_TOKEN = "invalid-token";
   public static final String UNAUTH_TOKEN = "test-not-authorized";
+  public static final String TIMEOUT_TOKEN = "timeout-token";
   public static final String TRUSTIFY_PROVIDER = "trustify";
 
   static final String WIREMOCK_URL_TEMPLATE = "__WIREMOCK_URL__";
@@ -319,6 +320,17 @@ public abstract class AbstractAnalysisTest {
             .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .willReturn(aResponse().withStatus(500).withBody("Unexpected error")));
+    // Timeout - delay response to exceed the configured 1 second timeout
+    server.stubFor(
+        post(Constants.TRUSTIFY_ANALYZE_PATH)
+            .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + TIMEOUT_TOKEN))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withFixedDelay(3000) // 3 seconds delay exceeds 1 second timeout
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("trustify/empty_report.json")));
     // Forbidden
     server.stubFor(
         post(Constants.TRUSTIFY_ANALYZE_PATH)

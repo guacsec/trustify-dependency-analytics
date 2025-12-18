@@ -606,6 +606,53 @@ public class AnalysisTest extends AbstractAnalysisTest {
   }
 
   @Test
+  public void testTimeoutError() {
+    stubAllProviders();
+
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, TIMEOUT_TOKEN)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    // Verify that the Trustify provider has a timeout error
+    assertEquals(2, report.getProviders().size());
+    var trustifyProvider = report.getProviders().get(TRUSTIFY_PROVIDER);
+    assertNotNull(trustifyProvider, "Trustify provider should be present");
+
+    // Timeout should result in GATEWAY_TIMEOUT (504) status
+    assertEquals(
+        jakarta.ws.rs.core.Response.Status.GATEWAY_TIMEOUT.getStatusCode(),
+        trustifyProvider.getStatus().getCode(),
+        "Timeout should return 504 GATEWAY_TIMEOUT status");
+    assertFalse(trustifyProvider.getStatus().getOk(), "Timeout should mark status as not OK");
+    assertEquals(
+        "Request timed out",
+        trustifyProvider.getStatus().getMessage(),
+        "Timeout should have appropriate error message");
+
+    // Verify that sources are empty due to timeout
+    assertTrue(
+        trustifyProvider.getSources().isEmpty(), "Sources should be empty when request times out");
+
+    // Verify the request was actually made to Trustify
+    verifyTrustifyRequest(TIMEOUT_TOKEN, 1);
+  }
+
+  @Test
   public void testCachingBehavior() {
     stubAllProviders();
 

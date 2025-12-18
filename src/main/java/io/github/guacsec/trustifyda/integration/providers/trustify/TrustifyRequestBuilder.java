@@ -53,22 +53,6 @@ public class TrustifyRequestBuilder {
     return mapper.writeValueAsString(request);
   }
 
-  public List<List<String>> split(DependencyTree tree) {
-    List<List<String>> bulks = new ArrayList<>();
-    List<String> bulk = new ArrayList<>();
-    for (var pkg : tree.getAll()) {
-      if (bulk.size() == BULK_SIZE) {
-        bulks.add(bulk);
-        bulk = new ArrayList<>();
-      }
-      bulk.add(pkg.ref());
-    }
-    if (!bulk.isEmpty()) {
-      bulks.add(bulk);
-    }
-    return bulks;
-  }
-
   public boolean isEmpty(DependencyTree tree) {
     return tree.dependencies().isEmpty();
   }

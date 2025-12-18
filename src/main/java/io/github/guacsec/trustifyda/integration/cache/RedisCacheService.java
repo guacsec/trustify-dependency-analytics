@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -60,21 +61,17 @@ public class RedisCacheService implements CacheService {
         || Boolean.FALSE.equals(response.status().getOk())) {
       return;
     }
-    misses.stream()
+    var count = new AtomicInteger(0);
+    response
+        .pkgItems()
         .forEach(
-            v -> {
-              var item = response.pkgItems().get(v.ref());
-              if (item != null) {
-                itemsCommands.psetex("items:" + v.ref(), itemTtl.toMillis(), item);
-              } else {
-                itemsCommands.psetex(
-                    "items:" + v.ref(),
-                    itemTtl.toMillis(),
-                    new PackageItem(
-                        v.ref(), null, Collections.emptyList(), Collections.emptyList()));
+            (ref, item) -> {
+              if (misses.contains(new PackageRef(ref))) {
+                itemsCommands.psetex("items:" + ref, itemTtl.toMillis(), item);
+                count.incrementAndGet();
               }
             });
-    LOGGER.debugf("Cached %d items", misses.size());
+    LOGGER.debugf("Cached %d items", count.get());
   }
 
   @Override

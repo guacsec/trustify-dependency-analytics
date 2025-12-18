@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
@@ -31,6 +32,7 @@ import org.apache.camel.Message;
 import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,8 +66,10 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class TrustifyIntegration extends EndpointRouteBuilder {
 
-  private static final String TIMEOUT_DURATION = "60s";
   private static final String TIMEOUT_DURATION_HEALTH = "1s";
+
+  @ConfigProperty(name = "api.trustify.timeout", defaultValue = "60s")
+  String timeout;
 
   private static final String TRUSTIFY_URL_PROPERTY = "trustifyUrl";
 
@@ -91,6 +95,10 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Override
   public void configure() throws Exception {
     // fmt:off
+    onException(TimeoutException.class)
+      .handled(true)
+      .process(responseHandler::processResponseError);
+
     // Generic trustify scan route that accepts provider configuration
     from(direct("trustifyScan"))
       .routeId("trustifyScan")
@@ -127,13 +135,13 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         .circuitBreaker()
           .faultToleranceConfiguration()
             .timeoutEnabled(true)
-            .timeoutDuration(TIMEOUT_DURATION)
+            .timeoutDuration(timeout)
           .end()
           .process(this::processRecommendationsRequest)
           .toD("${exchangeProperty.trustifyUrl}")
           .process(this::processRecommendations)
-        .onFallback()
-          .process(responseHandler::processResponseError)
+      .onFallback()
+        .process(responseHandler::processResponseError)
       .endChoice()
       
       .end();
@@ -144,7 +152,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
-          .timeoutDuration(TIMEOUT_DURATION)
+          .timeoutDuration(timeout)
         .end()
         .process(this::processVulnerabilitiesRequest)
       .toD("${exchangeProperty.trustifyUrl}")
@@ -186,7 +194,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
-          .timeoutDuration(TIMEOUT_DURATION)
+          .timeoutDuration(timeout)
         .end()
         .process(this::validateToken)
       .onFallback()

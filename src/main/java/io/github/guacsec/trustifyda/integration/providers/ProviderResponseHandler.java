@@ -140,48 +140,106 @@ public abstract class ProviderResponseHandler {
 
   public void processResponseError(Exchange exchange) {
     var providerName = getProviderName(exchange);
-    ProviderStatus status = new ProviderStatus().ok(false).name(providerName);
-    Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
+    var status = new ProviderStatus().ok(false).name(providerName);
 
-    Throwable cause = exception != null ? exception.getCause() : null;
+    var exception = getExceptionFromExchange(exchange);
 
-    while (cause instanceof RuntimeCamelException) {
+    var mapping = mapException(exception);
+
+    status.message(mapping.message()).code(mapping.statusCode());
+
+    LOGGER.warnf(
+        "Unable to process request to %s - %s", providerName, mapping.message(), exception);
+
+    monitoringProcessor.processProviderError(exchange, exception, providerName);
+    exchange.getMessage().setBody(new ProviderResponse(null, status));
+  }
+
+  private Exception getExceptionFromExchange(Exchange exchange) {
+    var exception =
+        firstNonNull(
+            exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
+            exchange.getException(),
+            exchange.getProperty("CamelCircuitBreakerException", Exception.class),
+            exchange
+                .getMessage()
+                .getHeader("CamelFaultToleranceExecutionException", Exception.class));
+
+    if (exception == null) {
+      LOGGER.warn("Fallback triggered but no exception found in exchange");
+      return null;
+    }
+
+    LOGGER.debugf("Handling exception: %s", exception.getClass().getName());
+    return unwrapException(exception);
+  }
+
+  @SafeVarargs
+  private static <T> T firstNonNull(T... values) {
+    for (T value : values) {
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  private Exception unwrapException(Exception exception) {
+    Throwable cause = exception;
+    while (cause instanceof RuntimeCamelException && cause.getCause() != null) {
       cause = cause.getCause();
     }
+    if (cause instanceof Exception ex) {
+      return ex;
+    }
+    return exception;
+  }
+
+  private ErrorMapping mapException(Exception exception) {
+    if (exception == null || isTimeoutException(exception)) {
+      return ErrorMapping.timeout();
+    }
+
+    if (exception instanceof HttpOperationFailedException http) {
+      return new ErrorMapping(prettifyHttpError(http), http.getStatusCode());
+    }
+
+    if (exception instanceof IllegalArgumentException
+        || exception instanceof UnexpectedProviderException
+        || exception instanceof PackageValidationException) {
+      return ErrorMapping.unprocessableEntity(exception.getMessage());
+    }
+
+    return ErrorMapping.internalError(exception.getMessage());
+  }
+
+  private record ErrorMapping(String message, int statusCode) {
+
+    static ErrorMapping timeout() {
+      return new ErrorMapping("Request timed out", Response.Status.GATEWAY_TIMEOUT.getStatusCode());
+    }
+
+    static ErrorMapping unprocessableEntity(String message) {
+      return new ErrorMapping(message, Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    static ErrorMapping internalError(String message) {
+      return new ErrorMapping(message, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+  }
+
+  private boolean isTimeoutException(Throwable cause) {
     if (cause == null) {
-      cause = exception;
+      return false;
     }
-    switch (cause) {
-      case null -> {
-        status.message("Unknown error").code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        LOGGER.warnf("Unable to process request to: {}", providerName);
-      }
-
-      case HttpOperationFailedException httpException -> {
-        String message = prettifyHttpError(httpException);
-        status.message(message).code(httpException.getStatusCode());
-        LOGGER.warnf("Unable to process request: {}", message, httpException);
-      }
-
-      case IllegalArgumentException ex -> handle422(ex, status, providerName);
-      case UnexpectedProviderException ex -> handle422(ex, status, providerName);
-      case PackageValidationException ex -> handle422(ex, status, providerName);
-
-      default -> {
-        status
-            .message(cause.getMessage())
-            .code(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        LOGGER.warnf("Unable to process request to: {}", providerName, cause);
-      }
-    }
-
-    ProviderResponse response = new ProviderResponse(null, status);
-    monitoringProcessor.processProviderError(exchange, exception, providerName);
-    exchange.getMessage().setBody(response);
+    var className = cause.getClass().getName();
+    return className.contains("TimeoutException")
+        || className.contains("CircuitBreakerOpenException")
+        || (cause.getMessage() != null && cause.getMessage().toLowerCase().contains("timeout"));
   }
 
   public void processTokenFallBack(Exchange exchange) {
-    Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
+    var exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
     var providerName = getProviderName(exchange);
     Throwable cause = exception;
     if (exception.getCause() != null) {
@@ -341,8 +399,8 @@ public abstract class ProviderResponseHandler {
   }
 
   private Source buildReportForSource(Map<String, PackageItem> pkgItemsData, DependencyTree tree) {
-    List<DependencyReport> sourceReport = new ArrayList<>();
-    Set<String> processedRefs = new HashSet<>();
+    var sourceReport = new ArrayList<DependencyReport>();
+    var processedRefs = new HashSet<String>();
 
     // Process packages from the dependency tree
     tree.dependencies().entrySet().stream()
@@ -513,11 +571,6 @@ public abstract class ProviderResponseHandler {
                 counter.remediations.incrementAndGet();
               }
             });
-  }
-
-  private void handle422(Exception ex, ProviderStatus status, String providerName) {
-    status.message(ex.getMessage()).code(422);
-    LOGGER.debugf("Unable to process request to: {}", providerName, ex);
   }
 
   // The number of vulnerabilities is the total count of public CVEs

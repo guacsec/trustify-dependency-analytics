@@ -90,6 +90,16 @@ public class MonitoringProcessor {
     // Add meaningful breadcrumbs for provider errors
     var requestId = exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER, String.class);
     errorContext.breadcrumbs().add("Provider error in " + providerName + " - " + requestId);
+
+    if (exception == null) {
+      errorContext.breadcrumbs().add("Error type: Timeout");
+      errorContext.tags().put(PROVIDER_TAG, providerName);
+      errorContext.tags().put(ERROR_TYPE_TAG, PROVIDER_ERROR_TYPE);
+      Stream.of(LOGGED_PROPERTIES)
+          .forEach(p -> errorContext.metadata().put(p, exchange.getProperty(p, String.class)));
+      return;
+    }
+
     errorContext.breadcrumbs().add("Error type: " + exception.getClass().getSimpleName());
 
     errorContext.tags().put(PROVIDER_TAG, providerName);
