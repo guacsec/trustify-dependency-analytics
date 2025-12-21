@@ -217,7 +217,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asPrettyString();
     assertJson("reports/report.json", body);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
-    verifyOsvRequest();
     verifyRecommendRequest();
   }
 
@@ -246,7 +245,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertRecommendations(body, TRUSTIFY_PROVIDER, CSAF_SOURCE, 0);
     assertRecommendations(body, TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
-    verifyOsvRequest();
     verifyNoInteractionsWithRecommend();
   }
 
@@ -274,7 +272,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asPrettyString();
     assertJson("reports/report.json", body);
     verifyTrustifyRequest(OK_TOKEN);
-    verifyOsvRequest();
   }
 
   @Test
@@ -300,7 +297,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(2, report.getProviders().size());
+    assertEquals(1, report.getProviders().size());
     assertEquals(
         Response.Status.UNAUTHORIZED.getStatusCode(),
         report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
@@ -331,7 +328,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(2, report.getProviders().size());
+    assertEquals(1, report.getProviders().size());
     assertEquals(401, report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getCode());
     assertTrue(report.getProviders().get(TRUSTIFY_PROVIDER).getSources().isEmpty());
 
@@ -551,7 +548,6 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asPrettyString();
     assertJson("reports/batch_report.json", body);
     verifyTrustifyRequest(OK_TOKEN, 3);
-    verifyOsvRequest(3);
   }
 
   private void assertScanned(Scanned scanned) {

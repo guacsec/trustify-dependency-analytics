@@ -57,8 +57,6 @@ public final class Constants {
   public static final String SPDX_MEDIATYPE_JSON = "application/vnd.spdx+json";
   public static final String CYCLONEDX_MEDIATYPE_JSON = "application/vnd.cyclonedx+json";
 
-  public static final String OSV_PROVIDER = "osv";
-
   public static final String HTTP_UNAUTHENTICATED = "Unauthenticated";
 
   public static final String REQUEST_CONTENT_PROPERTY = "requestContent";
@@ -74,9 +72,6 @@ public final class Constants {
 
   public static final String CACHE_MISSES_PROPERTY = "cacheMisses";
   public static final String CACHE_HITS_PROPERTY = "cacheHits";
-
-  public static final String OSV_NVD_PURLS_PATH = "/purls";
-  public static final String OSV_NVD_HEALTH_PATH = "/q/health";
 
   public static final String TRUSTIFY_RECOMMEND_PATH = "/api/v2/purl/recommend";
   public static final String TRUSTIFY_ANALYZE_PATH = "/api/v2/vulnerability/analyze";
