@@ -625,7 +625,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     // Verify that the Trustify provider has a timeout error
-    assertEquals(2, report.getProviders().size());
+    assertEquals(1, report.getProviders().size());
     var trustifyProvider = report.getProviders().get(TRUSTIFY_PROVIDER);
     assertNotNull(trustifyProvider, "Trustify provider should be present");
 
