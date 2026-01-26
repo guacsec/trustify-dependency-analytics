@@ -39,7 +39,7 @@
     <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
-    <frontend-maven-plugin.version>1.13.4</frontend-maven-plugin.version>
+    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
     <google-java-format.version>1.17.0</google-java-format.version>
     <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
     <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
@@ -57,8 +57,8 @@
     <cvss-calculator.version>1.4.2</cvss-calculator.version>
 
     <!-- Node and Yarn -->
-    <node.version>v20.9.0</node.version>
-    <yarn.version>v1.22.19</yarn.version>
+    <node.version>v24.12.0</node.version>
+    <corepack.version>v0.32.0</corepack.version>
   </properties>
 
   <dependencyManagement>
@@ -267,36 +267,36 @@
         <version>${frontend-maven-plugin.version}</version>
         <executions>
           <execution>
-            <id>install node and yarn</id>
+            <id>install node and corepack</id>
             <phase>initialize</phase>
             <goals>
-              <goal>install-node-and-yarn</goal>
+              <goal>install-node-and-corepack</goal>
             </goals>
           </execution>
           <execution>
             <id>yarn install</id>
             <phase>compile</phase>
             <goals>
-              <goal>yarn</goal>
+              <goal>corepack</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>yarn install</arguments>
             </configuration>
           </execution>
           <execution>
             <id>yarn build</id>
             <phase>compile</phase>
             <goals>
-              <goal>yarn</goal>
+              <goal>corepack</goal>
             </goals>
             <configuration>
-              <arguments>run build</arguments>
+              <arguments>yarn build</arguments>
             </configuration>
           </execution>
         </executions>
         <configuration>
           <nodeVersion>${node.version}</nodeVersion>
-          <yarnVersion>${yarn.version}</yarnVersion>
+          <corepackVersion>${corepack.version}</corepackVersion>
           <workingDirectory>${project.basedir}/ui</workingDirectory>
           <installDirectory>target</installDirectory>
         </configuration>
