@@ -215,9 +215,12 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
+
+    body = replaceMockedDepsDevSourceUrl(body);
     assertJson("reports/report.json", body);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyRecommendRequest();
+    verifyLicensesRequest(1);
   }
 
   @Test
@@ -270,8 +273,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
+    body = replaceMockedDepsDevSourceUrl(body);
     assertJson("reports/report.json", body);
     verifyTrustifyRequest(OK_TOKEN);
+    verifyLicensesRequest(1);
   }
 
   @Test
@@ -546,8 +551,12 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .extract()
             .body()
             .asPrettyString();
+
+    body = replaceMockedDepsDevSourceUrl(body);
+
     assertJson("reports/batch_report.json", body);
     verifyTrustifyRequest(OK_TOKEN, 3);
+    verifyLicensesRequest(3);
   }
 
   private void assertScanned(Scanned scanned) {
@@ -646,6 +655,85 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     // Verify the request was actually made to Trustify
     verifyTrustifyRequest(TIMEOUT_TOKEN, 1);
+  }
+
+  @Test
+  public void testLicensesInternalError() {
+    stubDepsDevInternalErrorRequest();
+
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    // Verify that the licenses provider has a timeout error
+    assertEquals(1, report.getLicenses().size());
+    var licenses = report.getLicenses().get(0);
+    assertNotNull(licenses, "Expected one result from licenses provider");
+
+    assertEquals(500, licenses.getStatus().getCode(), "Internal error should return 500 status");
+    assertFalse(licenses.getStatus().getOk(), "Should mark status as not OK");
+
+    assertTrue(licenses.getPackages().isEmpty(), "Packages should be empty on internal error");
+
+    verifyLicensesRequest(1);
+  }
+
+  @Test
+  public void testLicensesTimeoutError() {
+    stubAllProviders();
+    stubDepsDevTimeoutRequest();
+
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    // Verify that the licenses provider has a timeout error
+    assertEquals(1, report.getLicenses().size());
+    var licenses = report.getLicenses().get(0);
+    assertNotNull(licenses, "Expected one result from licenses provider");
+
+    // Timeout should result in GATEWAY_TIMEOUT (504) status
+    assertEquals(
+        jakarta.ws.rs.core.Response.Status.GATEWAY_TIMEOUT.getStatusCode(),
+        licenses.getStatus().getCode(),
+        "Timeout should return 504 GATEWAY_TIMEOUT status");
+    assertFalse(licenses.getStatus().getOk(), "Timeout should mark status as not OK");
+    assertEquals(
+        "Request timed out",
+        licenses.getStatus().getMessage(),
+        "Timeout should have appropriate error message");
+
+    assertTrue(licenses.getPackages().isEmpty(), "Packages should be empty when request times out");
+
+    verifyLicensesRequest(1);
   }
 
   @Test

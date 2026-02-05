@@ -36,8 +36,8 @@ public class WiremockExtension implements QuarkusTestResourceLifecycleManager {
     server.start();
 
     return Map.of(
-        "api.trustedcontent.host", server.baseUrl(),
-        "provider.trustify.host", server.baseUrl());
+        "provider.trustify.host", server.baseUrl(),
+        "api.licenses.depsdev.host", server.baseUrl());
   }
 
   @Override

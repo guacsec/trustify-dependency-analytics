@@ -1,0 +1,36 @@
+permissive:
+  - MIT
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - ISC
+  - Apache-2.0
+  - Zlib
+  - Artistic-2.0
+  - 0BSD
+  - BSL-1.0
+
+weak-copyleft:
+  - LGPL-2.0
+  - LGPL-2.1
+  - LGPL-3.0
+  - MPL-2.0
+  - EPL-1.0
+  - EPL-2.0
+  - CDDL-1.0
+  - CDDL-1.1
+
+strong-copyleft:
+  - GPL-2.0
+  - GPL-3.0
+  - AGPL-3.0
+
+exception-suffixes:
+  - classpath-exception
+  - gcc-exception-2.0
+  - gcc-exception-3.1
+  - clisp-exception-2.0
+  - i2p-gpl-java-exception
+  - libtool-exception
+  - occt-exception-1.0
+  - openvpn-openssl-exception
+  - nokia-qt-exception-1.1

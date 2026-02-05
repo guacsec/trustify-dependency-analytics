@@ -1,0 +1,721 @@
+{
+  "nextPageToken": "",
+  "responses": [
+    {
+      "request": {
+        "purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/quarkusio/quarkus"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/quarkusio/quarkus/issues/"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/quarkusio/quarkus"
+            }
+          ],
+          "publishedAt": "2022-11-25T10:45:43Z",
+          "purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "io.quarkus:quarkus-jdbc-h2",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.5.Final"
+            }
+          ],
+          "versionKey": {
+            "name": "io.quarkus:quarkus-jdbc-h2",
+            "system": "MAVEN",
+            "version": "2.13.5.Final"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "Apache License 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "scm:git:git@github.com:cdi-spec/cdi.git"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/eclipse-ee4j/cdi/issues"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "http://cdi-spec.org"
+            }
+          ],
+          "publishedAt": "2019-08-10T15:38:08Z",
+          "purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/eclipse-ee4j/cdi"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "jakarta.enterprise:jakarta.enterprise.cdi-api",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.0.2"
+            }
+          ],
+          "versionKey": {
+            "name": "jakarta.enterprise:jakarta.enterprise.cdi-api",
+            "system": "MAVEN",
+            "version": "2.0.2"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/quarkusio/quarkus"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/quarkusio/quarkus/issues/"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/quarkusio/quarkus"
+            }
+          ],
+          "publishedAt": "2022-11-25T10:38:07Z",
+          "purl": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "io.quarkus:quarkus-hibernate-orm",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.5.Final"
+            }
+          ],
+          "versionKey": {
+            "name": "io.quarkus:quarkus-hibernate-orm",
+            "system": "MAVEN",
+            "version": "2.13.5.Final"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/quarkusio/quarkus"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/quarkusio/quarkus/issues/"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/quarkusio/quarkus"
+            }
+          ],
+          "publishedAt": "2022-11-25T10:59:02Z",
+          "purl": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "io.quarkus:quarkus-narayana-jta",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.5.Final"
+            }
+          ],
+          "versionKey": {
+            "name": "io.quarkus:quarkus-narayana-jta",
+            "system": "MAVEN",
+            "version": "2.13.5.Final"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "EPL 2.0",
+              "spdx": "non-standard"
+            },
+            {
+              "license": "GPL2 w/ CPE",
+              "spdx": "GPL-2.0-with-classpath-exception"
+            }
+          ],
+          "licenses": [
+            "non-standard",
+            "GPL-2.0-with-classpath-exception"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/eclipse-ee4j/interceptor-api"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/eclipse-ee4j/interceptor-api/issues"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/eclipse-ee4j/interceptor-api"
+            }
+          ],
+          "publishedAt": "2019-09-10T04:23:16Z",
+          "purl": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/eclipse-ee4j/interceptor-api"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/eclipse-ee4j/interceptor-api"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "jakarta.interceptor:jakarta.interceptor-api",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "1.2.5"
+            }
+          ],
+          "versionKey": {
+            "name": "jakarta.interceptor:jakarta.interceptor-api",
+            "system": "MAVEN",
+            "version": "1.2.5"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/quarkusio/quarkus"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/quarkusio/quarkus/issues/"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/quarkusio/quarkus"
+            }
+          ],
+          "publishedAt": "2022-11-25T11:01:29Z",
+          "purl": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "io.quarkus:quarkus-jdbc-postgresql",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.5.Final"
+            }
+          ],
+          "versionKey": {
+            "name": "io.quarkus:quarkus-jdbc-postgresql",
+            "system": "MAVEN",
+            "version": "2.13.5.Final"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [
+            {
+              "id": "GHSA-57j2-w4cx-62h2"
+            },
+            {
+              "id": "GHSA-jjjh-jjxp-wpff"
+            },
+            {
+              "id": "GHSA-rgv9-q543-rqg4"
+            }
+          ],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "http://github.com/FasterXML/jackson-databind"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "http://github.com/FasterXML/jackson"
+            }
+          ],
+          "publishedAt": "2021-12-19T00:52:36Z",
+          "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/fasterxml/jackson-databind"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "com.fasterxml.jackson.core:jackson-databind",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.1"
+            }
+          ],
+          "versionKey": {
+            "name": "com.fasterxml.jackson.core:jackson-databind",
+            "system": "MAVEN",
+            "version": "2.13.1"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "EPL 2.0",
+              "spdx": "non-standard"
+            },
+            {
+              "license": "GPL2 w/ CPE",
+              "spdx": "GPL-2.0-with-classpath-exception"
+            }
+          ],
+          "licenses": [
+            "non-standard",
+            "GPL-2.0-with-classpath-exception"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/eclipse-ee4j/el-ri"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/eclipse-ee4j/el-ri/issues"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://projects.eclipse.org/projects/ee4j.el"
+            }
+          ],
+          "publishedAt": "2019-08-14T00:14:27Z",
+          "purl": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/eclipse-ee4j/el-ri"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/eclipse-ee4j/el-ri"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "jakarta.el:jakarta.el-api",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "3.0.3"
+            }
+          ],
+          "versionKey": {
+            "name": "jakarta.el:jakarta.el-api",
+            "system": "MAVEN",
+            "version": "3.0.3"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/org.postgresql/postgresql@42.5.0"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [
+            {
+              "id": "GHSA-24rp-q3w6-vc56"
+            },
+            {
+              "id": "GHSA-562r-vg33-8x8h"
+            }
+          ],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "BSD-2-Clause",
+              "spdx": "BSD-2-Clause"
+            }
+          ],
+          "licenses": [
+            "BSD-2-Clause"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/pgjdbc/pgjdbc"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/pgjdbc/pgjdbc/issues"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://jdbc.postgresql.org"
+            }
+          ],
+          "publishedAt": "2022-08-24T17:10:37Z",
+          "purl": "pkg:maven/org.postgresql/postgresql@42.5.0",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/pgjdbc/pgjdbc"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/pgjdbc/pgjdbc"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "org.postgresql:postgresql",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "42.5.0"
+            }
+          ],
+          "versionKey": {
+            "name": "org.postgresql:postgresql",
+            "system": "MAVEN",
+            "version": "42.5.0"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [
+            {
+              "id": "GHSA-3fhx-3vvg-2j84"
+            },
+            {
+              "id": "GHSA-f8h5-v2vg-46rr"
+            }
+          ],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "The Apache Software License, Version 2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/quarkusio/quarkus"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/quarkusio/quarkus/issues/"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/quarkusio/quarkus"
+            }
+          ],
+          "publishedAt": "2022-11-25T10:47:57Z",
+          "purl": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final",
+          "registries": [
+            "https://repo.maven.apache.org/maven2/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/quarkusio/quarkus"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "io.quarkus:quarkus-core",
+              "source": "MAVEN_POM_FILE",
+              "versionString": "2.13.5.Final"
+            }
+          ],
+          "versionKey": {
+            "name": "io.quarkus:quarkus-core",
+            "system": "MAVEN",
+            "version": "2.13.5.Final"
+          }
+        }
+      }
+    }
+  ]
+}

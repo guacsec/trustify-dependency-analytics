@@ -48,6 +48,16 @@ public final class Constants {
 
   public static final String TRUST_DA_TOKEN_HEADER = "trust-da-token";
   public static final String TRUST_DA_SOURCE_HEADER = "trust-da-source";
+
+  /**
+   * Set when entering a circuit breaker onFallback that has timeout enabled. Used only when the
+   * exchange has <em>no</em> exception: MicroProfile FT does not set the exception on timeout, so
+   * BackendUtils then treats null exception as timeout (504). Fallbacks that have an exception
+   * (e.g. 401, 500) are mapped from that exception and this property is ignored.
+   */
+  public static final String CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT =
+      "CircuitBreakerFallbackWithTimeout";
+
   public static final String TRUST_DA_OPERATION_TYPE_HEADER = "trust-da-operation-type";
   public static final String TRUST_DA_PKG_MANAGER_HEADER = "trust-da-pkg-manager";
   public static final String USER_AGENT_HEADER = "User-Agent";
@@ -76,6 +86,11 @@ public final class Constants {
   public static final String TRUSTIFY_RECOMMEND_PATH = "/api/v2/purl/recommend";
   public static final String TRUSTIFY_ANALYZE_PATH = "/api/v2/vulnerability/analyze";
   public static final String TRUSTIFY_HEALTH_PATH = "/.well-known/trustify";
+
+  public static final String DEPS_DEV_LICENSES_PATH = "/v3alpha/purlbatch";
+  public static final String DEPS_DEV_STATUS_PROPERTY = "depsDevStatus";
+  public static final String DEPS_DEV_ERROR_PROPERTY = "depsDevError";
+  public static final String LICENSES_REST_ENDPOINT_PROPERTY = "licensesRestEndpoint";
 
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 

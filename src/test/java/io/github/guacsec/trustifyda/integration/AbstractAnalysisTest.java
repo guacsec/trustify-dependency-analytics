@@ -18,6 +18,7 @@
 package io.github.guacsec.trustifyda.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
@@ -187,6 +188,7 @@ public abstract class AbstractAnalysisTest {
   protected void stubAllProviders() {
     stubTrustifyRequests();
     stubRecommendRequests();
+    stubLicensesRequests();
   }
 
   protected void verifyProviders(Collection<String> providers, Map<String, String> credentials) {
@@ -266,8 +268,11 @@ public abstract class AbstractAnalysisTest {
   }
 
   protected void stubTrustifyRequests() {
-    // Missing token
-    server.stubFor(post(Constants.TRUSTIFY_ANALYZE_PATH).willReturn(aResponse().withStatus(401)));
+    // Missing token - only match when Authorization header is absent
+    server.stubFor(
+        post(urlEqualTo(Constants.TRUSTIFY_ANALYZE_PATH))
+            .withHeader(Constants.AUTHORIZATION_HEADER, absent())
+            .willReturn(aResponse().withStatus(401)));
 
     // Invalid token
     server.stubFor(
@@ -286,9 +291,11 @@ public abstract class AbstractAnalysisTest {
             .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + ERROR_TOKEN))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .willReturn(aResponse().withStatus(500).withBody("Unexpected error")));
-    // Timeout - delay response to exceed the configured 1 second timeout
+    // Timeout - delay response to exceed the configured 1 second timeout (priority 1 so it matches
+    // before generic stubs when Authorization is Bearer timeout-token)
     server.stubFor(
-        post(Constants.TRUSTIFY_ANALYZE_PATH)
+        post(urlEqualTo(Constants.TRUSTIFY_ANALYZE_PATH))
+            .atPriority(1)
             .withHeader(Constants.AUTHORIZATION_HEADER, equalTo("Bearer " + TIMEOUT_TOKEN))
             .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
             .willReturn(
@@ -351,6 +358,48 @@ public abstract class AbstractAnalysisTest {
     OidcWiremockExtension.restubOidcEndpoints(server);
   }
 
+  protected void stubLicensesRequests() {
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .withRequestBody(
+                equalToJson(loadFileAsString("__files/depsdev/debian_request.json"), true, false))
+            .willReturn(aResponse().withStatus(200).withBodyFile("depsdev/debian_response.json")));
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .withRequestBody(
+                equalToJson(
+                    loadFileAsString("__files/depsdev/default_app_request.json"), true, false))
+            .willReturn(
+                aResponse().withStatus(200).withBodyFile("depsdev/default_app_response.json")));
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(aResponse().withStatus(200).withBodyFile("depsdev/maven_response.json")));
+  }
+
+  protected void stubDepsDevTimeoutRequest() {
+    // Priority 1 so this matches before the generic licenses stubs (same as Trustify timeout stub)
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .atPriority(1)
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withFixedDelay(3000) // 3 seconds delay exceeds 1 second timeout
+                    .withHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBodyFile("depsdev/maven_response.json")));
+  }
+
+  protected void stubDepsDevInternalErrorRequest() {
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withHeader(Exchange.CONTENT_TYPE, containing(MediaType.APPLICATION_JSON))
+            .willReturn(aResponse().withStatus(500)));
+  }
+
   protected void stubTokenValidationEndpoint() {
     server.stubFor(
         post(urlMatching(".*/realms/.*/token/introspect.*"))
@@ -384,6 +433,15 @@ public abstract class AbstractAnalysisTest {
 
   protected void verifyRecommendRequest() {
     server.verify(1, postRequestedFor(urlEqualTo(Constants.TRUSTIFY_RECOMMEND_PATH)));
+  }
+
+  protected void verifyLicensesRequest(int count) {
+    server.verify(count, postRequestedFor(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH)));
+  }
+
+  protected String replaceMockedDepsDevSourceUrl(String body) {
+    return body.replaceAll(
+        "\"sourceUrl\": \"http://localhost:(\\d+)\"", "\"sourceUrl\": \"https://api.deps.dev\"");
   }
 
   protected void verifyNoInteractions() {

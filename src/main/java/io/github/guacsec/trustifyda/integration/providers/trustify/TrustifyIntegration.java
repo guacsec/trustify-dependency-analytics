@@ -99,7 +99,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .handled(true)
       .process(responseHandler::processResponseError);
 
-    // Generic trustify scan route that accepts provider configuration
     from(direct("trustifyScan"))
       .routeId("trustifyScan")
       .choice()
@@ -113,7 +112,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
           .transform()
           .method(responseHandler, "buildReport");
 
-    // Generic split request route
     from(direct("trustifySplitRequest"))
       .routeId("trustifySplitRequest")
       .process(this::lookupCachedItems)
@@ -141,6 +139,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
           .toD("${exchangeProperty.trustifyUrl}")
           .process(this::processRecommendations)
       .onFallback()
+        // Mark fallback so null exception (FT timeout) is mapped to 504; other failures keep their status
+        .setProperty(Constants.CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT, constant(true))
         .process(responseHandler::processResponseError)
       .endChoice()
       
@@ -158,6 +158,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .toD("${exchangeProperty.trustifyUrl}")
       .transform(method(responseHandler, "responseToIssues"))
       .onFallback()
+        // Mark fallback so null exception (FT timeout) is mapped to 504; other failures keep their status
+        .setProperty(Constants.CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT, constant(true))
         .process(responseHandler::processResponseError)
       .end();
     
@@ -171,7 +173,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
           .to(direct("recommendations"))
       .end();
 
-    // Generic health check route
     from(direct("trustifyHealthCheck"))
       .routeId("trustifyHealthCheck")
       .routePolicy(new ProviderRoutePolicy(registry))
@@ -187,7 +188,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         .process(this::buildFailureHealthResult)
       .end();
 
-    // Generic credential validation route
     from(direct("trustifyValidateCredentials"))
       .routeId("trustifyValidateCredentials")
       .routePolicy(new ProviderRoutePolicy(registry))
@@ -256,7 +256,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     Integer statusCode = 503;
     String message = providerName + " Service is down";
 
-    // Check if there's an HTTP operation failure with specific status code
     Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
     if (exception instanceof HttpOperationFailedException httpException) {
       statusCode = httpException.getStatusCode();
@@ -272,11 +271,9 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   }
 
   private void addAuthentication(Exchange exchange) {
-    // Get the provider configuration from exchange property
     var config = exchange.getProperty(Constants.PROVIDER_CONFIG_PROPERTY, ProviderConfig.class);
 
     if (config != null && config.auth().isPresent()) {
-      // Get provider key from exchange property
       String providerKey = exchange.getProperty(Constants.PROVIDER_NAME_PROPERTY, String.class);
       String providerTokenHeader = String.format("ex-%s-token", providerKey);
       String token = exchange.getIn().getHeader(providerTokenHeader, String.class);
@@ -309,16 +306,12 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
           "Provider " + providerKey + " is not available", Response.Status.BAD_REQUEST);
     }
 
-    // Get provider configuration from exchange property (set by ExhortIntegration)
     var config = providersConfig.providers().get(providerKey);
     if (config != null && config.auth().isPresent()) {
-      // Use OIDC client for token validation if auth configuration is available
-      // Validate the provided token using OIDC introspection
       if (dynamicOidcClientService.hasClient(providerKey)) {
         try {
           boolean isValid = dynamicOidcClientService.validateToken(providerKey, token);
           if (isValid) {
-            // Use the validated token for authentication
             LOGGER.debug("Token validated successfully for provider: " + providerKey);
             exchange.getIn().setBody("Token validated successfully for provider: " + providerKey);
           } else {
@@ -432,7 +425,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     Set<PackageRef> allPurls = tree.getAll();
     Map<PackageRef, PackageItem> cachedItems = cacheService.getCachedItems(allPurls);
 
-    // Store cache hits for later aggregation
     exchange.setProperty(Constants.CACHE_HITS_PROPERTY, cachedItems);
 
     Set<PackageRef> misses = new HashSet<>(allPurls);

@@ -24,17 +24,26 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.Header;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.http.base.HttpOperationFailedException;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.common.util.MediaTypeHelper;
 
+import io.github.guacsec.trustifyda.config.exception.PackageValidationException;
+import io.github.guacsec.trustifyda.config.exception.UnexpectedProviderException;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 @RegisterForReflection
 public class BackendUtils {
+
+  private static final Logger LOGGER = Logger.getLogger(BackendUtils.class);
 
   public BackendUtils() {
     this.clock = Clock.systemDefaultZone();
@@ -91,5 +100,224 @@ public class BackendUtils {
       hexString.append(hex);
     }
     return hexString.toString();
+  }
+
+  public static Exception getExceptionFromExchange(Exchange exchange) {
+    var exception =
+        firstNonNull(
+            exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
+            exchange.getException(),
+            exchange.getProperty("CamelCircuitBreakerException", Exception.class),
+            exchange
+                .getMessage()
+                .getHeader("CamelFaultToleranceExecutionException", Exception.class));
+
+    if (exception == null) {
+      LOGGER.warn("Fallback triggered but no exception found in exchange");
+      return null;
+    }
+
+    LOGGER.debugf(
+        "Handling exception: %s - message: %s",
+        exception.getClass().getName(), exception.getMessage());
+
+    String detailedMessage = extractDetailedMessage(exception);
+    Exception unwrapped = unwrapException(exception);
+
+    if (detailedMessage != null && !detailedMessage.isEmpty()) {
+      exchange.setProperty("detailedErrorMessage", detailedMessage);
+    }
+
+    return unwrapped;
+  }
+
+  private static String extractDetailedMessage(Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      String msg = current.getMessage();
+      String className = current.getClass().getSimpleName();
+      LOGGER.debugf("Exception in chain: %s, message: %s", className, msg);
+      current = current.getCause();
+    }
+
+    String bestMessage = ExceptionUtils.getLongestMessage(exception);
+    LOGGER.debugf("Extracted detailed message: %s", bestMessage);
+    return bestMessage;
+  }
+
+  /**
+   * Resolves both the exception (for monitoring) and the error mapping (for HTTP status) from the
+   * exchange. Call this once in error handlers; pass the exception to monitoring and use the
+   * mapping for the response status.
+   */
+  public static ErrorMappingResult getErrorMappingFromExchange(Exchange exchange) {
+    Exception exception = getExceptionFromExchange(exchange);
+    ErrorMapping mapping = computeMappingFromExchange(exchange, exception);
+    return new ErrorMappingResult(exception, mapping);
+  }
+
+  /**
+   * Result of resolving an error from an exchange: exception for monitoring, mapping for status.
+   */
+  public static record ErrorMappingResult(Exception exception, ErrorMapping mapping) {}
+
+  /**
+   * Maps the exchange to an HTTP error mapping. Prefer {@link #getErrorMappingFromExchange} when
+   * you also need the exception for monitoring.
+   */
+  public static ErrorMapping mapException(Exchange exchange) {
+    return getErrorMappingFromExchange(exchange).mapping();
+  }
+
+  /**
+   * Determines the error mapping from the exchange and optional exception. Handles timeout when
+   * MicroProfile FT does not set the exception on the exchange (e.g. split/parallel).
+   */
+  private static ErrorMapping computeMappingFromExchange(Exchange exchange, Exception exception) {
+    if (isTimeoutFromExchange(exchange, exception)) {
+      return ErrorMapping.timeout();
+    }
+    return mapException(exception);
+  }
+
+  private static boolean isTimeoutFromExchange(Exchange exchange, Exception unwrappedException) {
+    if (Boolean.TRUE.equals(exchange.getProperty("CamelResponseTimedOut", Boolean.class))) {
+      return true;
+    }
+    var raw = getRawExceptionFromExchange(exchange);
+    if (raw != null && isTimeoutException(raw)) {
+      return true;
+    }
+    if (Boolean.TRUE.equals(exchange.getProperty("CamelResponseFromFallback", Boolean.class))) {
+      for (Object value : exchange.getProperties().values()) {
+        if (value instanceof Throwable t && isTimeoutException(t)) {
+          return true;
+        }
+      }
+      Object headerEx = exchange.getMessage().getHeader("CamelFaultToleranceExecutionException");
+      if (headerEx instanceof Throwable t && isTimeoutException(t)) {
+        return true;
+      }
+    }
+    return unwrappedException == null
+        && Boolean.TRUE.equals(
+            exchange.getProperty(Constants.CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT, Boolean.class));
+  }
+
+  /** Returns the exception as stored on the exchange, without unwrapping. */
+  private static Exception getRawExceptionFromExchange(Exchange exchange) {
+    return firstNonNull(
+        exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
+        exchange.getException(),
+        exchange.getProperty("CamelCircuitBreakerException", Exception.class),
+        exchange.getMessage().getHeader("CamelFaultToleranceExecutionException", Exception.class));
+  }
+
+  public static ErrorMapping mapException(Exception exception) {
+    if (exception == null) {
+      return ErrorMapping.internalError("Unknown error");
+    }
+
+    if (isTimeoutException(exception)) {
+      return ErrorMapping.timeout();
+    }
+
+    if (exception instanceof HttpOperationFailedException http) {
+      return new ErrorMapping(prettifyHttpError(http), http.getStatusCode());
+    }
+
+    if (isUnknownHostException(exception)) {
+      String hostname = getDetailedErrorMessage(exception);
+      return ErrorMapping.internalError("Failed to resolve hostname: " + hostname);
+    }
+
+    if (exception instanceof IllegalArgumentException
+        || exception instanceof UnexpectedProviderException
+        || exception instanceof PackageValidationException) {
+      return ErrorMapping.unprocessableEntity(exception.getMessage());
+    }
+
+    return ErrorMapping.internalError(getDetailedErrorMessage(exception));
+  }
+
+  private static String getDetailedErrorMessage(Exception exception) {
+    return ExceptionUtils.getLongestMessage(exception);
+  }
+
+  public static boolean isTimeoutException(Throwable cause) {
+    if (cause == null) {
+      return false;
+    }
+    return ExceptionUtils.findInChain(
+            cause,
+            e -> {
+              var className = e.getClass().getName();
+              var message = e.getMessage();
+              var msgLower = message != null ? message.toLowerCase() : "";
+              return className.contains("TimeoutException")
+                  || className.contains("CircuitBreakerOpenException")
+                  || className.contains("SocketTimeoutException")
+                  || msgLower.contains("timeout")
+                  || msgLower.contains("timed out");
+            })
+        .isPresent();
+  }
+
+  private static boolean isUnknownHostException(Throwable cause) {
+    if (cause == null) {
+      return false;
+    }
+    return ExceptionUtils.findInChain(cause, java.net.UnknownHostException.class).isPresent();
+  }
+
+  public static record ErrorMapping(String message, int statusCode) {
+
+    static ErrorMapping timeout() {
+      return new ErrorMapping("Request timed out", Response.Status.GATEWAY_TIMEOUT.getStatusCode());
+    }
+
+    static ErrorMapping unprocessableEntity(String message) {
+      return new ErrorMapping(message, Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    static ErrorMapping internalError(String message) {
+      return new ErrorMapping(message, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+  }
+
+  private static String prettifyHttpError(HttpOperationFailedException httpException) {
+    String text = httpException.getStatusText();
+    String defaultReason =
+        httpException.getResponseBody() != null && !httpException.getResponseBody().isBlank()
+            ? httpException.getResponseBody()
+            : httpException.getMessage();
+    return text
+        + switch (httpException.getStatusCode()) {
+          case 401 -> ": Verify the provided credentials are valid.";
+          case 403 -> ": The provided credentials don't have the required permissions.";
+          case 429 -> ": The rate limit has been exceeded.";
+          default -> ": " + defaultReason;
+        };
+  }
+
+  @SafeVarargs
+  private static <T> T firstNonNull(T... values) {
+    for (T value : values) {
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  public static Exception unwrapException(Exception exception) {
+    Throwable cause = exception;
+    while (cause instanceof RuntimeCamelException && cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    if (cause instanceof Exception ex) {
+      return ex;
+    }
+    return exception;
   }
 }

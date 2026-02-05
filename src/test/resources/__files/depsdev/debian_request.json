@@ -1,0 +1,7 @@
+{
+  "requests" : [ {
+    "purl" : "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994"
+  }, {
+    "purl" : "pkg:npm/%40xml-tools/common@0.1.6"
+  } ]
+}

@@ -39,6 +39,7 @@ import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.backend.JsonUtils;
 import io.github.guacsec.trustifyda.integration.providers.ProviderResponseHandler;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -110,11 +111,11 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             return;
           }
           var affected = (ArrayNode) status.get("affected");
-          var id = getTextValue(vuln, "identifier");
-          var title = getTextValue(vuln, "title");
+          var id = JsonUtils.getTextValue(vuln, "identifier");
+          var title = JsonUtils.getTextValue(vuln, "title");
           final String iTitle;
           if (title == null) {
-            iTitle = getTextValue(vuln, "description");
+            iTitle = JsonUtils.getTextValue(vuln, "description");
           } else {
             iTitle = title;
           }
@@ -181,7 +182,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
           var events = (ArrayNode) rangeNode.get("events");
           events.forEach(
               eventNode -> {
-                var fixed = getTextValue(eventNode, "fixed");
+                var fixed = JsonUtils.getTextValue(eventNode, "fixed");
                 if (fixed != null) {
                   r.addFixedInItem(fixed);
                 }
@@ -195,8 +196,8 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     scores.forEach(
         score -> {
           try {
-            var scoreType = ScoreType.fromValue(getTextValue(score, "type"));
-            var severity = getTextValue(score, "severity");
+            var scoreType = ScoreType.fromValue(JsonUtils.getTextValue(score, "type"));
+            var severity = JsonUtils.getTextValue(score, "severity");
             var scoreValue = score.get("value").asDouble();
             result.add(
                 new AdvisoryScore(
@@ -213,18 +214,11 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     return result;
   }
 
-  private String getTextValue(JsonNode node, String key) {
-    if (node.has(key) && node.hasNonNull(key)) {
-      return node.get(key).asText();
-    }
-    return null;
-  }
-
   private String getSource(JsonNode node) {
     var labels = node.get("labels");
     if (labels == null) {
       return null;
     }
-    return getTextValue(labels, "importer");
+    return JsonUtils.getTextValue(labels, "importer");
   }
 }

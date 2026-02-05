@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.jboss.logging.Logger;
 
@@ -45,9 +44,8 @@ import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
 import io.github.guacsec.trustifyda.api.v5.TransitiveDependencyReport;
-import io.github.guacsec.trustifyda.config.exception.PackageValidationException;
-import io.github.guacsec.trustifyda.config.exception.UnexpectedProviderException;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.backend.BackendUtils;
 import io.github.guacsec.trustifyda.model.CvssScoreComparable.DependencyScoreComparator;
 import io.github.guacsec.trustifyda.model.CvssScoreComparable.TransitiveScoreComparator;
 import io.github.guacsec.trustifyda.model.DependencyTree;
@@ -140,102 +138,20 @@ public abstract class ProviderResponseHandler {
 
   public void processResponseError(Exchange exchange) {
     var providerName = getProviderName(exchange);
-    var status = new ProviderStatus().ok(false).name(providerName);
-
-    var exception = getExceptionFromExchange(exchange);
-
-    var mapping = mapException(exception);
-
-    status.message(mapping.message()).code(mapping.statusCode());
+    var result = BackendUtils.getErrorMappingFromExchange(exchange);
+    var status =
+        new ProviderStatus()
+            .ok(false)
+            .name(providerName)
+            .message(result.mapping().message())
+            .code(result.mapping().statusCode());
 
     LOGGER.warnf(
-        "Unable to process request to %s - %s", providerName, mapping.message(), exception);
+        "Unable to process request to %s - %s",
+        providerName, result.mapping().message(), result.exception());
 
-    monitoringProcessor.processProviderError(exchange, exception, providerName);
+    monitoringProcessor.processProviderError(exchange, result.exception(), providerName);
     exchange.getMessage().setBody(new ProviderResponse(null, status));
-  }
-
-  private Exception getExceptionFromExchange(Exchange exchange) {
-    var exception =
-        firstNonNull(
-            exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
-            exchange.getException(),
-            exchange.getProperty("CamelCircuitBreakerException", Exception.class),
-            exchange
-                .getMessage()
-                .getHeader("CamelFaultToleranceExecutionException", Exception.class));
-
-    if (exception == null) {
-      LOGGER.warn("Fallback triggered but no exception found in exchange");
-      return null;
-    }
-
-    LOGGER.debugf("Handling exception: %s", exception.getClass().getName());
-    return unwrapException(exception);
-  }
-
-  @SafeVarargs
-  private static <T> T firstNonNull(T... values) {
-    for (T value : values) {
-      if (value != null) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  private Exception unwrapException(Exception exception) {
-    Throwable cause = exception;
-    while (cause instanceof RuntimeCamelException && cause.getCause() != null) {
-      cause = cause.getCause();
-    }
-    if (cause instanceof Exception ex) {
-      return ex;
-    }
-    return exception;
-  }
-
-  private ErrorMapping mapException(Exception exception) {
-    if (exception == null || isTimeoutException(exception)) {
-      return ErrorMapping.timeout();
-    }
-
-    if (exception instanceof HttpOperationFailedException http) {
-      return new ErrorMapping(prettifyHttpError(http), http.getStatusCode());
-    }
-
-    if (exception instanceof IllegalArgumentException
-        || exception instanceof UnexpectedProviderException
-        || exception instanceof PackageValidationException) {
-      return ErrorMapping.unprocessableEntity(exception.getMessage());
-    }
-
-    return ErrorMapping.internalError(exception.getMessage());
-  }
-
-  private record ErrorMapping(String message, int statusCode) {
-
-    static ErrorMapping timeout() {
-      return new ErrorMapping("Request timed out", Response.Status.GATEWAY_TIMEOUT.getStatusCode());
-    }
-
-    static ErrorMapping unprocessableEntity(String message) {
-      return new ErrorMapping(message, Response.Status.BAD_REQUEST.getStatusCode());
-    }
-
-    static ErrorMapping internalError(String message) {
-      return new ErrorMapping(message, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-    }
-  }
-
-  private boolean isTimeoutException(Throwable cause) {
-    if (cause == null) {
-      return false;
-    }
-    var className = cause.getClass().getName();
-    return className.contains("TimeoutException")
-        || className.contains("CircuitBreakerOpenException")
-        || (cause.getMessage() != null && cause.getMessage().toLowerCase().contains("timeout"));
   }
 
   public void processTokenFallBack(Exchange exchange) {
@@ -265,21 +181,6 @@ public abstract class ProviderResponseHandler {
     }
     exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, code);
     exchange.getMessage().setBody(body);
-  }
-
-  private static String prettifyHttpError(HttpOperationFailedException httpException) {
-    String text = httpException.getStatusText();
-    String defaultReason =
-        httpException.getResponseBody() != null && !httpException.getResponseBody().isBlank()
-            ? httpException.getResponseBody()
-            : httpException.getMessage();
-    return text
-        + switch (httpException.getStatusCode()) {
-          case 401 -> ": Verify the provided credentials are valid.";
-          case 403 -> ": The provided credentials don't have the required permissions.";
-          case 429 -> ": The rate limit has been exceeded.";
-          default -> ": " + defaultReason;
-        };
   }
 
   public ProviderResponse emptyResponse(Exchange exchange) {

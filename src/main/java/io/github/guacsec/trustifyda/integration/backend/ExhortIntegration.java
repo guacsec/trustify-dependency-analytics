@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,7 @@ import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.config.exception.DetailedException;
 import io.github.guacsec.trustifyda.config.exception.SbomValidationException;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.licenses.LicenseAggregationStrategy;
 import io.github.guacsec.trustifyda.integration.providers.ProviderAggregationStrategy;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
 import io.github.guacsec.trustifyda.integration.sbom.SbomParser;
@@ -137,7 +137,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .end();
 
     rest()
-      // v4 API endpoints
       .post("/v4/analysis")
         .routeId("restAnalysisV4")
         .param()
@@ -166,7 +165,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
         .routeId("restListModelCards")
         .to("direct:listModelCards")
 
-      // v5 API endpoints
       .post("/v5/analysis")
         .routeId("restAnalysisV5")
         .param()
@@ -185,6 +183,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
           .defaultValue(Boolean.TRUE.toString())
           .endParam()
         .to("direct:batchAnalysisV5")
+      .post("/v5/licenses")
+        .routeId("restLicensesV5")
+        .to("direct:getLicensesFromEndpoint")
       .get("/v5/token")
         .routeId("restTokenValidationV5")
         .to("direct:validateTokenV5");
@@ -222,8 +223,10 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("analyzeSbom"))
       .routeId("analyzeSbom")
-      .to(direct("findVulnerabilities"))
-      .transform().method(ProviderAggregationStrategy.class, "toReport");
+      .multicast(new LicenseAggregationStrategy())
+        .parallelProcessing()
+          .to(direct("findVulnerabilities"), direct("getLicensesFromSbom"))
+      .end();
 
     from(direct("analyzeSboms"))
       .routeId("analyzeSboms")
@@ -263,7 +266,8 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .routeId("findVulnerabilities")
       .process(this::setProviderConfiguration)
       .toD("direct:trustifyScan")
-      .process(this::wrapSingleProviderResult);
+      .process(this::wrapSingleProviderResult)
+      .transform().method(ProviderAggregationStrategy.class, "toReport");
 
     from(direct("validateToken"))
       .routeId("validateToken")
@@ -352,7 +356,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     msg.removeHeader(Constants.AUTHORIZATION_HEADER);
     msg.removeHeaders("trust-da-.*");
 
-    // Clean up monitoring context to prevent contamination between requests
     monitoringProcessor.cleanupContext(exchange);
   }
 
@@ -393,26 +396,6 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   public Map<String, AnalysisReport> transformBatchAnalysisReportList(
       @Body List<Map.Entry<String, AnalysisReport>> reports) {
     return reports.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  private void setProviders(Exchange exchange) {
-    String providersQuery = exchange.getIn().getHeader(Constants.PROVIDERS_PARAM, String.class);
-    List<String> providers = new ArrayList<>();
-    if (providersQuery != null && !providersQuery.isEmpty()) {
-      for (String provider : providersQuery.split(",")) {
-        providers.add(provider.trim());
-        if (!vulnerabilityProvider.isProviderEnabled(provider)) {
-          throw new ClientErrorException(
-              "Provider " + provider + " is not enabled", Response.Status.BAD_REQUEST);
-        }
-      }
-    }
-    if (providers.isEmpty()) {
-      providers = vulnerabilityProvider.getEnabled();
-    }
-    if (providers != null && !providers.isEmpty()) {
-      exchange.setProperty(Constants.PROVIDERS_PROPERTY, providers);
-    }
   }
 
   private void setProviderConfiguration(Exchange exchange) {

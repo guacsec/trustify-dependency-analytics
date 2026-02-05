@@ -1,0 +1,84 @@
+{
+  "nextPageToken": "",
+  "responses": [
+    {
+      "request": {
+        "purl": "pkg:oci/default-app@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994"
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:npm/%40xml-tools/common@0.1.6"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": true,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "Apache-2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "HOMEPAGE",
+              "url": "https://github.com/sap/xml-tools#readme"
+            },
+            {
+              "label": "ISSUE_TRACKER",
+              "url": "https://github.com/sap/xml-tools/issues"
+            },
+            {
+              "label": "ORIGIN",
+              "url": "https://registry.npmjs.org/@xml-tools%2Fcommon/0.1.6"
+            },
+            {
+              "label": "SOURCE_REPO",
+              "url": "git+https://github.com/sap/xml-tools.git"
+            }
+          ],
+          "publishedAt": "2021-06-03T12:15:13Z",
+          "purl": "pkg:npm/%40xml-tools/common@0.1.6",
+          "registries": [
+            "https://registry.npmjs.org/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/sap/xml-tools"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "ISSUE_TRACKER"
+            },
+            {
+              "projectKey": {
+                "id": "github.com/sap/xml-tools"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "@xml-tools/common",
+              "source": "NPM_NPMJS_ORG",
+              "versionString": "0.1.6"
+            }
+          ],
+          "versionKey": {
+            "name": "@xml-tools/common",
+            "system": "NPM",
+            "version": "0.1.6"
+          }
+        }
+      }
+    }
+  ]
+}
