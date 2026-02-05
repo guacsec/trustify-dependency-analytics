@@ -102,6 +102,9 @@ public class DepsDevResponseHandler {
       var results = new HashMap<String, PackageLicenseResult>();
 
       var json = mapper.readTree(body);
+      if (!json.has("responses") || !json.get("responses").isArray()) {
+        throw new RuntimeException("Invalid response format: missing or non-array 'responses'");
+      }
       var responses = (ArrayNode) json.get("responses");
       responses.forEach(
           response -> {
@@ -148,22 +151,27 @@ public class DepsDevResponseHandler {
     if (oldResult == null) {
       return newResult;
     }
+    Map<String, PackageLicenseResult> mergedPackages = new HashMap<>(oldResult.packages());
     if (newResult != null) {
-      oldResult.packages().putAll(newResult.packages());
+      mergedPackages.putAll(newResult.packages());
     }
     var status = getWorstStatus(oldResult, newResult);
-    return new LicenseSplitResult(status, oldResult.packages());
+    return new LicenseSplitResult(status, mergedPackages);
   }
 
   private ProviderStatus getWorstStatus(
       LicenseSplitResult oldResult, LicenseSplitResult newResult) {
     if (oldResult == null) {
+      if (newResult == null) {
+        return null;
+      }
       return newResult.status();
     }
     if (newResult == null) {
       return oldResult.status();
     }
-    return oldResult.status().getOk() ? oldResult.status() : newResult.status();
+    // If the old status is not OK, propagate the failure. Otherwise, use the new status.
+    return !oldResult.status().getOk() ? oldResult.status() : newResult.status();
   }
 
   public List<LicenseProviderResult> buildResponse(LicenseSplitResult results, Exchange exchange) {
@@ -211,11 +219,11 @@ public class DepsDevResponseHandler {
         category = newCategory;
       } else {
         if (isOrExpression) {
-          if (isMorePermissive(category, newCategory)) {
+          if (isMorePermissive(newCategory, category)) {
             category = newCategory;
           }
         } else {
-          if (isMorePermissive(newCategory, category)) {
+          if (isMorePermissive(category, newCategory)) {
             category = newCategory;
           }
         }
@@ -254,22 +262,23 @@ public class DepsDevResponseHandler {
 
   /** Returns true if category1 is more permissive than category2. */
   private boolean isMorePermissive(CategoryEnum category1, CategoryEnum category2) {
-    if (category1 == null) {
-      return true;
+    if (category1 == category2) {
+      return false; // Neither is more permissive than the other
     }
-    if (category2 == null) {
-      return false;
+    return getCategoryRank(category1) > getCategoryRank(category2);
+  }
+
+  private int getCategoryRank(CategoryEnum category) {
+    if (category == null) {
+      return -1; // Lowest rank
     }
-    if (category2 == CategoryEnum.PERMISSIVE) {
-      return true;
-    }
-    if (category2 == CategoryEnum.WEAK_COPYLEFT) {
-      return category1 == CategoryEnum.STRONG_COPYLEFT || category1 == CategoryEnum.UNKNOWN;
-    }
-    if (category2 == CategoryEnum.STRONG_COPYLEFT) {
-      return category1 == CategoryEnum.UNKNOWN;
-    }
-    return false;
+    return switch (category) {
+      case PERMISSIVE -> 4;
+      case WEAK_COPYLEFT -> 3;
+      case STRONG_COPYLEFT -> 2;
+      case UNKNOWN -> 1;
+      default -> 0;
+    };
   }
 
   private LicensesSummary buildSummary(Map<String, PackageLicenseResult> results) {
@@ -307,7 +316,7 @@ public class DepsDevResponseHandler {
       if (concluded == null) {
         concluded = info;
       } else {
-        if (isMorePermissive(concluded.getCategory(), info.getCategory())) {
+        if (!isMorePermissive(concluded.getCategory(), info.getCategory())) {
           concluded = info;
         }
       }

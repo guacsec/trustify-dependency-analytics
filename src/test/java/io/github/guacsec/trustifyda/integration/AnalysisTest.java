@@ -800,6 +800,67 @@ public class AnalysisTest extends AbstractAnalysisTest {
   }
 
   @Test
+  public void testLicensesCaching() {
+    stubAllProviders();
+
+    // First request - cache should be empty, Deps.dev licenses should be called
+    var firstResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    assertEquals(1, firstResponse.getLicenses().size());
+    assertTrue(firstResponse.getLicenses().get(0).getStatus().getOk());
+    verifyLicensesRequest(1);
+
+    // Reset WireMock request count but keep stubs
+    server.resetRequests();
+
+    // Second request - licenses should be from cache, Deps.dev should NOT be called
+    var secondResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyLicensesRequest(0);
+
+    // Both responses should have the same licenses data
+    assertEquals(
+        firstResponse.getLicenses().get(0).getStatus().getOk(),
+        secondResponse.getLicenses().get(0).getStatus().getOk());
+    assertEquals(
+        firstResponse.getLicenses().get(0).getPackages().size(),
+        secondResponse.getLicenses().get(0).getPackages().size(),
+        "Both responses should have the same number of license packages");
+    assertNotNull(firstResponse.getLicenses().get(0).getSummary());
+    assertNotNull(secondResponse.getLicenses().get(0).getSummary());
+    assertEquals(
+        firstResponse.getLicenses().get(0).getSummary().getTotal(),
+        secondResponse.getLicenses().get(0).getSummary().getTotal(),
+        "Both responses should have the same license summary total");
+  }
+
+  @Test
   public void testCachingBehaviorWithErrors() {
     stubAllProviders();
 

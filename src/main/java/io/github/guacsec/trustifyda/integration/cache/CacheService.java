@@ -24,9 +24,11 @@ import org.apache.camel.Body;
 import org.apache.camel.ExchangeProperty;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
+import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 
 public interface CacheService {
 
@@ -35,4 +37,10 @@ public interface CacheService {
       @ExchangeProperty(Constants.CACHE_MISSES_PROPERTY) Set<PackageRef> misses);
 
   public Map<PackageRef, PackageItem> getCachedItems(Set<PackageRef> purls);
+
+  public void cacheLicenses(
+      @Body LicenseSplitResult response,
+      @ExchangeProperty(Constants.CACHE_LICENSES_PROPERTY) Set<PackageRef> misses);
+
+  public Map<PackageRef, PackageLicenseResult> getCachedLicenses(Set<PackageRef> purls);
 }

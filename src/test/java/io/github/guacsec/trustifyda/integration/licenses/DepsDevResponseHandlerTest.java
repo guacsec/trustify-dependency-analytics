@@ -179,7 +179,7 @@ class DepsDevResponseHandlerTest {
     LicenseSplitResult aggregated = handler.aggregateLicenses(result1, result2);
 
     // When old result has failed status, new result's status is used
-    assertTrue(aggregated.status().getOk());
+    assertFalse(aggregated.status().getOk());
   }
 
   @Test
@@ -371,7 +371,46 @@ class DepsDevResponseHandlerTest {
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
     // AND expression should return least permissive (strong copyleft)
-    assertEquals(CategoryEnum.STRONG_COPYLEFT, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(CategoryEnum.STRONG_COPYLEFT, packageResult.getConcluded().getCategory());
+  }
+
+  @Test
+  void testLicenseCategory_andExpression_multipleLicenses() throws IOException {
+    String jsonResponse =
+        """
+        {
+          "responses": [
+            {
+              "request": {
+                "purl": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5"
+              },
+              "result": {
+                "version": {
+                  "licenseDetails": [
+                    {
+                      "license": "EPL 2.0",
+                      "spdx": "non-standard"
+                    },
+                    {
+                      "license": "GPL2 w/ CPE",
+                      "spdx": "GPL-2.0-with-classpath-exception"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+        """;
+
+    Exchange exchange = buildExchange(jsonResponse);
+    handler.handleResponse(exchange);
+
+    LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
+    var packageResult =
+        result.packages().get("pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5");
+
+    assertEquals(CategoryEnum.WEAK_COPYLEFT, packageResult.getConcluded().getCategory());
   }
 
   @Test

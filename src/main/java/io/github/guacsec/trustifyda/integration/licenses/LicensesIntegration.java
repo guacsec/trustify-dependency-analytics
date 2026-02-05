@@ -17,17 +17,29 @@
 
 package io.github.guacsec.trustifyda.integration.licenses;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
+import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.LicensesRequest;
+import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
+import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.cache.CacheService;
+import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -37,6 +49,9 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class LicensesIntegration extends EndpointRouteBuilder {
 
+  private static final String DEPS_DEV_SOURCE = "deps.dev";
+  private static final Logger LOGGER = Logger.getLogger(LicensesIntegration.class);
+
   @ConfigProperty(name = "api.licenses.depsdev.host", defaultValue = "https://api.deps.dev")
   String depsDevHost;
 
@@ -45,6 +60,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
   @Inject DepsDevRequestBuilder requestBuilder;
   @Inject DepsDevResponseHandler responseHandler;
+  @Inject CacheService cacheService;
 
   @Override
   public void configure() {
@@ -68,12 +84,14 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
     from(direct("getLicenses"))
         .routeId("getLicenses")
+        .process(this::lookupCachedLicenses)
         .choice()
           .when(method(requestBuilder, "isEmpty"))
-            .setBody(constant(Collections.emptyMap()))
+            .process(this::buildResponseFromLicenseCacheHitsOnly)
         .endChoice()
         .otherwise()
             .to(direct("depsDevSplitRequest"))
+            .process(this::aggregateLicenseCacheHits)
         .end()
         .transform(method(responseHandler, "buildResponse"));
 
@@ -85,6 +103,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateLicenses"))
       .parallelProcessing()
         .to(direct("depsDevRequest"))
+        .bean(cacheService, "cacheLicenses")
       .end();
 
     from(direct("depsDevRequest"))
@@ -105,6 +124,72 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .end();
           
     // fmt:on
+  }
+
+  private void lookupCachedLicenses(Exchange exchange) {
+    @SuppressWarnings("unchecked")
+    List<PackageRef> purls = exchange.getIn().getBody(List.class);
+    if (purls == null || purls.isEmpty()) {
+      exchange.setProperty(Constants.CACHE_LICENSES_HITS_PROPERTY, Collections.emptyMap());
+      exchange.setProperty(Constants.CACHE_LICENSES_PROPERTY, Collections.emptySet());
+      exchange.getIn().setBody(Collections.emptyList());
+      return;
+    }
+    Set<PackageRef> allPurls = purls.stream().collect(Collectors.toSet());
+    Map<PackageRef, PackageLicenseResult> cachedLicenses = cacheService.getCachedLicenses(allPurls);
+    exchange.setProperty(Constants.CACHE_LICENSES_HITS_PROPERTY, cachedLicenses);
+
+    // Compare using coordinates since cache uses coordinates as keys
+    Set<String> cachedCoordinates =
+        cachedLicenses.keySet().stream()
+            .map(p -> p.purl().getCoordinates())
+            .collect(Collectors.toSet());
+    Set<PackageRef> misses =
+        allPurls.stream()
+            .filter(p -> !cachedCoordinates.contains(p.purl().getCoordinates()))
+            .collect(Collectors.toSet());
+
+    exchange.setProperty(Constants.CACHE_LICENSES_PROPERTY, misses);
+    exchange.getIn().setBody(new ArrayList<>(misses));
+    LOGGER.debugf(
+        "License cache lookup: %d hits, %d misses out of %d total",
+        cachedLicenses.size(), misses.size(), allPurls.size());
+  }
+
+  private void buildResponseFromLicenseCacheHitsOnly(Exchange exchange) {
+    @SuppressWarnings("unchecked")
+    Map<PackageRef, PackageLicenseResult> cacheHits =
+        exchange.getProperty(Constants.CACHE_LICENSES_HITS_PROPERTY, Map.class);
+    if (cacheHits == null) {
+      cacheHits = Collections.emptyMap();
+    }
+    Map<String, PackageLicenseResult> packages = new HashMap<>();
+    cacheHits.forEach((ref, result) -> packages.put(ref.ref(), result));
+    var status = new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE);
+    exchange.getIn().setBody(new LicenseSplitResult(status, packages));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void aggregateLicenseCacheHits(Exchange exchange) {
+    Map<PackageRef, PackageLicenseResult> cacheHits =
+        exchange.getProperty(Constants.CACHE_LICENSES_HITS_PROPERTY, Map.class);
+    if (cacheHits == null || cacheHits.isEmpty()) {
+      return;
+    }
+    LicenseSplitResult result = exchange.getIn().getBody(LicenseSplitResult.class);
+    if (result == null) {
+      Map<String, PackageLicenseResult> packages = new HashMap<>();
+      cacheHits.forEach((ref, r) -> packages.put(ref.ref(), r));
+      exchange
+          .getIn()
+          .setBody(
+              new LicenseSplitResult(
+                  new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE), packages));
+      return;
+    }
+    Map<String, PackageLicenseResult> merged = new HashMap<>(result.packages());
+    cacheHits.forEach((ref, r) -> merged.put(ref.ref(), r));
+    exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
   }
 
   /** Clears HTTP headers from the REST consumer so the HTTP producer uses only the full URL. */

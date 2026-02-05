@@ -30,8 +30,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
+import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.value.ValueCommands;
 
@@ -45,10 +47,15 @@ public class RedisCacheService implements CacheService {
   @ConfigProperty(name = "items.cache.ttl", defaultValue = "1d")
   Duration itemTtl;
 
+  @ConfigProperty(name = "licenses.cache.ttl", defaultValue = "1d")
+  Duration licenseTtl;
+
   private final ValueCommands<String, PackageItem> itemsCommands;
+  private final ValueCommands<String, CachedLicense> licensesCommands;
 
   public RedisCacheService(RedisDataSource ds) {
     this.itemsCommands = ds.value(PackageItem.class);
+    this.licensesCommands = ds.value(CachedLicense.class);
   }
 
   @Override
@@ -86,4 +93,44 @@ public class RedisCacheService implements CacheService {
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(v -> new PackageRef(v.packageRef()), Function.identity()));
   }
+
+  @Override
+  public void cacheLicenses(LicenseSplitResult response, Set<PackageRef> misses) {
+    if (response == null || response.packages() == null || misses == null || misses.isEmpty()) {
+      return;
+    }
+    var count = new AtomicInteger(0);
+    response
+        .packages()
+        .forEach(
+            (ref, result) -> {
+              var packageRef = new PackageRef(ref);
+              if (!misses.contains(packageRef)) {
+                return;
+              }
+              licensesCommands.psetex(
+                  "licenses:" + packageRef.purl().getCoordinates(),
+                  licenseTtl.toMillis(),
+                  new CachedLicense(packageRef, result));
+              count.incrementAndGet();
+            });
+    LOGGER.debugf("Cached %d licenses", count.get());
+  }
+
+  @Override
+  public Map<PackageRef, PackageLicenseResult> getCachedLicenses(Set<PackageRef> purls) {
+    if (purls == null || purls.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    // Use coordinates (without qualifiers) as cache key
+    String[] keys =
+        purls.stream().map(p -> "licenses:" + p.purl().getCoordinates()).toArray(String[]::new);
+    var result = licensesCommands.mget(keys);
+    LOGGER.debugf("Got %d cached licenses for %d purls", result.size(), purls.size());
+    return result.values().stream()
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(CachedLicense::ref, CachedLicense::result));
+  }
+
+  private static record CachedLicense(PackageRef ref, PackageLicenseResult result) {}
 }
