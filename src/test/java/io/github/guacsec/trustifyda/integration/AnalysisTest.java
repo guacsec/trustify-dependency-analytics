@@ -372,7 +372,13 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertNull(osvSource.getDependencies());
     assertNull(csafSource.getDependencies());
 
+    assertEquals(1, report.getLicenses().size());
+    assertNotNull(report.getLicenses().get(0).getSummary());
+    assertNotNull(report.getLicenses().get(0).getStatus());
+    assertTrue(report.getLicenses().get(0).getPackages().isEmpty());
+
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
+    verifyLicensesRequest(1);
   }
 
   @ParameterizedTest

@@ -139,7 +139,8 @@ public class DepsDevResponseHandler {
       exchange
           .getMessage()
           .setBody(
-              new LicenseSplitResult(new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE), results));
+              new LicenseSplitResult(
+                  new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE).message("OK"), results));
     } catch (JsonProcessingException ex) {
       LOGGER.error("Error parsing JSON response", ex);
       throw new RuntimeException("Error parsing JSON response", ex);
@@ -174,7 +175,7 @@ public class DepsDevResponseHandler {
     return !oldResult.status().getOk() ? oldResult.status() : newResult.status();
   }
 
-  public List<LicenseProviderResult> buildResponse(LicenseSplitResult results, Exchange exchange) {
+  public List<LicenseProviderResult> toResultList(LicenseSplitResult results) {
     var response = new LicenseProviderResult();
     response.packages(results.packages());
     response.summary(buildSummary(results.packages()));

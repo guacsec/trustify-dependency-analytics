@@ -63,11 +63,11 @@ class DepsDevResponseHandlerTest {
 
   @Test
   void testHandleResponse_withValidData() throws IOException {
-    byte[] jsonResponseBytes =
-        getClass()
-            .getClassLoader()
-            .getResourceAsStream("__files/depsdev/maven_response.json")
-            .readAllBytes();
+    byte[] jsonResponseBytes;
+    try (var in =
+        getClass().getClassLoader().getResourceAsStream("__files/depsdev/maven_response.json")) {
+      jsonResponseBytes = in.readAllBytes();
+    }
 
     Exchange exchange = buildExchange(new String(jsonResponseBytes));
     handler.handleResponse(exchange);
@@ -178,12 +178,12 @@ class DepsDevResponseHandlerTest {
 
     LicenseSplitResult aggregated = handler.aggregateLicenses(result1, result2);
 
-    // When old result has failed status, new result's status is used
+    // We expect the worst status to be received
     assertFalse(aggregated.status().getOk());
   }
 
   @Test
-  void testBuildResponse() {
+  void testBuildResult() {
     var status = new ProviderStatus().ok(true).name("deps.dev");
     var licenseInfo =
         new io.github.guacsec.trustifyda.api.v5.LicenseInfo()
@@ -193,8 +193,7 @@ class DepsDevResponseHandlerTest {
     var packages = Collections.singletonMap("pkg:npm/test@1.0", packageResult);
     var splitResult = new LicenseSplitResult(status, packages);
 
-    Exchange exchange = mock(Exchange.class);
-    List<LicenseProviderResult> response = handler.buildResponse(splitResult, exchange);
+    List<LicenseProviderResult> response = handler.toResultList(splitResult);
 
     assertNotNull(response);
     assertEquals(1, response.size());
@@ -205,17 +204,17 @@ class DepsDevResponseHandlerTest {
 
   @Test
   void testBuildSummary() throws IOException {
-    byte[] jsonResponseBytes =
-        getClass()
-            .getClassLoader()
-            .getResourceAsStream("__files/depsdev/maven_response.json")
-            .readAllBytes();
+    byte[] jsonResponseBytes;
+    try (var in =
+        getClass().getClassLoader().getResourceAsStream("__files/depsdev/maven_response.json")) {
+      jsonResponseBytes = in.readAllBytes();
+    }
 
     Exchange exchange = buildExchange(new String(jsonResponseBytes));
     handler.handleResponse(exchange);
 
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
-    List<LicenseProviderResult> providerResult = handler.buildResponse(result, exchange);
+    List<LicenseProviderResult> providerResult = handler.toResultList(result);
 
     var summary = providerResult.get(0).getSummary();
     assertNotNull(summary);

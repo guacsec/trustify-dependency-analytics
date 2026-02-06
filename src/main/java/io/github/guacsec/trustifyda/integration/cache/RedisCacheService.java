@@ -99,19 +99,21 @@ public class RedisCacheService implements CacheService {
     if (response == null || response.packages() == null || misses == null || misses.isEmpty()) {
       return;
     }
+    var missesCoordinates =
+        misses.stream()
+            .collect(Collectors.toMap(p -> p.purl().getCoordinates(), Function.identity()));
     var count = new AtomicInteger(0);
     response
         .packages()
         .forEach(
             (ref, result) -> {
-              var packageRef = new PackageRef(ref);
-              if (!misses.contains(packageRef)) {
+              if (!missesCoordinates.containsKey(ref)) {
                 return;
               }
               licensesCommands.psetex(
-                  "licenses:" + packageRef.purl().getCoordinates(),
+                  "licenses:" + ref,
                   licenseTtl.toMillis(),
-                  new CachedLicense(packageRef, result));
+                  new CachedLicense(missesCoordinates.get(ref), result));
               count.incrementAndGet();
             });
     LOGGER.debugf("Cached %d licenses", count.get());

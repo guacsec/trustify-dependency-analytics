@@ -7,7 +7,8 @@
 
 - Trustify: Provides vulnerability data and recommendations [Trustify](https://github.com/guacsec/trustify)
 - Postgres Database: Stores data needed for the Model Cards functionality. See [Model Cards](#model-cards)
-- Redis cache: Allows caching recommendations and remediations. Can be configured with the `quarkus.redis.host` parameter
+- Redis cache: Allows caching licenses, recommendations and remediations. Can be configured with the `quarkus.redis.host` parameter
+- Deps.dev: For license information
 
 ## Vulnerability providers
 
@@ -25,6 +26,16 @@ You can define any number of vulnerability providers where the key is the identi
 - `providers.provider1.auth.client-timeout` - OAuth2 client timeout duration (default: `30s`)
 - `providers.provider1.disabled` - Boolean flag to disable this specific provider (default: `false`)
 
+## License providers
+
+We rely on [Deps.dev API](https://docs.deps.dev/api/v3alpha/#purllookupbatch) for retrieving license data
+
+You can use the following configuration properties:
+
+- `api.licenses.depsdev.host`: DepsDev API endpoint (https://api.deps.dev)
+- `api.licenses.depsdev.timeout`: Connection timeout (60s)
+- `licenses.file`: Relative or absolute path to the licenses configuration file.
+
 ## OpenAPI and SwaggerUI
 
 - OpenAPI Spec: There is an [openapi.yaml](https://maven.pkg.github.com/guacsec/trustify-da-api-spec/blob/main/api/v5/openapi.yaml)
@@ -37,13 +48,102 @@ you can use the `recommend` query parameter and set it to `false`. Example `/ana
 
 ## Dependency Analytics API
 
-Here you can find the [Dependency Analytics API Specification](https://maven.pkg.github.com/guacsec/trustify-da-api-spec) together with
+Here you can find the [Dependency Analytics API Specification](https://github.com/guacsec/trustify-da-api-spec) together with
 the Java and Javascript generated data model.
+
+## License Analysis `/api/v5/licenses`
+
+The endpoint can be use to only retrieve information about licenses found in the given package urls. It will return a dictionary with the
+licenses found in the different License providers (evidences) and then conclude which is the most permissive license that can be used.
+
+### Categories
+
+The system will use the `licenses.file` configuration file to categorized the retrieved licenses into:
+
+- PERMISSIVE
+- WEAK_COPYLEFT
+- STRONG_COPYLEFT
+- UNKNOWN
+
+It will also use the `exception-suffixes` to decide if a `STRONG_COPYLEFT` license can be categorized as `WEAK_COPYLEFT`. The other
+suffixes will be ignored and the category will not be changed. Example `GPL-3.0-only`.
+
+### License evidences and concluded license.
+
+All licenses found in the license provider response will be considered as evidences. Then the system will conclude which is the most suitable
+license that can be used. It will be the more permissive license that is allowed. Some exceptions must be declared for multi-license declaration.
+
+- If multiple licenses are found, the backend doesn't decide which source is more reliable or if one should invalidate another. It just takes
+**the more permissive** license.
+- If the SPDX expression defines an `OR` clause, the system will conclude that the **more permissive can be used**.
+- If the SPDX expression defines an `AND` clause, the system will conclude that the **more restrictive must be used**.
+- If the SPDX license is categorized as `STRONG_COPYLEFT` but defines an exception that makes it less restrictive, the system will adapt the category to `WEAK_COPYLEFT`. Example `GPL-3.0 with classpath Exception`.
+
+The report will also provide a summary of the different licenses found.
+
+```bash
+echo '{
+  "purls": [
+    "pkg:npm/atob@2.1.2",
+    "pkg:npm/node-forge@1.3.0",
+    "pkg:npm/rc@1.2.8",
+    "pkg:npm/dompurify@2.3.0",
+    "pkg:npm/diff-lcs@1.3.0",
+    "pkg:npm/type-fest@0.20.2",
+    "pkg:npm/path-is-inside@1.0.0"
+  ]
+}' | http -v :8080/api/v5/licenses
+```
+
+### Summary
+```json
+        "summary": {
+            "concluded": 7, // number of concluded licenses
+            "permissive": 8, // total number of permissive licenses found. Including the declared but not concluded.
+            "strong-copyleft": 1, // total number of strong-copyleft licenses found. Including the declared but not concluded.
+            "total": 12, // total number of declared licenses found.
+            "unknown": 2, // total number of unknown licenses found. Including the declared but not concluded.
+            "weak-copyleft": 1 // total number of weak-copyleft licenses found. Including the declared but not concluded.
+        }
+```
+
+### Result example
+```json
+            "pkg:npm/rc@1.2.8": {
+                "concluded": {
+                    "category": "PERMISSIVE",
+                    "expression": "Apache-2.0 OR BSD-2-Clause OR MIT",
+                    "identifiers": [
+                        "Apache-2.0",
+                        "BSD-2-Clause",
+                        "MIT"
+                    ],
+                    "name": "Apache-2.0 OR BSD-2-Clause OR MIT",
+                    "source": "deps.dev",
+                    "sourceUrl": "https://api.deps.dev"
+                },
+                "evidence": [
+                    {
+                        "category": "PERMISSIVE",
+                        "expression": "Apache-2.0 OR BSD-2-Clause OR MIT",
+                        "identifiers": [
+                            "Apache-2.0",
+                            "BSD-2-Clause",
+                            "MIT"
+                        ],
+                        "name": "Apache-2.0 OR BSD-2-Clause OR MIT",
+                        "source": "deps.dev",
+                        "sourceUrl": "https://api.deps.dev"
+                    }
+                ]
+            },
+```
+
 
 ## Dependency Analysis `/api/v5/analysis`
 
 The expected input data format is a Software Bill of Materials (SBOM) containing the aggregate of all direct and transitive
-dependencies of a project.
+dependencies of a project. The license information will also be added to this report. See [License Analysis](#license-analysis-apiv5licenses).
 
 The `Content-Type` HTTP header will allow Dependency Analytics distinguish between the different supported SBOM formats.
 
@@ -74,37 +174,72 @@ in order to retrieve just a Summary. Use the `verbose=false` Query parameter to 
 $ http :8080/api/v5/analysis Content-Type:"application/vnd.cyclonedx+json" Accept:"application/json" @'target/sbom.json' verbose==false
 
 {
-    "scanned": {
-        "total": 9,
-        "direct": 2,
-        "transitive": 7
-    },
-    "providers": {
-        "trustify": {
+    "licenses": [
+        {
+            "packages": {},
             "status": {
+                "message": "OK",
+                "name": "deps.dev",
                 "ok": true,
-                "name": "trustify",
-                "code": 200,
-                "message": "OK"
+                "warnings": {}
             },
-            "sources": {
-                "osv": {
-                    "summary": {
-                        "direct": 0,
-                        "transitive": 3,
-                        "total": 3,
-                        "dependencies": 1,
-                        "critical": 0,
-                        "high": 3,
-                        "medium": 0,
-                        "low": 0,
-                        "remediations": 0,
-                        "recommendations": 0
-                    },
-                    "dependencies": []
-                }
+            "summary": {
+                "concluded": 10,
+                "permissive": 8,
+                "strong-copyleft": 0,
+                "total": 12,
+                "unknown": 2,
+                "weak-copyleft": 2
             }
         }
+    ],
+    "providers": {
+        "rhtpa": {
+            "sources": {
+                "osv-github": {
+                    "summary": {
+                        "critical": 1,
+                        "dependencies": 3,
+                        "direct": 0,
+                        "high": 4,
+                        "low": 0,
+                        "medium": 2,
+                        "recommendations": 3,
+                        "remediations": 0,
+                        "total": 7,
+                        "transitive": 7,
+                        "unscanned": 0
+                    }
+                },
+                "redhat-csaf": {
+                    "summary": {
+                        "critical": 1,
+                        "dependencies": 2,
+                        "direct": 0,
+                        "high": 1,
+                        "low": 0,
+                        "medium": 0,
+                        "recommendations": 3,
+                        "remediations": 0,
+                        "total": 2,
+                        "transitive": 2,
+                        "unscanned": 0
+                    }
+                }
+            },
+            "status": {
+                "code": 200,
+                "message": "OK",
+                "name": "rhtpa",
+                "ok": true,
+                "warnings": {}
+            }
+        }
+    },
+    "scanned": {
+        "direct": 3,
+        "total": 10,
+        "transitive": 7
     }
 }
 ```

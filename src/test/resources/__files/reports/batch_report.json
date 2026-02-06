@@ -372,6 +372,7 @@
                 "status": {
                     "ok": true,
                     "name": "deps.dev",
+                    "message": "OK",
                     "warnings": {
                         
                     }
@@ -676,6 +677,7 @@
                 "status": {
                     "ok": true,
                     "name": "deps.dev",
+                    "message": "OK",
                     "warnings": {
                         
                     }
@@ -1003,6 +1005,7 @@
                 "status": {
                     "ok": true,
                     "name": "deps.dev",
+                    "message": "OK",
                     "warnings": {
                         
                     }

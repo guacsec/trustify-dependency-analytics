@@ -371,6 +371,7 @@
       "status": {
         "ok": true,
         "name": "deps.dev",
+        "message": "OK",
         "warnings": {}
       },
       "summary": {

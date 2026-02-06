@@ -90,9 +90,6 @@ public final class Constants {
   public static final String TRUSTIFY_HEALTH_PATH = "/.well-known/trustify";
 
   public static final String DEPS_DEV_LICENSES_PATH = "/v3alpha/purlbatch";
-  public static final String DEPS_DEV_STATUS_PROPERTY = "depsDevStatus";
-  public static final String DEPS_DEV_ERROR_PROPERTY = "depsDevError";
-  public static final String LICENSES_REST_ENDPOINT_PROPERTY = "licensesRestEndpoint";
 
   public static final String DEFAULT_ACCEPT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 

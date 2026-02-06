@@ -93,7 +93,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
             .to(direct("depsDevSplitRequest"))
             .process(this::aggregateLicenseCacheHits)
         .end()
-        .transform(method(responseHandler, "buildResponse"));
+        .transform(method(responseHandler, "toResultList"));
 
     from(direct("depsDevSplitRequest"))
       .routeId("depsDevSplitRequest")

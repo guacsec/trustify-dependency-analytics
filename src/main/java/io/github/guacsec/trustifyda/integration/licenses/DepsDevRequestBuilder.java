@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.LicensesRequest;
+import io.github.guacsec.trustifyda.config.ObjectMapperProducer;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,7 +34,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class DepsDevRequestBuilder {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final ObjectMapper MAPPER = ObjectMapperProducer.newInstance();
 
   private static final int BATCH_SIZE = 500;
 

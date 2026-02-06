@@ -355,6 +355,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     msg.removeHeaders("ex-.*-token");
     msg.removeHeader(Constants.AUTHORIZATION_HEADER);
     msg.removeHeaders("trust-da-.*");
+    msg.removeHeader(Constants.RECOMMEND_PARAM);
 
     monitoringProcessor.cleanupContext(exchange);
   }

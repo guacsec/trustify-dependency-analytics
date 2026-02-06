@@ -124,7 +124,7 @@ public class BackendUtils {
     String detailedMessage = extractDetailedMessage(exception);
     Exception unwrapped = unwrapException(exception);
 
-    if (detailedMessage != null && !detailedMessage.isEmpty()) {
+    if (!detailedMessage.isEmpty()) {
       exchange.setProperty("detailedErrorMessage", detailedMessage);
     }
 
@@ -159,15 +159,7 @@ public class BackendUtils {
   /**
    * Result of resolving an error from an exchange: exception for monitoring, mapping for status.
    */
-  public static record ErrorMappingResult(Exception exception, ErrorMapping mapping) {}
-
-  /**
-   * Maps the exchange to an HTTP error mapping. Prefer {@link #getErrorMappingFromExchange} when
-   * you also need the exception for monitoring.
-   */
-  public static ErrorMapping mapException(Exchange exchange) {
-    return getErrorMappingFromExchange(exchange).mapping();
-  }
+  public record ErrorMappingResult(Exception exception, ErrorMapping mapping) {}
 
   /**
    * Determines the error mapping from the exchange and optional exception. Handles timeout when
@@ -270,7 +262,7 @@ public class BackendUtils {
     return ExceptionUtils.findInChain(cause, java.net.UnknownHostException.class).isPresent();
   }
 
-  public static record ErrorMapping(String message, int statusCode) {
+  public record ErrorMapping(String message, int statusCode) {
 
     static ErrorMapping timeout() {
       return new ErrorMapping("Request timed out", Response.Status.GATEWAY_TIMEOUT.getStatusCode());

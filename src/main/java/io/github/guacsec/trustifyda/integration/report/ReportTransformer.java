@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.report;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ import org.apache.camel.Header;
 import org.apache.camel.attachment.AttachmentMessage;
 
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
+import io.github.guacsec.trustifyda.api.v5.LicenseProviderResult;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.integration.Constants;
@@ -40,7 +42,10 @@ public class ReportTransformer {
   public AnalysisReport filterVerboseResult(
       @Body AnalysisReport report, @Header(Constants.VERBOSE_MODE_HEADER) Boolean verbose) {
     if (Boolean.FALSE.equals(verbose)) {
-      AnalysisReport filtered = new AnalysisReport().scanned(report.getScanned());
+      AnalysisReport filtered =
+          new AnalysisReport()
+              .scanned(report.getScanned())
+              .licenses(filterLicenseResult(report.getLicenses()));
       report
           .getProviders()
           .entrySet()
@@ -77,5 +82,17 @@ public class ReportTransformer {
         .addAttachment(
             "report.html",
             new DataHandler(exchange.getIn().getBody(String.class), MediaType.TEXT_HTML));
+  }
+
+  private List<LicenseProviderResult> filterLicenseResult(
+      List<LicenseProviderResult> licenseReports) {
+
+    return licenseReports.stream()
+        .map(
+            licenseReport ->
+                new LicenseProviderResult()
+                    .summary(licenseReport.getSummary())
+                    .status(licenseReport.getStatus()))
+        .toList();
   }
 }
