@@ -358,6 +358,26 @@ public class TrustifyResponseHandlerTest {
                             "severity": "medium"
                           }
                         ]
+                      },
+                      {
+                        "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9908",
+                        "identifier": "CVE-2022-41946",
+                        "document_id": "CVE-2022-41946",
+                        "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
+                        "withdrawn": "2024-01-01T00:00:00Z",
+                        "labels": {
+                          "type": "osv",
+                          "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
+                          "importer": "osv-github",
+                          "source": "https://github.com/github/advisory-database"
+                        },
+                        "scores": [
+                          {
+                            "type": "3.1",
+                            "value": 5.8,
+                            "severity": "medium"
+                          }
+                        ]
                       }
                     ]
                   }

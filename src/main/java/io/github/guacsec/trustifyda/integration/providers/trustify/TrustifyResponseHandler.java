@@ -126,6 +126,9 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
 
           affected.forEach(
               data -> {
+                if (data.hasNonNull("withdrawn")) {
+                  return;
+                }
                 var source = getSource(data);
                 if (source == null) {
                   return;
