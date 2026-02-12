@@ -1,0 +1,76 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2023-01-01T00:00:00Z",
+    "creators": ["Tool: Test-1.0"],
+    "licenseListVersion": "3.21"
+  },
+  "name": "test-multiple-errors",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://test.example.com/multiple-errors",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Root",
+      "name": "root-package",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org/root@1.0",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-NoPurl1",
+      "name": "package-no-purl-1",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": []
+    },
+    {
+      "SPDXID": "SPDXRef-EmptyPurl",
+      "name": "package-empty-purl",
+      "versionInfo": "2.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "   ",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Root"
+    },
+    {
+      "spdxElementId": "SPDXRef-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-NoPurl1"
+    },
+    {
+      "spdxElementId": "SPDXRef-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-EmptyPurl"
+    }
+  ]
+}
