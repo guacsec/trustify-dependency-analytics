@@ -139,7 +139,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     switch (sbom) {
       case CYCLONEDX -> assertTrue(response.startsWith("CycloneDX Validation"));
-      case SPDX -> assertTrue(response.startsWith("SPDX-2.3 Validation"));
+      case SPDX -> assertTrue(response.startsWith("SPDX Validation"));
     }
 
     verifyNoInteractions();
@@ -530,7 +530,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     switch (sbom) {
       case CYCLONEDX -> assertTrue(response.startsWith("CycloneDX Validation"));
-      case SPDX -> assertTrue(response.startsWith("SPDX-2.3 Validation"));
+      case SPDX -> assertTrue(response.startsWith("SPDX Validation"));
     }
   }
 

@@ -1,0 +1,70 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2023-01-01T00:00:00Z",
+    "creators": ["Tool: Test-1.0"],
+    "licenseListVersion": "3.21"
+  },
+  "name": "test-duplicate-packages",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://test.example.com/duplicate-packages",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Root",
+      "name": "root-package",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org/root@1.0",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Duplicate",
+      "name": "duplicate-package",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org/duplicate@1.0",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Root"
+    },
+    {
+      "spdxElementId": "SPDXRef-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Duplicate"
+    },
+    {
+      "spdxElementId": "SPDXRef-Root",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Duplicate"
+    },
+    {
+      "spdxElementId": "SPDXRef-Duplicate",
+      "relationshipType": "DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-Root"
+    }
+  ]
+}
