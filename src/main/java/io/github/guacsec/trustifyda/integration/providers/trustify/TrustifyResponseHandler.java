@@ -56,6 +56,7 @@ import jakarta.inject.Inject;
 public class TrustifyResponseHandler extends ProviderResponseHandler {
 
   private static final Logger LOGGER = Logger.getLogger(TrustifyResponseHandler.class);
+  private static final String DEFAULT_SOURCE = "manual";
 
   private static final Map<ScoreType, Integer> SCORE_TYPE_ORDER =
       Map.of(
@@ -222,9 +223,10 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
 
   private String getSource(JsonNode node) {
     var labels = node.get("labels");
-    if (labels == null) {
-      return null;
+    var importer = JsonUtils.getTextValue(labels, "importer");
+    if (importer == null || importer.isBlank()) {
+      return DEFAULT_SOURCE;
     }
-    return JsonUtils.getTextValue(labels, "importer");
+    return importer;
   }
 }

@@ -739,6 +739,59 @@ public class TrustifyResponseHandlerTest {
   }
 
   @Test
+  void testResponseToIssuesWithDefaultSource() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": [
+        {
+          "identifier": "CVE-2024-1597",
+          "description": "This is a description used as title",
+          "status": {
+            "affected": [
+            {
+              "labels": {
+                "file": "2024/rhsa-2024_1662.json",
+                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
+                "type": "csaf"
+              },
+              "scores": [
+                {
+                  "type": "3.1",
+                  "value": 9.8,
+                  "severity": "critical"
+                }
+              ],
+              "ranges": [
+                {
+                  "events": [
+                    {
+                      "fixed": "42.5.5"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]}
+        }
+      ]
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertEquals("manual", issue.getSource());
+  }
+
+  @Test
   void testResponseToIssuesWithMultipleFixedVersions() throws IOException {
     String jsonResponse =
         """
