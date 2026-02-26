@@ -230,24 +230,24 @@ public class SpdxLicenseService {
       return List.of(depsDevResult);
     }
     var sbomPackages = new HashMap<String, PackageLicenseResult>();
-    dependencyTree
-        .licenseExpressions()
-        .entrySet()
-        .forEach(
-            entry -> {
-              var license = fromLicenseId(entry.getValue(), SBOM_SOURCE, null);
-              if (!entry.getKey().equals(dependencyTree.root().ref())) {
-                sbomPackages.put(
-                    entry.getKey(),
-                    new PackageLicenseResult()
-                        .evidence(List.of(license))
-                        .concluded(getConcluded(List.of(license))));
-              }
-            });
+    LicenseInfo projectLicense = null;
+    for (var entry : dependencyTree.licenseExpressions().entrySet()) {
+      var license = fromLicenseId(entry.getValue(), SBOM_SOURCE, null);
+      if (!entry.getKey().equals(dependencyTree.root().ref())) {
+        sbomPackages.put(
+            entry.getKey(),
+            new PackageLicenseResult()
+                .evidence(List.of(license))
+                .concluded(getConcluded(List.of(license))));
+      } else {
+        projectLicense = license;
+      }
+    }
 
     var sbomResult =
         new LicenseProviderResult()
             .packages(sbomPackages)
+            .projectLicense(projectLicense)
             .summary(LicenseSummaryUtils.buildSummary(sbomPackages))
             .status(new ProviderStatus().ok(true).name(SBOM_SOURCE).message("OK").code(200));
 

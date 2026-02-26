@@ -44,6 +44,7 @@ export interface Report {
 export interface LicenseReport {
   status: ProviderStatus
   summary: LicenseSummary;
+  projectLicense?: LicenseInfo;
   packages: {
     [key: string]: LicensePackageReport;
   };

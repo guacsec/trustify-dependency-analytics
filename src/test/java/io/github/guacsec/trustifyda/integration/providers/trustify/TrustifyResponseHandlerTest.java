@@ -64,6 +64,8 @@ public class TrustifyResponseHandlerTest {
   private TrustifyIntegration trustifyIntegration;
   private UBIRecommendation ubiRecommendation;
 
+  private static final PackageRef rootPackageRef = new PackageRef("pkg:maven/org.acme/app@1.0");
+
   @BeforeEach
   void setUp() {
     handler = new TrustifyResponseHandler();
@@ -73,7 +75,12 @@ public class TrustifyResponseHandlerTest {
     var packageRef = new PackageRef("pkg:maven/org.postgresql/postgresql@42.5.0");
     var directDep = new DirectDependency(packageRef, Collections.emptySet());
     var dependencies = Collections.singletonMap(packageRef, directDep);
-    dependencyTree = new DependencyTree(dependencies);
+    dependencyTree =
+        DependencyTree.builder()
+            .dependencies(dependencies)
+            .licenseExpressions(Collections.emptyMap())
+            .root(rootPackageRef)
+            .build();
 
     // Setup for TrustifyIntegration.processRecommendations() tests
     trustifyIntegration = new TrustifyIntegration();
@@ -187,8 +194,7 @@ public class TrustifyResponseHandlerTest {
                   ]
                 }
               }
-            ]}
-              "warnings": []
+            ]
           }
         """,
         // new response with details field
@@ -1135,7 +1141,12 @@ public class TrustifyResponseHandlerTest {
     dependencies.put(packageRef2, new DirectDependency(packageRef2, Collections.emptySet()));
     dependencies.put(packageRef3, new DirectDependency(packageRef3, Collections.emptySet()));
     dependencies.put(packageRef4, new DirectDependency(packageRef4, Collections.emptySet()));
-    var testDependencyTree = new DependencyTree(dependencies);
+    var testDependencyTree =
+        DependencyTree.builder()
+            .dependencies(dependencies)
+            .licenseExpressions(Collections.emptyMap())
+            .root(rootPackageRef)
+            .build();
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1241,7 +1252,12 @@ public class TrustifyResponseHandlerTest {
     var dependencies = new HashMap<PackageRef, DirectDependency>();
     dependencies.put(packageRef1, new DirectDependency(packageRef1, Collections.emptySet()));
     dependencies.put(packageRef2, new DirectDependency(packageRef2, Collections.emptySet()));
-    var testDependencyTree = new DependencyTree(dependencies);
+    var testDependencyTree =
+        DependencyTree.builder()
+            .dependencies(dependencies)
+            .licenseExpressions(Collections.emptyMap())
+            .root(rootPackageRef)
+            .build();
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =

@@ -81,7 +81,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
     page = click(webClient, srcBtn);
 
     DomNodeList<DomElement> tables = page.getElementsByTagName("table");
-    assertEquals(3, tables.size()); // dependencies table and vulnerabilities table
+    assertEquals(4, tables.size()); // dependencies table and licenses table
     DomElement table = tables.get(0); // dependencies table
     HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
     assertNotNull(tbody);
@@ -139,7 +139,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
         pageText.contains("License Summary"),
         "Page should contain License Summary from the license card");
     assertTrue(
-        pageText.contains("Concluded licenses"),
+        pageText.contains("Total licenses"),
         "Page should contain Concluded licenses (pie chart subtitle)");
 
     // Licenses tab (deps.dev from stub)

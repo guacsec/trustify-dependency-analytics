@@ -1,6 +1,6 @@
 import {Card, DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm} from '@patternfly/react-core';
 import {LicenseInfo} from '../api/report';
-import {getCategoryLabel} from './LicensesCountByCategory';
+import { getCategoryLabel } from '../constants/licenseCategories';
 
 export const ConcludedLicenseDetail = ({concluded}: {concluded: LicenseInfo}) => {
   return (

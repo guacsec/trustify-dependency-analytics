@@ -1,7 +1,7 @@
-import {Bullseye, CardBody} from '@patternfly/react-core';
-import {ChartDonut} from '@patternfly/react-charts';
-import {LicenseSummary} from '../api/report';
-import {CATEGORY_COLORS} from './LicensesCountByCategory';
+import { Bullseye, CardBody } from '@patternfly/react-core';
+import { ChartDonut } from '@patternfly/react-charts';
+import { LicenseSummary } from '../api/report';
+import { CATEGORY_COLORS } from '../constants/licenseCategories';
 
 export const LicensesChartCard = ({summary}: { summary: LicenseSummary }) => {
 

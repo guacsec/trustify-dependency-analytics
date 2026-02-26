@@ -254,15 +254,17 @@ public class CycloneDxParser extends SbomParser {
           licenses.put(rootRef.ref(), expression);
         }
       }
-      bom.getComponents()
-          .forEach(
-              component -> {
-                var expression = getLicenseExpression(component);
-                if (component.getPurl() != null && expression != null) {
-                  licenses.put(
-                      new PackageRef(component.getPurl()).purl().getCoordinates(), expression);
-                }
-              });
+      if (bom.getComponents() != null) {
+        bom.getComponents()
+            .forEach(
+                component -> {
+                  var expression = getLicenseExpression(component);
+                  if (component.getPurl() != null && expression != null) {
+                    licenses.put(
+                        new PackageRef(component.getPurl()).purl().getCoordinates(), expression);
+                  }
+                });
+      }
     }
     return licenses;
   }

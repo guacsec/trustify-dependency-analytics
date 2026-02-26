@@ -258,6 +258,21 @@ export const reportBasic: AppData = {
         "osiApproved" : 10,
         "fsfLibre" : 10
       },
+      "projectLicense" : {
+        "identifiers" : [ {
+          "id" : "Apache-2.0",
+          "name" : "Apache License 2.0",
+          "isDeprecated" : false,
+          "isOsiApproved" : true,
+          "isFsfLibre" : true,
+          "category" : "PERMISSIVE"
+        } ],
+        "expression" : "Apache-2.0",
+        "name" : "Apache License 2.0",
+        "category" : "PERMISSIVE",
+        "source" : "SBOM",
+        "sourceUrl" : "https://spdx.org"
+      },
       "packages" : {
         "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final" : {
           "concluded" : {
@@ -622,6 +637,21 @@ export const reportBasic: AppData = {
         "deprecated" : 2,
         "osiApproved" : 10,
         "fsfLibre" : 10
+      },
+      "projectLicense" : {
+        "identifiers" : [ {
+          "id" : "Apache-2.0",
+          "name" : "Apache License 2.0",
+          "isDeprecated" : false,
+          "isOsiApproved" : true,
+          "isFsfLibre" : true,
+          "category" : "PERMISSIVE"
+        } ],
+        "expression" : "Apache-2.0",
+        "name" : "Apache License 2.0",
+        "category" : "PERMISSIVE",
+        "source" : "SBOM",
+        "sourceUrl" : "https://spdx.org"
       },
       "packages" : {
         "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar" : {

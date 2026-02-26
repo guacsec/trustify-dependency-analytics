@@ -17,7 +17,6 @@
 
 package io.github.guacsec.trustifyda.integration.licenses;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -217,27 +216,6 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     Map<String, PackageLicenseResult> merged = new HashMap<>(result.packages());
     cacheHits.forEach((ref, r) -> merged.put(ref.ref(), r));
     exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
-  }
-
-  private void handleInvocationTargetException(Exchange exchange) {
-    Exception ex = exchange.getException(InvocationTargetException.class);
-    if (ex == null) {
-      return;
-    }
-    Throwable cause = ex.getCause();
-    if (cause instanceof NotFoundException notFound) {
-      exchange
-          .getIn()
-          .setHeader(Exchange.HTTP_RESPONSE_CODE, Response.Status.NOT_FOUND.getStatusCode());
-      exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
-      exchange.getIn().setBody(notFound.getMessage());
-      exchange
-          .getIn()
-          .setHeader(
-              Constants.EXHORT_REQUEST_ID_HEADER,
-              exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER));
-      exchange.setProperty(Exchange.EXCEPTION_HANDLED, true);
-    }
   }
 
   private void removeHeaders(Exchange exchange) {

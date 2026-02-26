@@ -2,7 +2,7 @@ import React from 'react';
 import { Divider, Icon } from '@patternfly/react-core';
 import SecurityIcon from '@patternfly/react-icons/dist/esm/icons/security-icon';
 import { LicensePackageReport } from '../api/report';
-import { getCategoryColor, getCategoryLabel } from './LicensesCountByCategory';
+import { getCategoryColor, getCategoryLabel } from '../constants/licenseCategories';
 import { GenericCompoundTable, ColumnDef } from './GenericCompoundTable';
 import { DependencyLink } from './DependencyLink';
 import { LicensesCountByCategory } from './LicensesCountByCategory';

@@ -1,44 +1,20 @@
 import React from 'react';
-import {FlexItem, Icon} from '@patternfly/react-core';
-import {LicenseInfo} from '../api/report';
+import { FlexItem, Icon } from '@patternfly/react-core';
+import { LicenseInfo } from '../api/report';
 import SecurityIcon from '@patternfly/react-icons/dist/esm/icons/security-icon';
+import {
+  CATEGORY_COLORS,
+  CATEGORY_SORT_ORDER,
+} from '../constants/licenseCategories';
 
-// Same order and colors as LicensesChartCard: permissive, weak copyleft, strong copyleft, unknown
-export const CATEGORY_COLORS: Record<string, string> = {
-  PERMISSIVE: '#0066CC',
-  WEAK_COPYLEFT: '#3E8635',
-  STRONG_COPYLEFT: '#F0AB00',
-  UNKNOWN: '#C46100',
-};
-
-export const CATEGORY_LABELS: Record<string, string> = {
-  PERMISSIVE: 'Permissive',
-  WEAK_COPYLEFT: 'Weak copyleft',
-  STRONG_COPYLEFT: 'Strong copyleft',
-  UNKNOWN: 'Unknown',
-};
-
-export function getCategoryLabel(category: string | undefined): string {
-  if (!category) return CATEGORY_LABELS.UNKNOWN;
-  const cat = category.toUpperCase().replace(/-/g, '_');
-  return CATEGORY_LABELS[cat] ?? category;
-}
-
-export function getCategoryColor(category: string | undefined): string {
-  if (!category) return CATEGORY_COLORS.UNKNOWN;
-  const cat = category.toUpperCase().replace(/-/g, '_');
-  return CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.UNKNOWN;
-}
-
-/** Sort order by decreasing permissiveness: Permissive first, then Weak copyleft, Strong copyleft, Unknown last. */
-export const CATEGORY_SORT_ORDER = ['PERMISSIVE', 'WEAK_COPYLEFT', 'STRONG_COPYLEFT', 'UNKNOWN'] as const;
-
-export function getCategorySortIndex(category: string | undefined): number {
-  if (!category) return CATEGORY_SORT_ORDER.length;
-  const cat = category.toUpperCase().replace(/-/g, '_');
-  const idx = CATEGORY_SORT_ORDER.indexOf(cat as (typeof CATEGORY_SORT_ORDER)[number]);
-  return idx >= 0 ? idx : CATEGORY_SORT_ORDER.length;
-}
+export {
+  CATEGORY_COLORS,
+  CATEGORY_LABELS,
+  getCategoryLabel,
+  getCategoryColor,
+  CATEGORY_SORT_ORDER,
+  getCategorySortIndex,
+} from '../constants/licenseCategories';
 
 const CATEGORY_ORDER = CATEGORY_SORT_ORDER;
 

@@ -3,12 +3,11 @@ import {Card, Flex, FlexItem, Icon} from '@patternfly/react-core';
 import {Table, TableVariant, Tbody, Td, Th, Thead, Tr} from '@patternfly/react-table';
 import SecurityIcon from '@patternfly/react-icons/dist/esm/icons/security-icon';
 import {LicenseInfo} from '../api/report';
-import {getCategoryColor, getCategoryLabel, getCategorySortIndex} from './LicensesCountByCategory';
+import { getCategoryColor, getCategoryLabel, getCategorySortIndex, WARNING_SHIELD_COLOR } from '../constants/licenseCategories';
 import {ConditionalTableBody} from './TableControls/ConditionalTableBody';
 
 const FSF_LOGO_URL = 'https://www.gnu.org/graphics/fsf-logo-notext-small.png';
 const OSI_LOGO_URL = 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/open-source-initiative.svg';
-const DEPRECATED_SHIELD_COLOR = '#F0AB00'; // PatternFly warning yellow
 
 const columnNames = {
   evidence: 'Evidence',
@@ -30,7 +29,7 @@ function IdentifierBadges({info}: {info: LicenseInfo}) {
         <FlexItem>
           <span title="Deprecated identifier">
             <Icon isInline>
-              <SecurityIcon style={{ fill: DEPRECATED_SHIELD_COLOR, height: '13px' }} />
+              <SecurityIcon style={{ fill: WARNING_SHIELD_COLOR, height: '13px' }} />
             </Icon>
           </span>
         </FlexItem>

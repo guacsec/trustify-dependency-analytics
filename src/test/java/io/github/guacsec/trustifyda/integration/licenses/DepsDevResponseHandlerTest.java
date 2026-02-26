@@ -185,13 +185,12 @@ class DepsDevResponseHandlerTest {
     var packages = Collections.singletonMap("pkg:npm/test@1.0", packageResult);
     var splitResult = new LicenseSplitResult(status, packages);
 
-    List<LicenseProviderResult> response = handler.toResultList(splitResult);
+    LicenseProviderResult response = handler.toResult(splitResult);
 
     assertNotNull(response);
-    assertEquals(1, response.size());
-    assertEquals(packages, response.get(0).getPackages());
-    assertEquals(status, response.get(0).getStatus());
-    assertNotNull(response.get(0).getSummary());
+    assertEquals(packages, response.getPackages());
+    assertEquals(status, response.getStatus());
+    assertNotNull(response.getSummary());
   }
 
   @Test
@@ -206,9 +205,9 @@ class DepsDevResponseHandlerTest {
     handler.handleResponse(exchange);
 
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
-    List<LicenseProviderResult> providerResult = handler.toResultList(result);
+    LicenseProviderResult providerResult = handler.toResult(result);
 
-    var summary = providerResult.get(0).getSummary();
+    var summary = providerResult.getSummary();
     assertNotNull(summary);
     // maven_response.json: 10 packages, 12 license identifiers (8 Apache-2.0, 1 BSD-2-Clause, 2
     // weak copyleft, 2 unknown)
