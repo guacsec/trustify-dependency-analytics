@@ -21,7 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -414,37 +416,35 @@ public class SpdxLicenseServiceTest {
 
   @Test
   void testIdentifyLicense_apache20() throws InvalidSPDXAnalysisException {
-    // Use header from SPDX library so round-trip works regardless of JAR vs network list
-    ListedLicense apache = LicenseInfoFactory.getListedLicenseById("Apache-2.0");
-    if (apache == null) {
-      return; // Apache-2.0 not in list (e.g. minimal JAR)
-    }
-    var headerOpt = apache.getStandardLicenseHeader();
-    if (headerOpt == null || !headerOpt.isPresent()) {
-      return;
-    }
-    String licenseContent = headerOpt.get();
+    var licenseContent = getClass().getClassLoader().getResourceAsStream("licenses/Apache-2.0.txt");
     try {
-      var license = service.identifyLicense(licenseContent);
+      var license = service.identifyLicense(new String(licenseContent.readAllBytes()));
       assertEquals("Apache-2.0", license.getId());
-    } catch (NotFoundException e) {
-      // Header map may not contain this header when SPDX data differs (e.g. template text)
-      return;
+    } catch (NotFoundException | IOException e) {
+      fail("Error identifying license", e);
     }
   }
 
   @Test
   void testIdentifyLicense_mit() throws InvalidSPDXAnalysisException {
-    ListedLicense mit = LicenseInfoFactory.getListedLicenseById("MIT");
-    if (mit == null) {
-      return;
+    var licenseContent = getClass().getClassLoader().getResourceAsStream("licenses/MIT.txt");
+    try {
+      var license = service.identifyLicense(new String(licenseContent.readAllBytes()));
+      assertEquals("MIT", license.getId());
+    } catch (NotFoundException | IOException e) {
+      fail("Error identifying license", e);
     }
-    var headerOpt = mit.getStandardLicenseHeader();
-    if (headerOpt == null || !headerOpt.isPresent()) {
-      return;
-    }
-    var license = service.identifyLicense(headerOpt.get());
-    assertEquals("MIT", license.getId());
+  }
+
+  @Test
+  void testIdentifyLicense_gpl20_with_classpath_exception() throws InvalidSPDXAnalysisException {
+    var licenseContent =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("licenses/GPL-2.0-with-classpath-exception.txt");
+    assertThrows(
+        NotFoundException.class,
+        () -> service.identifyLicense(new String(licenseContent.readAllBytes())));
   }
 
   @Test

@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.camel.Body;
 import org.apache.camel.ExchangeProperty;
@@ -39,6 +37,8 @@ import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicense;
 import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicenseException;
 import org.spdx.library.model.v3_0_1.expandedlicensing.WithAdditionOperator;
 import org.spdx.library.model.v3_0_1.simplelicensing.AnyLicenseInfo;
+import org.spdx.utility.compare.LicenseCompareHelper;
+import org.spdx.utility.compare.SpdxCompareException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -53,11 +53,9 @@ import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.licenses.LicenseConfig;
 import io.quarkus.runtime.StartupEvent;
-import io.quarkus.runtime.util.HashUtil;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
@@ -67,6 +65,17 @@ public class SpdxLicenseService {
   private static final String SBOM_SOURCE = "SBOM";
   private static final String SPDX_SOURCE = "SPDX";
   private static final String SPDX_SOURCE_URL = "https://spdx.org";
+
+  private static final Map<String, String> COMMON_LICENSE_HEADERS =
+      Map.of(
+          "Apache-2.0", "Apache License\nVersion 2.0",
+          "MIT", "MIT License",
+          "GPL-2.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991",
+          "GPL-3.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 3, June 2007",
+          "LGPL-2.1-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 2.1, February 1999",
+          "LGPL-3.0-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 3, February 2007",
+          "BSD-2-Clause", "BSD 2-Clause License",
+          "BSD-3-Clause", "BSD 3-Clause License");
 
   /**
    * Deprecated SPDX license ids that are replaced by "license WITH exception" form. Normalizing
@@ -82,51 +91,11 @@ public class SpdxLicenseService {
 
   private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
 
-  /**
-   * Header hash (first 5 lines normalized) -> SPDX license id. Built lazily from SPDX library on
-   * first identifyLicense call (library may download license list on first use).
-   */
-  private final Map<String, String> headerHashToLicenseId = new HashMap<>();
-
-  @Inject ExecutorService executorService;
-  @Inject ObjectMapper mapper;
-
   private LicenseConfig licenseConfig;
 
   void onStart(@Observes StartupEvent ev) {
     SpdxModelFactory.init();
-    var loadHeadersFuture = CompletableFuture.runAsync(this::loadHeaders, executorService);
-    var loadCategoriesFuture = CompletableFuture.runAsync(this::loadCategories, executorService);
-    CompletableFuture.allOf(loadHeadersFuture, loadCategoriesFuture).join();
-  }
-
-  private void loadHeaders() {
-    try {
-      List<String> ids = LicenseInfoFactory.getSpdxListedLicenseIds();
-      if (ids != null) {
-        for (String licenseId : ids) {
-          LOGGER.debugf("Loading header for license %s", licenseId);
-          try (var stream =
-              getClass()
-                  .getClassLoader()
-                  .getResourceAsStream("spdx-licenses/" + licenseId + ".json")) {
-            if (stream == null) {
-              LOGGER.warnf("License file not found: %s", licenseId);
-              continue;
-            }
-            var json = mapper.readTree(stream);
-            var licenseText = json.get("licenseText").asText();
-            var header = extractHeader(licenseText);
-            headerHashToLicenseId.put(HashUtil.sha256(header), licenseId);
-          } catch (IOException e) {
-            LOGGER.debugf("Could not load header for license %s: %s", licenseId, e.getMessage());
-          }
-        }
-      }
-      LOGGER.infof("Built SPDX header map with %d entries", headerHashToLicenseId.size());
-    } catch (Exception e) {
-      LOGGER.error("Error building SPDX header map", e);
-    }
+    loadCategories();
   }
 
   private void loadCategories() {
@@ -146,22 +115,49 @@ public class SpdxLicenseService {
   }
 
   public LicenseIdentifier identifyLicense(String licenseFile) {
-    String header = extractHeader(licenseFile);
-    if (header == null) {
-      throw new NotFoundException("License header not found in license file");
+    var licenseIdentifier = findCommonLicense(licenseFile);
+    if (licenseIdentifier != null) {
+      return licenseIdentifier;
     }
-    String licenseId = headerHashToLicenseId.get(HashUtil.sha256(header));
-    if (licenseId == null) {
-      throw new NotFoundException("License not found with header: " + header);
-    }
-    try {
-      ListedLicense license = LicenseInfoFactory.getListedLicenseById(licenseId);
-      if (license == null) {
-        throw new NotFoundException("License not found with ID: " + licenseId);
+    List<String> allLicenseIds = LicenseInfoFactory.getSpdxListedLicenseIds();
+    for (String licenseId : allLicenseIds) {
+      licenseIdentifier = resolveStandardLicense(licenseId, licenseFile);
+      if (licenseIdentifier != null) {
+        return licenseIdentifier;
       }
-      return toLicenseIdentifier(license, null, licenseId);
-    } catch (InvalidSPDXAnalysisException e) {
-      throw new NotFoundException("License not found with ID: " + licenseId, e);
+    }
+    LOGGER.warn(
+        "License not found with header: "
+            + licenseFile.substring(0, Math.min(licenseFile.length(), 100)));
+    throw new NotFoundException("License not found");
+  }
+
+  private LicenseIdentifier findCommonLicense(String licenseFile) {
+    String header = extractHeader(licenseFile);
+    for (Map.Entry<String, String> entry : COMMON_LICENSE_HEADERS.entrySet()) {
+      if (header.strip().startsWith(entry.getValue().strip())) {
+        return resolveStandardLicense(entry.getKey(), licenseFile);
+      }
+    }
+    return null;
+  }
+
+  private LicenseIdentifier resolveStandardLicense(String licenseId, String licenseFile) {
+    try {
+      var isStandardLicense =
+          LicenseCompareHelper.isTextStandardLicense(
+              LicenseInfoFactory.getListedLicenseById(licenseId), licenseFile);
+      if (!isStandardLicense.isDifferenceFound()) {
+        ListedLicense license;
+        license = LicenseInfoFactory.getListedLicenseById(licenseId);
+        var licenseIdentifier = toLicenseIdentifier(license, null, licenseId);
+        LOGGER.debug("License found: " + licenseIdentifier.getId());
+        return licenseIdentifier;
+      }
+      return null;
+    } catch (InvalidSPDXAnalysisException | SpdxCompareException e) {
+      LOGGER.error("Error identifying license", e);
+      throw new NotFoundException("License not found", e);
     }
   }
 

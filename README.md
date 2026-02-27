@@ -100,10 +100,10 @@ echo '{
         "summary": {
             "concluded": 7, // number of concluded licenses
             "permissive": 8, // total number of permissive licenses found. Including the declared but not concluded.
-            "strong-copyleft": 1, // total number of strong-copyleft licenses found. Including the declared but not concluded.
+            "strongCopyleft": 1, // total number of strong-copyleft licenses found. Including the declared but not concluded.
             "total": 12, // total number of declared licenses found.
             "unknown": 2, // total number of unknown licenses found. Including the declared but not concluded.
-            "weak-copyleft": 1 // total number of weak-copyleft licenses found. Including the declared but not concluded.
+            "weakCopyleft": 1 // total number of weak-copyleft licenses found. Including the declared but not concluded.
         }
 ```
 
@@ -139,11 +139,30 @@ echo '{
             },
 ```
 
+### License Identify `/api/v5/licenses/identify`
+
+The endpoint identifies an SPDX license from raw license file text. Send the license file content (typically the license header) in the request body as plain text. The service extracts the first 5 lines of the header, matches it against bundled SPDX license texts, and returns the identified license with its SPDX ID, name, and category.
+
+```bash
+echo 'SPDX-License-Identifier: Apache-2.0
+Copyright 2023 Example.
+Licensed under the Apache License, Version 2.0' | http -v :8080/api/v5/licenses/identify Content-Type:text/plain
+```
+
+Returns a `LicenseIdentifier` with `id`, `name`, `category`, and related fields. Responds with 404 if the license header cannot be matched.
 
 ## Dependency Analysis `/api/v5/analysis`
 
 The expected input data format is a Software Bill of Materials (SBOM) containing the aggregate of all direct and transitive
-dependencies of a project. The license information will also be added to this report. See [License Analysis](#license-analysis-apiv5licenses).
+dependencies of a project.
+
+**License information**: The analysis report includes license information retrieved from the dependencies defined in the SBOM. License data is gathered from:
+
+- **SBOM-provided license data**: For CycloneDX SBOMs, license information already declared in the SBOM components is used
+- **deps.dev**: License data is fetched from [Deps.dev API](https://docs.deps.dev/api/v3alpha/#purllookupbatch) based on the SBOM component package URLs (purls)
+- **Project license**: The project's own license (when present in the SBOM metadata) is also included in the report
+
+See [License Analysis](#license-analysis-apiv5licenses) for how licenses are categorized and concluded.
 
 The `Content-Type` HTTP header will allow Dependency Analytics distinguish between the different supported SBOM formats.
 
