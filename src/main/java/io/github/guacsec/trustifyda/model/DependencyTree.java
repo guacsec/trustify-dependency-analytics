@@ -29,12 +29,15 @@ import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record DependencyTree(Map<PackageRef, DirectDependency> dependencies) {
+public record DependencyTree(
+    Map<PackageRef, DirectDependency> dependencies,
+    Map<String, String> licenseExpressions,
+    PackageRef root) {
 
   public static final PackageRef getDefaultRoot(String type) {
     return PackageRef.builder()
         .pkgManager(type)
-        .namespace("com.redhat.exhort")
+        .namespace("io.github.guacsec.trustifyda")
         .name("default-app")
         .version("0.0.1")
         .build();
@@ -86,6 +89,18 @@ public record DependencyTree(Map<PackageRef, DirectDependency> dependencies) {
   public static class Builder {
 
     public Map<PackageRef, DirectDependency> dependencies;
+    public Map<String, String> licenseExpressions;
+    public PackageRef root;
+
+    public Builder licenseExpressions(Map<String, String> licenseExpressions) {
+      this.licenseExpressions = licenseExpressions;
+      return this;
+    }
+
+    public Builder root(PackageRef root) {
+      this.root = root;
+      return this;
+    }
 
     public Builder dependencies(Map<PackageRef, DirectDependency> dependencies) {
       this.dependencies = dependencies;
@@ -93,7 +108,7 @@ public record DependencyTree(Map<PackageRef, DirectDependency> dependencies) {
     }
 
     public DependencyTree build() {
-      return new DependencyTree(dependencies);
+      return new DependencyTree(dependencies, licenseExpressions, root);
     }
   }
 }

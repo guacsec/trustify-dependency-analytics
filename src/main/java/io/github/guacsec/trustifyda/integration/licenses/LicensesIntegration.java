@@ -44,7 +44,9 @@ import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class LicensesIntegration extends EndpointRouteBuilder {
@@ -60,6 +62,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
   @Inject DepsDevRequestBuilder requestBuilder;
   @Inject DepsDevResponseHandler responseHandler;
+  @Inject SpdxLicenseService spdxLicenseService;
   @Inject CacheService cacheService;
 
   @Override
@@ -69,6 +72,28 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     onException(TimeoutException.class)
       .handled(true)
       .process(responseHandler::processResponseError);
+
+    onException(NotFoundException.class)
+      .routeId("onLicensesNotFoundException")
+      .useOriginalMessage()
+      .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.NOT_FOUND.getStatusCode()))
+      .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
+      .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
+      .handled(true)
+      .setBody().simple("${exception.message}");
+
+    from(direct("getLicense"))
+      .routeId("getLicense")
+      .process(this::removeHeaders)
+      .setBody(header("licenseId"))
+      .transform(method(spdxLicenseService, "fromLicenseId"))
+      .marshal().json();
+
+    from(direct("identifyLicense"))
+      .routeId("identifyLicense")
+      .process(this::removeHeaders)
+      .transform(method(spdxLicenseService, "identifyLicense"))
+      .marshal().json();
 
     from(direct("getLicensesFromEndpoint"))
       .routeId("getLicensesFromEndpoint")
@@ -93,7 +118,8 @@ public class LicensesIntegration extends EndpointRouteBuilder {
             .to(direct("depsDevSplitRequest"))
             .process(this::aggregateLicenseCacheHits)
         .end()
-        .transform(method(responseHandler, "toResultList"));
+        .transform(method(responseHandler, "toResult"))    
+        .transform(method(spdxLicenseService, "aggregateSbomLicenses"));
 
     from(direct("depsDevSplitRequest"))
       .routeId("depsDevSplitRequest")
@@ -192,16 +218,19 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
   }
 
-  /** Clears HTTP headers from the REST consumer so the HTTP producer uses only the full URL. */
-  private void processRequest(Exchange exchange) {
+  private void removeHeaders(Exchange exchange) {
     Message message = exchange.getMessage();
     message.removeHeader(Exchange.HTTP_RAW_QUERY);
     message.removeHeader(Exchange.HTTP_QUERY);
     message.removeHeader(Exchange.HTTP_URI);
     message.removeHeader(Exchange.HTTP_PATH);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+  }
 
-    message.setHeader(Exchange.CONTENT_TYPE, constant(MediaType.APPLICATION_JSON));
-    message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
+  /** Clears HTTP headers from the REST consumer so the HTTP producer uses only the full URL. */
+  private void processRequest(Exchange exchange) {
+    removeHeaders(exchange);
+    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, constant(MediaType.APPLICATION_JSON));
+    exchange.getMessage().setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
   }
 }

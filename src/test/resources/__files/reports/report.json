@@ -370,7 +370,8 @@
     {
       "status": {
         "ok": true,
-        "name": "deps.dev",
+        "name": "SBOM",
+        "code": 200,
         "message": "OK",
         "warnings": {}
       },
@@ -378,145 +379,472 @@
         "total": 12,
         "concluded": 10,
         "permissive": 8,
-        "weak-copyleft": 2,
-        "strong-copyleft": 0,
-        "unknown": 2
+        "weakCopyleft": 4,
+        "strongCopyleft": 0,
+        "unknown": 0,
+        "deprecated": 2,
+        "osiApproved": 10,
+        "fsfLibre": 10
+      },
+      "projectLicense": {
+        "identifiers": [
+          {
+            "id": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "isDeprecated": false,
+            "isOsiApproved": true,
+            "isFsfLibre": true,
+            "category": "PERMISSIVE"
+          }
+        ],
+        "expression": "Apache-2.0",
+        "name": "Apache License 2.0",
+        "category": "PERMISSIVE",
+        "source": "SBOM",
+        "sourceUrl": "https://spdx.org"
       },
       "packages": {
         "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
-            "source": "deps.dev",
-            "sourceUrl": "https://api.deps.dev"
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
           },
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
             }
           ]
         },
         "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
-            "source": "deps.dev",
-            "sourceUrl": "https://api.deps.dev"
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
           },
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
             }
           ]
         },
         "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
-            "source": "deps.dev",
-            "sourceUrl": "https://api.deps.dev"
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
           },
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
             }
           ]
         },
         "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5": {
           "concluded": {
             "identifiers": [
-              "GPL-2.0-with-classpath-exception"
+              {
+                "id": "GPL-2.0-with-classpath-exception",
+                "name": "GNU General Public License v2.0 w/Classpath exception",
+                "isDeprecated": true,
+                "isOsiApproved": false,
+                "category": "WEAK_COPYLEFT"
+              },
+              {
+                "id": "EPL-2.0",
+                "name": "Eclipse Public License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "WEAK_COPYLEFT"
+              }
             ],
-            "expression": "GPL-2.0-with-classpath-exception",
-            "name": "GPL2 w/ CPE",
+            "expression": "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+            "name": "GNU General Public License v2.0 w/Classpath exception AND Eclipse Public License 2.0",
             "category": "WEAK_COPYLEFT",
-            "source": "deps.dev",
-            "sourceUrl": "https://api.deps.dev"
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
           },
           "evidence": [
             {
               "identifiers": [
-                "non-standard"
+                {
+                  "id": "GPL-2.0-with-classpath-exception",
+                  "name": "GNU General Public License v2.0 w/Classpath exception",
+                  "isDeprecated": true,
+                  "isOsiApproved": false,
+                  "category": "WEAK_COPYLEFT"
+                },
+                {
+                  "id": "EPL-2.0",
+                  "name": "Eclipse Public License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "WEAK_COPYLEFT"
+                }
               ],
-              "expression": "non-standard",
-              "name": "EPL 2.0",
-              "category": "UNKNOWN",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
-            },
-            {
-              "identifiers": [
-                "GPL-2.0-with-classpath-exception"
-              ],
-              "expression": "GPL-2.0-with-classpath-exception",
-              "name": "GPL2 w/ CPE",
+              "expression": "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+              "name": "GNU General Public License v2.0 w/Classpath exception AND Eclipse Public License 2.0",
               "category": "WEAK_COPYLEFT",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
             }
           ]
         },
         "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
-            "source": "deps.dev",
-            "sourceUrl": "https://api.deps.dev"
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
           },
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
-              "source": "deps.dev",
-              "sourceUrl": "https://api.deps.dev"
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
             }
           ]
         },
         "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
+            }
+          ]
+        },
+        "pkg:maven/jakarta.el/jakarta.el-api@3.0.3": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "GPL-2.0-with-classpath-exception",
+                "name": "GNU General Public License v2.0 w/Classpath exception",
+                "isDeprecated": true,
+                "isOsiApproved": false,
+                "category": "WEAK_COPYLEFT"
+              },
+              {
+                "id": "EPL-2.0",
+                "name": "Eclipse Public License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "WEAK_COPYLEFT"
+              }
+            ],
+            "expression": "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+            "name": "GNU General Public License v2.0 w/Classpath exception AND Eclipse Public License 2.0",
+            "category": "WEAK_COPYLEFT",
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "GPL-2.0-with-classpath-exception",
+                  "name": "GNU General Public License v2.0 w/Classpath exception",
+                  "isDeprecated": true,
+                  "isOsiApproved": false,
+                  "category": "WEAK_COPYLEFT"
+                },
+                {
+                  "id": "EPL-2.0",
+                  "name": "Eclipse Public License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "WEAK_COPYLEFT"
+                }
+              ],
+              "expression": "(GPL-2.0-with-classpath-exception AND EPL-2.0)",
+              "name": "GNU General Public License v2.0 w/Classpath exception AND Eclipse Public License 2.0",
+              "category": "WEAK_COPYLEFT",
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
+            }
+          ]
+        },
+        "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
+            }
+          ]
+        },
+        "pkg:maven/org.postgresql/postgresql@42.5.0": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "BSD-2-Clause",
+                "name": "BSD 2-Clause \"Simplified\" License",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "BSD-2-Clause",
+            "name": "BSD 2-Clause \"Simplified\" License",
+            "category": "PERMISSIVE",
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "BSD-2-Clause",
+                  "name": "BSD 2-Clause \"Simplified\" License",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "BSD-2-Clause",
+              "name": "BSD 2-Clause \"Simplified\" License",
+              "category": "PERMISSIVE",
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
+            }
+          ]
+        },
+        "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "SBOM",
+            "sourceUrl": "https://spdx.org"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "SBOM",
+              "sourceUrl": "https://spdx.org"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": {
+        "ok": true,
+        "name": "deps.dev",
+        "code": 200,
+        "message": "OK",
+        "warnings": {}
+      },
+      "summary": {
+        "total": 12,
+        "concluded": 10,
+        "permissive": 8,
+        "weakCopyleft": 2,
+        "strongCopyleft": 0,
+        "unknown": 2,
+        "deprecated": 0,
+        "osiApproved": 10,
+        "fsfLibre": 10
+      },
+      "packages": {
+        "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
             "name": "Apache License 2.0",
@@ -527,7 +855,218 @@
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            }
+          ]
+        },
+        "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "deps.dev",
+            "sourceUrl": "https://api.deps.dev"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            }
+          ]
+        },
+        "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "deps.dev",
+            "sourceUrl": "https://api.deps.dev"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            }
+          ]
+        },
+        "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "GPL-2.0-only WITH Classpath-exception-2.0",
+                "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "WEAK_COPYLEFT"
+              }
+            ],
+            "expression": "GPL-2.0-only WITH Classpath-exception-2.0",
+            "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+            "category": "WEAK_COPYLEFT",
+            "source": "deps.dev",
+            "sourceUrl": "https://api.deps.dev"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "non-standard",
+                  "name": "non-standard",
+                  "category": "UNKNOWN"
+                }
+              ],
+              "expression": "non-standard",
+              "name": "non-standard",
+              "category": "UNKNOWN",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            },
+            {
+              "identifiers": [
+                {
+                  "id": "GPL-2.0-only WITH Classpath-exception-2.0",
+                  "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "WEAK_COPYLEFT"
+                }
+              ],
+              "expression": "GPL-2.0-only WITH Classpath-exception-2.0",
+              "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+              "category": "WEAK_COPYLEFT",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            }
+          ]
+        },
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "deps.dev",
+            "sourceUrl": "https://api.deps.dev"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
+              ],
+              "expression": "Apache-2.0",
+              "name": "Apache License 2.0",
+              "category": "PERMISSIVE",
+              "source": "deps.dev",
+              "sourceUrl": "https://api.deps.dev"
+            }
+          ]
+        },
+        "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2": {
+          "concluded": {
+            "identifiers": [
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
+            ],
+            "expression": "Apache-2.0",
+            "name": "Apache License 2.0",
+            "category": "PERMISSIVE",
+            "source": "deps.dev",
+            "sourceUrl": "https://api.deps.dev"
+          },
+          "evidence": [
+            {
+              "identifiers": [
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
               "name": "Apache License 2.0",
@@ -540,10 +1079,17 @@
         "pkg:maven/jakarta.el/jakarta.el-api@3.0.3": {
           "concluded": {
             "identifiers": [
-              "GPL-2.0-with-classpath-exception"
+              {
+                "id": "GPL-2.0-only WITH Classpath-exception-2.0",
+                "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "WEAK_COPYLEFT"
+              }
             ],
-            "expression": "GPL-2.0-with-classpath-exception",
-            "name": "GPL2 w/ CPE",
+            "expression": "GPL-2.0-only WITH Classpath-exception-2.0",
+            "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
             "category": "WEAK_COPYLEFT",
             "source": "deps.dev",
             "sourceUrl": "https://api.deps.dev"
@@ -551,20 +1097,31 @@
           "evidence": [
             {
               "identifiers": [
-                "non-standard"
+                {
+                  "id": "non-standard",
+                  "name": "non-standard",
+                  "category": "UNKNOWN"
+                }
               ],
               "expression": "non-standard",
-              "name": "EPL 2.0",
+              "name": "non-standard",
               "category": "UNKNOWN",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
             },
             {
               "identifiers": [
-                "GPL-2.0-with-classpath-exception"
+                {
+                  "id": "GPL-2.0-only WITH Classpath-exception-2.0",
+                  "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "WEAK_COPYLEFT"
+                }
               ],
-              "expression": "GPL-2.0-with-classpath-exception",
-              "name": "GPL2 w/ CPE",
+              "expression": "GPL-2.0-only WITH Classpath-exception-2.0",
+              "name": "GNU General Public License v2.0 only with Classpath exception 2.0",
               "category": "WEAK_COPYLEFT",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
@@ -574,10 +1131,17 @@
         "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
             "source": "deps.dev",
             "sourceUrl": "https://api.deps.dev"
@@ -585,10 +1149,17 @@
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
@@ -598,10 +1169,17 @@
         "pkg:maven/org.postgresql/postgresql@42.5.0": {
           "concluded": {
             "identifiers": [
-              "BSD-2-Clause"
+              {
+                "id": "BSD-2-Clause",
+                "name": "BSD 2-Clause \"Simplified\" License",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "BSD-2-Clause",
-            "name": "BSD-2-Clause",
+            "name": "BSD 2-Clause \"Simplified\" License",
             "category": "PERMISSIVE",
             "source": "deps.dev",
             "sourceUrl": "https://api.deps.dev"
@@ -609,10 +1187,17 @@
           "evidence": [
             {
               "identifiers": [
-                "BSD-2-Clause"
+                {
+                  "id": "BSD-2-Clause",
+                  "name": "BSD 2-Clause \"Simplified\" License",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "BSD-2-Clause",
-              "name": "BSD-2-Clause",
+              "name": "BSD 2-Clause \"Simplified\" License",
               "category": "PERMISSIVE",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
@@ -622,10 +1207,17 @@
         "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final": {
           "concluded": {
             "identifiers": [
-              "Apache-2.0"
+              {
+                "id": "Apache-2.0",
+                "name": "Apache License 2.0",
+                "isDeprecated": false,
+                "isOsiApproved": true,
+                "isFsfLibre": true,
+                "category": "PERMISSIVE"
+              }
             ],
             "expression": "Apache-2.0",
-            "name": "The Apache Software License, Version 2.0",
+            "name": "Apache License 2.0",
             "category": "PERMISSIVE",
             "source": "deps.dev",
             "sourceUrl": "https://api.deps.dev"
@@ -633,10 +1225,17 @@
           "evidence": [
             {
               "identifiers": [
-                "Apache-2.0"
+                {
+                  "id": "Apache-2.0",
+                  "name": "Apache License 2.0",
+                  "isDeprecated": false,
+                  "isOsiApproved": true,
+                  "isFsfLibre": true,
+                  "category": "PERMISSIVE"
+                }
               ],
               "expression": "Apache-2.0",
-              "name": "The Apache Software License, Version 2.0",
+              "name": "Apache License 2.0",
               "category": "PERMISSIVE",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"

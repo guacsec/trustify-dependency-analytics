@@ -2,13 +2,15 @@ import React from 'react';
 import { Divider, Icon } from '@patternfly/react-core';
 import SecurityIcon from '@patternfly/react-icons/dist/esm/icons/security-icon';
 import { LicensePackageReport } from '../api/report';
-import { getCategoryColor, getCategoryLabel } from './LicensesCountByCategory';
+import { getCategoryColor, getCategoryLabel } from '../constants/licenseCategories';
 import { GenericCompoundTable, ColumnDef } from './GenericCompoundTable';
 import { DependencyLink } from './DependencyLink';
 import { LicensesCountByCategory } from './LicensesCountByCategory';
 import { extractDependencyVersion } from '../utils/utils';
 import { ConcludedLicenseDetail } from './ConcludedLicenseDetail';
 import { EvidenceLicensesTable } from './EvidenceLicensesTable';
+
+const DEPRECATED_SHIELD_COLOR = '#F0AB00'; // PatternFly warning yellow
 
 export interface LicenseTableRow {
   ref: string;
@@ -55,10 +57,21 @@ export const LicensesTable = ({
       width: 20,
       sortIndex: 2,
       compoundExpand: true,
-      render: (item) =>
-        item.concluded
-          ? item.concluded.expression || item.concluded.name || '—'
-          : '—',
+      render: (item) => {
+        if (!item.concluded) return '—';
+        const label = item.concluded.expression || item.concluded.name || '—';
+        const isDeprecated = item.concluded.identifiers?.some((i) => i.isDeprecated === true);
+        return (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            {isDeprecated && (
+              <Icon isInline title="Concluded license is deprecated">
+                <SecurityIcon style={{ fill: DEPRECATED_SHIELD_COLOR, height: '13px' }} />
+              </Icon>
+            )}
+            {label}
+          </span>
+        );
+      },
     },
     {
       key: 'category',
@@ -84,8 +97,8 @@ export const LicensesTable = ({
         ),
     },
     {
-      key: 'licenses',
-      header: 'Licenses',
+      key: 'evidences',
+      header: 'Evidences',
       width: 25,
       compoundExpand: true,
       render: (item) =>
@@ -93,7 +106,7 @@ export const LicensesTable = ({
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '25px' }}>{item.evidence.length}</div>
             <Divider orientation={{ default: 'vertical' }} style={{ paddingRight: '10px' }} />
-            <LicensesCountByCategory evidence={item.evidence} />
+            <LicensesCountByCategory evidence={item.evidence} countBy="identifiers" />
           </div>
         ) : (
           0
@@ -137,13 +150,13 @@ export const LicensesTable = ({
         if (expandedColumnKey === 'concluded' && item.concluded) {
           return <ConcludedLicenseDetail concluded={item.concluded} />;
         }
-        if (expandedColumnKey === 'licenses' && item.evidence?.length) {
+        if (expandedColumnKey === 'evidences' && item.evidence?.length) {
           return <EvidenceLicensesTable evidence={item.evidence} />;
         }
         return null;
       }}
       ariaLabelPrefix="Licenses"
-      expandId="licenses-compound-expand"
+      expandId="evidences-compound-expand"
       initialSortBy={{ index: 3, direction: 'desc' }}
     />
   );

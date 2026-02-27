@@ -17,7 +17,6 @@
 
 package io.github.guacsec.trustifyda.integration.licenses;
 
-import static io.github.guacsec.trustifyda.api.v5.LicenseInfo.CategoryEnum;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -33,33 +32,26 @@ import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.github.guacsec.trustifyda.api.v5.LicenseCategory;
+import io.github.guacsec.trustifyda.api.v5.LicenseIdentifier;
 import io.github.guacsec.trustifyda.api.v5.LicenseProviderResult;
 import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 
+import jakarta.inject.Inject;
+
+@QuarkusTest
 class DepsDevResponseHandlerTest {
 
-  private DepsDevResponseHandler handler;
-  private MonitoringProcessor monitoringProcessor;
+  @InjectMock private MonitoringProcessor monitoringProcessor;
 
-  @BeforeEach
-  void setUp() throws IOException {
-    handler = new DepsDevResponseHandler();
-    handler.mapper = new ObjectMapper();
-    handler.licensesFile = "licenses.yaml";
-    handler.depsDevHost = "https://api.deps.dev/";
-    handler.init();
-
-    monitoringProcessor = mock(MonitoringProcessor.class);
-    handler.monitoringProcessor = monitoringProcessor;
-  }
+  @Inject private DepsDevResponseHandler handler;
 
   @Test
   void testHandleResponse_withValidData() throws IOException {
@@ -86,7 +78,7 @@ class DepsDevResponseHandlerTest {
     assertNotNull(quarkusJdbcResult);
     assertEquals(1, quarkusJdbcResult.getEvidence().size());
     assertEquals("Apache-2.0", quarkusJdbcResult.getEvidence().get(0).getExpression());
-    assertEquals(CategoryEnum.PERMISSIVE, quarkusJdbcResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.PERMISSIVE, quarkusJdbcResult.getEvidence().get(0).getCategory());
     assertEquals(1, quarkusJdbcResult.getEvidence().get(0).getIdentifiers().size());
 
     // Verify jakarta.interceptor-api: non-standard + GPL-2.0-with-classpath-exception (weak
@@ -97,14 +89,14 @@ class DepsDevResponseHandlerTest {
     assertEquals(2, interceptorResult.getEvidence().size());
     assertTrue(
         interceptorResult.getEvidence().stream()
-            .anyMatch(e -> CategoryEnum.WEAK_COPYLEFT.equals(e.getCategory())));
+            .anyMatch(e -> LicenseCategory.WEAK_COPYLEFT.equals(e.getCategory())));
 
     // Verify postgresql: BSD-2-Clause (permissive)
     var postgresResult = result.packages().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(postgresResult);
     assertEquals(1, postgresResult.getEvidence().size());
     assertEquals("BSD-2-Clause", postgresResult.getEvidence().get(0).getExpression());
-    assertEquals(CategoryEnum.PERMISSIVE, postgresResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.PERMISSIVE, postgresResult.getEvidence().get(0).getCategory());
   }
 
   @Test
@@ -187,19 +179,18 @@ class DepsDevResponseHandlerTest {
     var status = new ProviderStatus().ok(true).name("deps.dev");
     var licenseInfo =
         new io.github.guacsec.trustifyda.api.v5.LicenseInfo()
-            .identifiers(List.of("MIT"))
-            .category(CategoryEnum.PERMISSIVE);
+            .identifiers(List.of(new LicenseIdentifier().id("MIT")))
+            .category(LicenseCategory.PERMISSIVE);
     var packageResult = new PackageLicenseResult().evidence(List.of(licenseInfo));
     var packages = Collections.singletonMap("pkg:npm/test@1.0", packageResult);
     var splitResult = new LicenseSplitResult(status, packages);
 
-    List<LicenseProviderResult> response = handler.toResultList(splitResult);
+    LicenseProviderResult response = handler.toResult(splitResult);
 
     assertNotNull(response);
-    assertEquals(1, response.size());
-    assertEquals(packages, response.get(0).getPackages());
-    assertEquals(status, response.get(0).getStatus());
-    assertNotNull(response.get(0).getSummary());
+    assertEquals(packages, response.getPackages());
+    assertEquals(status, response.getStatus());
+    assertNotNull(response.getSummary());
   }
 
   @Test
@@ -214,9 +205,9 @@ class DepsDevResponseHandlerTest {
     handler.handleResponse(exchange);
 
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
-    List<LicenseProviderResult> providerResult = handler.toResultList(result);
+    LicenseProviderResult providerResult = handler.toResult(result);
 
-    var summary = providerResult.get(0).getSummary();
+    var summary = providerResult.getSummary();
     assertNotNull(summary);
     // maven_response.json: 10 packages, 12 license identifiers (8 Apache-2.0, 1 BSD-2-Clause, 2
     // weak copyleft, 2 unknown)
@@ -288,7 +279,7 @@ class DepsDevResponseHandlerTest {
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
-    assertEquals(CategoryEnum.PERMISSIVE, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.PERMISSIVE, packageResult.getEvidence().get(0).getCategory());
   }
 
   @Test
@@ -315,7 +306,7 @@ class DepsDevResponseHandlerTest {
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
-    assertEquals(CategoryEnum.STRONG_COPYLEFT, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.STRONG_COPYLEFT, packageResult.getEvidence().get(0).getCategory());
   }
 
   @Test
@@ -342,7 +333,7 @@ class DepsDevResponseHandlerTest {
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
-    assertEquals(CategoryEnum.WEAK_COPYLEFT, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.WEAK_COPYLEFT, packageResult.getEvidence().get(0).getCategory());
   }
 
   @Test
@@ -370,7 +361,7 @@ class DepsDevResponseHandlerTest {
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
     // AND expression should return least permissive (strong copyleft)
-    assertEquals(CategoryEnum.STRONG_COPYLEFT, packageResult.getConcluded().getCategory());
+    assertEquals(LicenseCategory.STRONG_COPYLEFT, packageResult.getConcluded().getCategory());
   }
 
   @Test
@@ -409,7 +400,7 @@ class DepsDevResponseHandlerTest {
     var packageResult =
         result.packages().get("pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5");
 
-    assertEquals(CategoryEnum.WEAK_COPYLEFT, packageResult.getConcluded().getCategory());
+    assertEquals(LicenseCategory.WEAK_COPYLEFT, packageResult.getConcluded().getCategory());
   }
 
   @Test
@@ -437,7 +428,7 @@ class DepsDevResponseHandlerTest {
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
     // OR expression should return most permissive
-    assertEquals(CategoryEnum.PERMISSIVE, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.PERMISSIVE, packageResult.getEvidence().get(0).getCategory());
   }
 
   @Test
@@ -464,7 +455,7 @@ class DepsDevResponseHandlerTest {
     LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
     var packageResult = result.packages().get("pkg:npm/test@1.0");
 
-    assertEquals(CategoryEnum.UNKNOWN, packageResult.getEvidence().get(0).getCategory());
+    assertEquals(LicenseCategory.UNKNOWN, packageResult.getEvidence().get(0).getCategory());
   }
 
   private Exchange buildExchange(String body) {

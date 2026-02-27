@@ -44,6 +44,7 @@ export interface Report {
 export interface LicenseReport {
   status: ProviderStatus
   summary: LicenseSummary;
+  projectLicense?: LicenseInfo;
   packages: {
     [key: string]: LicensePackageReport;
   };
@@ -55,7 +56,7 @@ export interface LicensePackageReport {
 }
 
 export interface LicenseInfo {
-  identifiers: string[];
+  identifiers: LicenseIdentifier[];
   expression: string;
   name: string;
   category: string;
@@ -63,13 +64,25 @@ export interface LicenseInfo {
   sourceUrl: string;
 }
 
+export interface LicenseIdentifier {
+  id: string;
+  name: string;
+  isDeprecated?: boolean;
+  isOsiApproved?: boolean;
+  isFsfLibre?: boolean;
+  category: string;
+}
+
 export interface LicenseSummary {
   total: number;
   concluded: number;
   permissive: number;
-  "strong-copyleft": number;
+  strongCopyleft: number;
   unknown: number;
-  "weak-copyleft": number;
+  weakCopyleft: number;
+  deprecated: number;
+  osiApproved: number;
+  fsfLibre: number;
 }
 
 export interface ProviderStatus {

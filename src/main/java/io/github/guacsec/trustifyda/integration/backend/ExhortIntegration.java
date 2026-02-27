@@ -25,6 +25,7 @@ import static io.github.guacsec.trustifyda.integration.Constants.VERBOSE_MODE_HE
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import jakarta.inject.Inject;
 import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.ParseException;
 import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -186,6 +188,12 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .post("/v5/licenses")
         .routeId("restLicensesV5")
         .to("direct:getLicensesFromEndpoint")
+      .get("/v5/licenses/{licenseId}")
+        .routeId("restLicenseV5")
+        .to("direct:getLicense")
+      .post("/v5/licenses/identify")
+        .routeId("restLicenseIdentifyV5")
+        .to("direct:identifyLicense")
       .get("/v5/token")
         .routeId("restTokenValidationV5")
         .to("direct:validateTokenV5");
@@ -347,6 +355,26 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     var parser = SbomParserFactory.newInstance(ct.getBaseType());
     exchange.setProperty(Constants.SBOM_TYPE_PARAM, ct.getBaseType());
     return parser;
+  }
+
+  private void handleInvocationTargetException(Exchange exchange) {
+    Exception ex = exchange.getException(InvocationTargetException.class);
+    if (ex == null) {
+      return;
+    }
+    Throwable cause = ex.getCause();
+    if (cause instanceof NotFoundException notFound) {
+      monitoringProcessor.processClientException(exchange);
+      exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, Status.NOT_FOUND.getStatusCode());
+      exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+      exchange.getIn().setBody(notFound.getMessage());
+      exchange
+          .getIn()
+          .setHeader(
+              Constants.EXHORT_REQUEST_ID_HEADER,
+              exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER));
+      exchange.setProperty(Exchange.EXCEPTION_HANDLED, true);
+    }
   }
 
   private void cleanUpHeaders(Exchange exchange) {

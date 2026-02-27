@@ -48,7 +48,7 @@
     <deploy-plugin.version>3.1.1</deploy-plugin.version>
 
     <!-- Dependencies -->
-    <trustify-da-api.version>2.0.4</trustify-da-api.version>
+    <trustify-da-api.version>2.0.7</trustify-da-api.version>
     <cyclonedx.version>11.0.1</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
     <spdx.version>2.0.2</spdx.version>
@@ -332,6 +332,7 @@
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
+            <org.spdx.useJARLicenseInfoOnly>true</org.spdx.useJARLicenseInfoOnly>
           </systemPropertyVariables>
         </configuration>
       </plugin>
