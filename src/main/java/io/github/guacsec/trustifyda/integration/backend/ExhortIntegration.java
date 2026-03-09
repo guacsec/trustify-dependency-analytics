@@ -363,14 +363,15 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   }
 
   private void setProviders(Exchange exchange) {
-    String providersQuery = exchange.getIn().getHeader(Constants.PROVIDERS_PARAM, String.class);
+    List<String> providersQuery = exchange.getProperty(Constants.PROVIDERS_PARAM, List.class);
     List<String> providers = new ArrayList<>();
     if (providersQuery != null && !providersQuery.isEmpty()) {
-      for (String provider : providersQuery.split(",")) {
-        providers.add(provider.trim());
-        if (!vulnerabilityProvider.isProviderEnabled(provider)) {
+      for (String provider : providersQuery) {
+        var providerName = provider.trim();
+        providers.add(providerName);
+        if (!vulnerabilityProvider.isProviderEnabled(providerName)) {
           throw new ClientErrorException(
-              "Provider " + provider + " is not enabled", Response.Status.BAD_REQUEST);
+              "Provider " + providerName + " is not enabled", Response.Status.BAD_REQUEST);
         }
       }
     }
