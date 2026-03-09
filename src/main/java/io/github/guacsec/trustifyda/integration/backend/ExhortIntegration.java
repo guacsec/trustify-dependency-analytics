@@ -25,8 +25,8 @@ import static io.github.guacsec.trustifyda.integration.Constants.VERBOSE_MODE_HE
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +37,7 @@ import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.apache.camel.component.micrometer.MicrometerConstants;
 import org.apache.camel.component.micrometer.routepolicy.MicrometerRoutePolicyFactory;
@@ -66,7 +67,6 @@ import jakarta.inject.Inject;
 import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.ParseException;
 import jakarta.ws.rs.ClientErrorException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -272,9 +272,14 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
     from(direct("findVulnerabilities"))
       .routeId("findVulnerabilities")
-      .process(this::setProviderConfiguration)
-      .toD("direct:trustifyScan")
-      .process(this::wrapSingleProviderResult)
+      .process(this::setProviders)
+      .setProperty("originalBody", body())
+      .split(exchangeProperty(Constants.PROVIDERS_PROPERTY), AggregationStrategies.beanAllowNull(ProviderAggregationStrategy.class, "aggregate"))
+        .parallelProcessing()
+        .process(this::setProviderConfiguration)
+        .setBody(exchangeProperty("originalBody"))
+        .toD("direct:trustifyScan")
+      .end()
       .transform().method(ProviderAggregationStrategy.class, "toReport");
 
     from(direct("validateToken"))
@@ -357,23 +362,24 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     return parser;
   }
 
-  private void handleInvocationTargetException(Exchange exchange) {
-    Exception ex = exchange.getException(InvocationTargetException.class);
-    if (ex == null) {
-      return;
+  private void setProviders(Exchange exchange) {
+    List<String> providersQuery = exchange.getProperty(Constants.PROVIDERS_PARAM, List.class);
+    List<String> providers = new ArrayList<>();
+    if (providersQuery != null && !providersQuery.isEmpty()) {
+      for (String provider : providersQuery) {
+        var providerName = provider.trim();
+        providers.add(providerName);
+        if (!vulnerabilityProvider.isProviderEnabled(providerName)) {
+          throw new ClientErrorException(
+              "Provider " + providerName + " is not enabled", Response.Status.BAD_REQUEST);
+        }
+      }
     }
-    Throwable cause = ex.getCause();
-    if (cause instanceof NotFoundException notFound) {
-      monitoringProcessor.processClientException(exchange);
-      exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, Status.NOT_FOUND.getStatusCode());
-      exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
-      exchange.getIn().setBody(notFound.getMessage());
-      exchange
-          .getIn()
-          .setHeader(
-              Constants.EXHORT_REQUEST_ID_HEADER,
-              exchange.getProperty(Constants.EXHORT_REQUEST_ID_HEADER));
-      exchange.setProperty(Exchange.EXCEPTION_HANDLED, true);
+    if (providers.isEmpty()) {
+      providers = vulnerabilityProvider.getEnabled();
+    }
+    if (providers != null && !providers.isEmpty()) {
+      exchange.setProperty(Constants.PROVIDERS_PROPERTY, providers);
     }
   }
 
@@ -428,23 +434,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
   }
 
   private void setProviderConfiguration(Exchange exchange) {
-    @SuppressWarnings("unchecked")
-    List<String> providers = exchange.getProperty(Constants.PROVIDERS_PARAM, List.class);
-
-    String provider = (providers != null && !providers.isEmpty()) ? providers.get(0) : "trustify";
-
+    var provider = exchange.getIn().getBody(String.class);
     var config = vulnerabilityProvider.getProviderConfig(provider);
     exchange.setProperty(Constants.PROVIDER_NAME_PROPERTY, provider);
     exchange.setProperty(Constants.PROVIDER_CONFIG_PROPERTY, config);
-  }
-
-  private void wrapSingleProviderResult(Exchange exchange) {
-    var providerReport =
-        exchange.getIn().getBody(io.github.guacsec.trustifyda.api.v5.ProviderReport.class);
-    if (providerReport != null) {
-      Map<String, io.github.guacsec.trustifyda.api.v5.ProviderReport> result = new HashMap<>();
-      result.put(providerReport.getStatus().getName(), providerReport);
-      exchange.getIn().setBody(result);
-    }
   }
 }

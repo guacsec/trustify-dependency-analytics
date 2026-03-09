@@ -48,6 +48,7 @@ public class ProviderAggregationStrategy {
 
     var scanned = new Scanned().direct(tree.directCount()).transitive(tree.transitiveCount());
     scanned.total(scanned.getDirect() + scanned.getTransitive());
+
     return new AnalysisReport().providers(reports).scanned(scanned);
   }
 }
