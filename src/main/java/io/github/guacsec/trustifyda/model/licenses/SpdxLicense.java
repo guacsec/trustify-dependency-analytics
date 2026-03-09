@@ -17,12 +17,9 @@
 
 package io.github.guacsec.trustifyda.model.licenses;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonAlias;
-
-public record LicenseConfig(
-    @JsonAlias("permissive") List<String> permissive,
-    @JsonAlias("weak-copyleft") List<String> weakCopyleft,
-    @JsonAlias("strong-copyleft") List<String> strongCopyleft,
-    @JsonAlias("weak-copyleft-exceptions") List<String> weakCopyleftExceptions) {}
+public record SpdxLicense(
+    String licenseId,
+    String name,
+    Boolean isOsiApproved,
+    Boolean isFsfLibre,
+    Boolean isDeprecatedLicenseId) {}

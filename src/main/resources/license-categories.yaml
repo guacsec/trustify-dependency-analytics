@@ -24,13 +24,15 @@ strong-copyleft:
   - GPL-3.0
   - AGPL-3.0
 
-exception-suffixes:
+# SPDX exception IDs that make strong-copyleft licenses weak-copyleft (matched case-insensitively)
+weak-copyleft-exceptions:
+  - Classpath-exception-2.0
   - classpath-exception
-  - gcc-exception-2.0
-  - gcc-exception-3.1
-  - clisp-exception-2.0
+  - GCC-exception-2.0
+  - GCC-exception-3.1
+  - CLISP-exception-2.0
   - i2p-gpl-java-exception
-  - libtool-exception
-  - occt-exception-1.0
-  - openvpn-openssl-exception
-  - nokia-qt-exception-1.1
+  - Libtool-exception
+  - OCCT-exception-1.0
+  - OpenVPN-OpenSSL-exception
+  - Nokia-Qt-exception-1.1

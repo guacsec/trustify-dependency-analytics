@@ -1,805 +1,811 @@
 {
-    "bomFormat" : "CycloneDX",
-    "specVersion" : "1.4",
-    "serialNumber" : "urn:uuid:3305afdd-9b43-4d3f-b5bb-1c8114bf4ab3",
-    "version" : 1,
-    "metadata" : {
-      "timestamp" : "2023-05-16T15:15:42Z",
-      "tools" : [
-        {
-          "vendor" : "OWASP Foundation",
-          "name" : "CycloneDX Maven plugin makeAggregateBom compile+provided+runtime+system",
-          "version" : "2.7.6",
-          "hashes" : [
-            {
-              "alg" : "MD5",
-              "content" : "639c35c7f79c5514f3abe11247999b70"
-            },
-            {
-              "alg" : "SHA-1",
-              "content" : "649239e622d8d454bb9ab6fafd6746c85cd11b7d"
-            },
-            {
-              "alg" : "SHA-256",
-              "content" : "1e3bc10146c370fe8b8f0a2edcb64329907d61dbc2f445db6ac1034cd3221ce3"
-            },
-            {
-              "alg" : "SHA-512",
-              "content" : "894a4b5762d32c88cc58ae1a35a3cc3d45a3c494accadb31b55b5832af65f60c0f8164623521a81de73e3ed6a4c994cca0f1951c8368b9d07fb41c82eaa84bbd"
-            },
-            {
-              "alg" : "SHA-384",
-              "content" : "3c385acc773a41056fb58ea27096c8ec86d46d8bd74a2eee9cf0913051981611afc68cf13a88d31af16590a489a97c0e"
-            },
-            {
-              "alg" : "SHA3-384",
-              "content" : "93695160055039f4791ecebd61c7aa6130f074f50a823de6e5aff7217c35548062829ec2b930658c2702cd47ea3118a1"
-            },
-            {
-              "alg" : "SHA3-256",
-              "content" : "4c9f5d3ab2b6ab9b4b4a8968a7ee2373b85a496bec34eefd96ed7c8260d2a45b"
-            },
-            {
-              "alg" : "SHA3-512",
-              "content" : "c2af46fe07c4be746fdc0b54e9eb3285231055c5401bcfb34c2d9392efe27fe9c16a0edd91615970bfae3f4a59846e89c3d88a6a36d4ba110a6d140a04fe184d"
-            }
-          ]
-        }
-      ],
-      "component" : {
-        "group" : "org.acme.dbaas",
-        "name" : "postgresql-orm-quarkus",
-        "version" : "1.0.0-SNAPSHOT",
-        "licenses" : [ ],
-        "purl" : "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar",
-        "type" : "library",
-        "bom-ref" : "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar"
-      }
-    },
-    "components" : [
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:3305afdd-9b43-4d3f-b5bb-1c8114bf4ab3",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2023-05-16T15:15:42Z",
+    "tools": [
       {
-        "publisher" : "JBoss by Red Hat",
-        "group" : "io.quarkus",
-        "name" : "quarkus-hibernate-orm",
-        "version" : "2.13.5.Final",
-        "description" : "Define your persistent model with Hibernate ORM and JPA",
-        "scope" : "optional",
-        "hashes" : [
+        "vendor": "OWASP Foundation",
+        "name": "CycloneDX Maven plugin makeAggregateBom compile+provided+runtime+system",
+        "version": "2.7.6",
+        "hashes": [
           {
-            "alg" : "MD5",
-            "content" : "554642d35d4e0322a1cefd2de8ccb0b5"
+            "alg": "MD5",
+            "content": "639c35c7f79c5514f3abe11247999b70"
           },
           {
-            "alg" : "SHA-1",
-            "content" : "eac78fba00b75d8e5df0b9c0afcbf531b7b20c4c"
+            "alg": "SHA-1",
+            "content": "649239e622d8d454bb9ab6fafd6746c85cd11b7d"
           },
           {
-            "alg" : "SHA-256",
-            "content" : "16689e5fb3f818be9ce0be466b1672f1deccb038a76be0ea453ec7ca7968373a"
+            "alg": "SHA-256",
+            "content": "1e3bc10146c370fe8b8f0a2edcb64329907d61dbc2f445db6ac1034cd3221ce3"
           },
           {
-            "alg" : "SHA-512",
-            "content" : "6d94394d5ddf5ec02e19dffcca1d95d4803e7b128e00a9b66330f1ad74976b597b66193d245d9b564eb72470618930b9bb397898be481037df99eceda6f3b00f"
+            "alg": "SHA-512",
+            "content": "894a4b5762d32c88cc58ae1a35a3cc3d45a3c494accadb31b55b5832af65f60c0f8164623521a81de73e3ed6a4c994cca0f1951c8368b9d07fb41c82eaa84bbd"
           },
           {
-            "alg" : "SHA-384",
-            "content" : "1b9ca4d1a08060a5a271fb9b590cd635e47db8086c09d9fe0e676751714921b3c5f8eae1c2007b1e0c3dbdb7415ae965"
+            "alg": "SHA-384",
+            "content": "3c385acc773a41056fb58ea27096c8ec86d46d8bd74a2eee9cf0913051981611afc68cf13a88d31af16590a489a97c0e"
           },
           {
-            "alg" : "SHA3-384",
-            "content" : "db0bf5fec70bc4eec8feee210b1efe3cd5bf1f171d157e770d9c3e71c6425cd9b70cbaf5be19cae9caf9d25f3fba606e"
+            "alg": "SHA3-384",
+            "content": "93695160055039f4791ecebd61c7aa6130f074f50a823de6e5aff7217c35548062829ec2b930658c2702cd47ea3118a1"
           },
           {
-            "alg" : "SHA3-256",
-            "content" : "e6444c6655bd551b0b3f2658a1ef0aedfa9ec63237fa70dd6b0918504735e09c"
+            "alg": "SHA3-256",
+            "content": "4c9f5d3ab2b6ab9b4b4a8968a7ee2373b85a496bec34eefd96ed7c8260d2a45b"
           },
           {
-            "alg" : "SHA3-512",
-            "content" : "278a83ac7d96d4816bd62683e96ef3e8aecc7437fbc7194d16925098c40200592a6961e9a23d141626ae6a6bdc913d488465371f24a2ab06d032f1c61ca954bd"
+            "alg": "SHA3-512",
+            "content": "c2af46fe07c4be746fdc0b54e9eb3285231055c5401bcfb34c2d9392efe27fe9c16a0edd91615970bfae3f4a59846e89c3d88a6a36d4ba110a6d140a04fe184d"
           }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://github.com/quarkusio/quarkus"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/quarkusio/quarkus/issues/"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "http://lists.jboss.org/pipermail/jboss-user/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/quarkusio/quarkus"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar"
-      },
-      {
-        "publisher" : "JBoss by Red Hat",
-        "group" : "io.quarkus",
-        "name" : "quarkus-core",
-        "version" : "2.13.5.Final",
-        "description" : "Quarkus core components",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "0b2459f91df047e31200a06eaae60d8f"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "482af55a4b5f1d4d812b251e25f1c860f61f35af"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "389a5afa2446292909ec1737d1350b133aae8e34d8663213fa4310e25b76cdf4"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "df297a8685c0e8b05fdda04a4bcfef6ac00c9493a3af569a24b3ef1cefb3b2eaffd141f82b40d7d71184d85dda24c8a8b89739bbd70c3163545642361c7f7ed5"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "21d7ba8bc6001878488017d37009293ceadbfd12f52459377b21c38a94ea233d6e8f1c52ae26ee6efcba3eaddd8d9ade"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "416f95c7b97f9c6b533e3af3afec3f5afb09e0f91f41eeab4becc79437735ffb69292801ce255d99577277b79843a80b"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "48ed835afee6b57c66aa49db68d0fee33f62b2c9217d5a4db5e9c8acf4e64c91"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "d98bd926f20f6fd1ca629dd8a1ffe912c3577d1938d7ee79311b313eb4db6328d5f01f733f43d53406d7b54483279761f632a051179020585d70b49eb9de915d"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://github.com/quarkusio/quarkus"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/quarkusio/quarkus/issues/"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "http://lists.jboss.org/pipermail/jboss-user/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/quarkusio/quarkus"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar"
-      },
-      {
-        "publisher" : "Eclipse Foundation",
-        "group" : "jakarta.enterprise",
-        "name" : "jakarta.enterprise.cdi-api",
-        "version" : "2.0.2",
-        "description" : "APIs for Jakarta CDI (Contexts and Dependency Injection)",
-        "scope" : "required",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "ff8956b6aa6e32e6f9064597d9c9f1bd"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "58f497f362cd19c2f8842d75c491d270f0600e7f"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "e71bbe0e4cacfce5b7d609021344d883531aa3e19321db17390f849fdb04a509"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "d1d51ee835f7abfd87c4df3431ddd99d9c0603cf4efc129215516379a56a23c907a0503727bb5b604a0a88f887a5c6782536724e823a6f1e8331df4fa391d217"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "d2f9399e0dd05773168b18993e7c00887ea02f689276d34cf5368f5100a447209f1f5fb5188b82b835b22d448183f078"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "472ad1589c164f82d7d2764eee2c4cd6299a1c3a849078b60ea05529d6d18d63a602b81cf47dfa9195a611d07ee3e752"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "8a58e19128f278cc5c66198e2ba48c84ddd6bbcb24cd874096e43347c54305c2"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "5b386c90b6b94edf2ba682b2aff63364f8cacc2c2ce33cb5ac0bf1898420a7ce33827550b6569f54a54c45ebe8d72405dd5ed6a7eacd5a30a763d68b847418bf"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0",
-              "url" : "https://www.apache.org/licenses/LICENSE-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "http://cdi-spec.org"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/eclipse-ee4j/cdi/issues"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "scm:git:git@github.com:cdi-spec/cdi.git"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar"
-      },
-      {
-        "publisher" : "Eclipse Foundation",
-        "group" : "jakarta.el",
-        "name" : "jakarta.el-api",
-        "version" : "3.0.3",
-        "description" : "Jakarta Expression Language defines an expression language for Java applications",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "528ed6138395d22fb54912b2b889e88e"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "f311ab94bb1d4380690a53d737226a6b879dd4f1"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "47ae0a91fb6dd32fdaa5d9bda63df043ac8148e00c297ccce8ab9c56b95cf261"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "f76c94036f0f49d3cf9d1f90697fa96a97d94aba93a0dccad7b907d6c63ff3bceacc6fd40405ff68d6c248b13d056b3543ccb3d2b405917b2ccddaae78ad8900"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "5796acb1f22b55e2713763584eaf2b62abbcfcee85530138006fbb55abb19b2c534b2887c28a2f5301168783416fb6c8"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "bdb09cc896874c0a4a3c470e355f2b23f954800510986753cfc2d4da41cb6c4de567b9014d618da3f89f04e36cfe620b"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "4fc4437d2638002741f4217003f3a9de47c037458dbeabee1a1a5bec96547466"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "5857452b1eb5e9ad141717dd9e989763e99a98bf49150ebeb66c423daee8e890ae9b89737abdebedd7ef7e47e6c2fd8cfeaa9276014fb6dc88134ccd2234ab5f"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "EPL-2.0"
-            }
-          },
-          {
-            "license" : {
-              "id" : "GPL-2.0-with-classpath-exception"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://projects.eclipse.org/projects/ee4j.el"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/eclipse-ee4j/el-ri/issues"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "https://dev.eclipse.org/mhonarc/lists/el-dev"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/eclipse-ee4j/el-ri"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar"
-      },
-      {
-        "publisher" : "JBoss by Red Hat",
-        "group" : "io.quarkus",
-        "name" : "quarkus-jdbc-postgresql",
-        "version" : "2.13.5.Final",
-        "description" : "Connect to the PostgreSQL database via JDBC",
-        "scope" : "optional",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "3159c8a1b7103614ed0f4e04636645f8"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "1f266e1ac95bc3f6892d5573a77156d3708ab70a"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "09db1f2cf876d54196d0a1275255da8297cb56aedd41abaedca548e263c1e309"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "77318cdb343ffe36d71e2f10a46b56dc308d4de33c9a86d5a0ce37819bf078356dfc549292d25e4905d805b9adaf51cd5e6ed4113f719a2c6095b31f9fe03301"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "b026733e1811efcfd855e60c097e7eb92793ee823043f492c05330653191c0f3f32de869dd215c28f3180b1f9aa5cc02"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "064945f45c00b4dd5010a39c328b3793b52166be2decf196b13536655f7a7f65cb50df987a72d9ce4a09888ca0487845"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "613a14b81f012e85c347ffc2ef57b577a2d8d979384c240bd2610d0759cb88bf"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "0ca2fa9f1d5f64e8481b496717547705a43b5dea2aa290ceaec19e780bd1a51b61dd7c46c7363ed87b41fb506e97045d42e3d2448d2b076935fad27544391571"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://github.com/quarkusio/quarkus"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/quarkusio/quarkus/issues/"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "http://lists.jboss.org/pipermail/jboss-user/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/quarkusio/quarkus"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar"
-      },
-      {
-        "publisher" : "JBoss by Red Hat",
-        "group" : "io.quarkus",
-        "name" : "quarkus-jdbc-h2",
-        "version" : "2.13.5.Final",
-        "description" : "Connect to the H2 database via JDBC",
-        "scope" : "optional",
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
-        "type" : "library",
-        "bom-ref" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
-      },
-      {
-        "publisher" : "PostgreSQL Global Development Group",
-        "group" : "org.postgresql",
-        "name" : "postgresql",
-        "version" : "42.5.0",
-        "description" : "PostgreSQL JDBC Driver Postgresql",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "20c8228267b6c9ce620fddb39467d3eb"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "43751d7ec562aeabcb025844345e39c340d732ba"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "a4d18b5ab1aeb9285a8b17b365f424f268445229cabf8e412115db6152b7dee3"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "0e85898219297d35170305712d0def33449245d2fc0612351e3dfc3b46c9cb160067a31c0ba079b018abe8c0f6e54ad013ee7af5e81cb5bb4603ee8a2b03cec5"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "50cdd3e8e34cd5aa9f71dabd6ca5b54391f2bdf985d200ef2e8ac760508597c66c09a97a1a709daceb8a61779adb1910"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "003c8fd4f48940f1fae039de6f8312f1cbdbbaba54676edc9d5ebd750e93762704ea86942690944718edd91ab8771b52"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "0e4d9d5102d2df74c49b775f6eded5d1f8fabb660acd47ec758351b9c44064cb"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "ee0953f70d67837596d6dcfb0912cd2f5c7b9bd7a7a491dc53b6132f2a298f3ffc77716520d638ab99a4dc2e0ba5c8a2c97b778dbc0fcf20ee5357f0f63ee228"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "BSD-2-Clause",
-              "url" : "https://opensource.org/licenses/BSD-2-Clause"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://jdbc.postgresql.org"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/pgjdbc/pgjdbc/issues"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "https://www.postgresql.org/list/pgsql-jdbc/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/pgjdbc/pgjdbc"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar"
-      },
-      {
-        "publisher" : "FasterXML",
-        "group" : "com.fasterxml.jackson.core",
-        "name" : "jackson-databind",
-        "version" : "2.13.1",
-        "description" : "General data-binding functionality for Jackson: works on core streaming API",
-        "scope" : "required",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "f26eab82fa1da09f8e8bc7e52fc82088"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "325c06bdfeb628cfb80ebaaf1a26cc1eb558a585"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "ba1a368137f9b92f48dd07f299ff7a782a69487b853ef5578215426fcde8f08b"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "89b5f58414d541d79f63ddedbcf4d5fafabc68d9bf9cad09f354c151e9685512e1433f2e22f6a7ffc8100c3c5fddbbb99fd64d7c6d4974b2915edb523f99ca16"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "87d3468179690f73868e8e2cad7b5107d4cea86ba7d6481ed288101f9d59b6b9ad27c7cfd1c466bdccc89effeb8291cd"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "16c34d4930500ab5749a3ff95ef5a0672c94b618dea5f88af37e61dbb19e366632f4d06c1a95d5132d451b329a4c32cb"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "222d42b2719c7ae81bc298570d4e37b745909a075e80cdc4beccd72be6a784c6"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "c2024c52d89b423a2049eba07badcb556b12ea953582002d47be7236d23cac7ca3cc4a099fd9f241dfeee8dbb8809a230721a2d7e6a63cdebebaf25f93bcdacd"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "http://github.com/FasterXML/jackson"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/FasterXML/jackson-databind/issues"
-          },
-          {
-            "type" : "vcs",
-            "url" : "http://github.com/FasterXML/jackson-databind"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar"
-      },
-      {
-        "publisher" : "JBoss by Red Hat",
-        "group" : "io.quarkus",
-        "name" : "quarkus-narayana-jta",
-        "version" : "2.13.5.Final",
-        "description" : "Offer JTA transaction support (included in Hibernate ORM)",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "3a66ac81017b996797f93f592f91effd"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "789eb0a7fce6365a4fe1b8834341643adbe7ac32"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "3d0af07de832088511d9470a23d9b371fb1e12be1dbfb6b644811a883ae4a032"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "b2a71bda14f8ee2569822ffb69a57f40a1f96693a9dc30cc1c7413cb0db6b5ffae919f4438a98bc656ccc964283ea3e94fae027de2777da13f4208e30e957d63"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "8e38068495d8597e1993c37ed7aa451521669620625b52c77d51f1824ae894bd75b135893ca3e56cdc49f9ac6d7a6ca9"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "528b6510d4456f9434ffb97b66e3edbd043da5d82d49c696d00977c8284244056bcc0194c7d7a2878261ed3f7a533a7c"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "d6d74ea0ea733ed72c330792ae18775c22ea30c13f6e3c5d734d6e38b258ccca"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "125a9c316a235aa12518dd27adb304e160be5ddae1e870e42470dbddfae4a67da04a7a9b87476c288c10ab732e56f0c6ed5dcbae106862c58a54ff1788a697a2"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "Apache-2.0"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://github.com/quarkusio/quarkus"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/quarkusio/quarkus/issues/"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "http://lists.jboss.org/pipermail/jboss-user/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/quarkusio/quarkus"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar"
-      },
-      {
-        "publisher" : "Eclipse Foundation",
-        "group" : "jakarta.interceptor",
-        "name" : "jakarta.interceptor-api",
-        "version" : "1.2.5",
-        "description" : "Jakarta Interceptors defines a means of interposing on business method invocations and specific events—such as lifecycle events and timeout events—that occur on instances of Jakarta EE components and other managed classes.",
-        "hashes" : [
-          {
-            "alg" : "MD5",
-            "content" : "69ab3deaef95f1a6522e7e828694ab14"
-          },
-          {
-            "alg" : "SHA-1",
-            "content" : "20cbde692c555692ca835fb6ecb4a8c95acbe6e0"
-          },
-          {
-            "alg" : "SHA-256",
-            "content" : "210c4f0a5a8f387457d58afa3982b9abdd28f0a891e6289b329a6d8cf2210299"
-          },
-          {
-            "alg" : "SHA-512",
-            "content" : "70f3c36d4e48d52b7c23a5a019e5947b375f8c5c49cf6f305989460217428f62e43b1cb9cadcdeeb61979c6406abd50bbffda08572a048dd45b871566308c1e0"
-          },
-          {
-            "alg" : "SHA-384",
-            "content" : "de8479983fbe9cb409aefb286a778f58c00e3cc1a04681e73d394e7fff03cb9c2c405961b1c06f328e38be27e22bd2ca"
-          },
-          {
-            "alg" : "SHA3-384",
-            "content" : "8d65c279a249fa0a2d035ce6348bffcc3ba4a6e3cc3543fed8c4d29ea1a2785357b9f19bf55d9c9ce667a06dec081fd7"
-          },
-          {
-            "alg" : "SHA3-256",
-            "content" : "368289095b8324d747b009f448d8b508354eced1abf776d634e75019b4c4c269"
-          },
-          {
-            "alg" : "SHA3-512",
-            "content" : "080b664d0924a44a2afae7c2fee6f314fc991c240c5f727b2e2a6a0d4a0695bbdeb569501c459cf3f15f61ad4b70c087262d8ec155c8cfe3a35b115166843d2c"
-          }
-        ],
-        "licenses" : [
-          {
-            "license" : {
-              "id" : "EPL-2.0"
-            }
-          },
-          {
-            "license" : {
-              "id" : "GPL-2.0-with-classpath-exception"
-            }
-          }
-        ],
-        "purl" : "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
-        "externalReferences" : [
-          {
-            "type" : "website",
-            "url" : "https://github.com/eclipse-ee4j/interceptor-api"
-          },
-          {
-            "type" : "distribution",
-            "url" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-          },
-          {
-            "type" : "issue-tracker",
-            "url" : "https://github.com/eclipse-ee4j/interceptor-api/issues"
-          },
-          {
-            "type" : "mailing-list",
-            "url" : "https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/"
-          },
-          {
-            "type" : "vcs",
-            "url" : "https://github.com/eclipse-ee4j/interceptor-api"
-          }
-        ],
-        "type" : "library",
-        "bom-ref" : "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar"
+        ]
       }
     ],
-    "dependencies" : [
-      {
-        "ref" : "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar",
-        "dependsOn" : [
-          "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-          "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-          "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
-        ]
-      },
-      {
-        "ref" : "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-        "dependsOn" : [
-          "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
-          "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar"
-        ]
-      },
-      {
-        "ref" : "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
-        "dependsOn" : [
-          "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
-          "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar"
-        ]
-      },
-      {
-        "ref" : "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
-        "dependsOn" : [ ]
-      },
-      {
-        "ref" : "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
-        "dependsOn" : [ ]
-      },
-      {
-        "ref" : "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
-        "dependsOn" : [
-          "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
-          "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar"
-        ]
-      },
-      {
-        "ref" : "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-        "dependsOn" : [
-           "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar"
-        ]
-      },
-      {
-        "ref" : "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
-        "dependsOn" : [ ]
-      },
-      {
-        "ref" : "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
-        "dependsOn" : [ ]
-      },
-      {
-        "ref" : "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
-        "dependsOn" : [ ]
-      },
-      {
-        "ref" : "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
-        "dependsOn" : [ ]
-      }
-    ]
-  }
+    "component": {
+      "group": "org.acme.dbaas",
+      "name": "postgresql-orm-quarkus",
+      "version": "1.0.0-SNAPSHOT",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "bom-ref": "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar"
+    }
+  },
+  "components": [
+    {
+      "publisher": "JBoss by Red Hat",
+      "group": "io.quarkus",
+      "name": "quarkus-hibernate-orm",
+      "version": "2.13.5.Final",
+      "description": "Define your persistent model with Hibernate ORM and JPA",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "554642d35d4e0322a1cefd2de8ccb0b5"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "eac78fba00b75d8e5df0b9c0afcbf531b7b20c4c"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "16689e5fb3f818be9ce0be466b1672f1deccb038a76be0ea453ec7ca7968373a"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "6d94394d5ddf5ec02e19dffcca1d95d4803e7b128e00a9b66330f1ad74976b597b66193d245d9b564eb72470618930b9bb397898be481037df99eceda6f3b00f"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "1b9ca4d1a08060a5a271fb9b590cd635e47db8086c09d9fe0e676751714921b3c5f8eae1c2007b1e0c3dbdb7415ae965"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "db0bf5fec70bc4eec8feee210b1efe3cd5bf1f171d157e770d9c3e71c6425cd9b70cbaf5be19cae9caf9d25f3fba606e"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "e6444c6655bd551b0b3f2658a1ef0aedfa9ec63237fa70dd6b0918504735e09c"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "278a83ac7d96d4816bd62683e96ef3e8aecc7437fbc7194d16925098c40200592a6961e9a23d141626ae6a6bdc913d488465371f24a2ab06d032f1c61ca954bd"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/quarkusio/quarkus"
+        },
+        {
+          "type": "distribution",
+          "url": "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/quarkusio/quarkus/issues/"
+        },
+        {
+          "type": "mailing-list",
+          "url": "http://lists.jboss.org/pipermail/jboss-user/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/quarkusio/quarkus"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar"
+    },
+    {
+      "publisher": "JBoss by Red Hat",
+      "group": "io.quarkus",
+      "name": "quarkus-core",
+      "version": "2.13.5.Final",
+      "description": "Quarkus core components",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "0b2459f91df047e31200a06eaae60d8f"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "482af55a4b5f1d4d812b251e25f1c860f61f35af"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "389a5afa2446292909ec1737d1350b133aae8e34d8663213fa4310e25b76cdf4"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "df297a8685c0e8b05fdda04a4bcfef6ac00c9493a3af569a24b3ef1cefb3b2eaffd141f82b40d7d71184d85dda24c8a8b89739bbd70c3163545642361c7f7ed5"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "21d7ba8bc6001878488017d37009293ceadbfd12f52459377b21c38a94ea233d6e8f1c52ae26ee6efcba3eaddd8d9ade"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "416f95c7b97f9c6b533e3af3afec3f5afb09e0f91f41eeab4becc79437735ffb69292801ce255d99577277b79843a80b"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "48ed835afee6b57c66aa49db68d0fee33f62b2c9217d5a4db5e9c8acf4e64c91"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "d98bd926f20f6fd1ca629dd8a1ffe912c3577d1938d7ee79311b313eb4db6328d5f01f733f43d53406d7b54483279761f632a051179020585d70b49eb9de915d"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/quarkusio/quarkus"
+        },
+        {
+          "type": "distribution",
+          "url": "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/quarkusio/quarkus/issues/"
+        },
+        {
+          "type": "mailing-list",
+          "url": "http://lists.jboss.org/pipermail/jboss-user/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/quarkusio/quarkus"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar"
+    },
+    {
+      "publisher": "Eclipse Foundation",
+      "group": "jakarta.enterprise",
+      "name": "jakarta.enterprise.cdi-api",
+      "version": "2.0.2",
+      "description": "APIs for Jakarta CDI (Contexts and Dependency Injection)",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "ff8956b6aa6e32e6f9064597d9c9f1bd"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "58f497f362cd19c2f8842d75c491d270f0600e7f"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "e71bbe0e4cacfce5b7d609021344d883531aa3e19321db17390f849fdb04a509"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "d1d51ee835f7abfd87c4df3431ddd99d9c0603cf4efc129215516379a56a23c907a0503727bb5b604a0a88f887a5c6782536724e823a6f1e8331df4fa391d217"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "d2f9399e0dd05773168b18993e7c00887ea02f689276d34cf5368f5100a447209f1f5fb5188b82b835b22d448183f078"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "472ad1589c164f82d7d2764eee2c4cd6299a1c3a849078b60ea05529d6d18d63a602b81cf47dfa9195a611d07ee3e752"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "8a58e19128f278cc5c66198e2ba48c84ddd6bbcb24cd874096e43347c54305c2"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "5b386c90b6b94edf2ba682b2aff63364f8cacc2c2ce33cb5ac0bf1898420a7ce33827550b6569f54a54c45ebe8d72405dd5ed6a7eacd5a30a763d68b847418bf"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "http://cdi-spec.org"
+        },
+        {
+          "type": "distribution",
+          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/eclipse-ee4j/cdi/issues"
+        },
+        {
+          "type": "mailing-list",
+          "url": "https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/"
+        },
+        {
+          "type": "vcs",
+          "url": "scm:git:git@github.com:cdi-spec/cdi.git"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar"
+    },
+    {
+      "publisher": "Eclipse Foundation",
+      "group": "jakarta.el",
+      "name": "jakarta.el-api",
+      "version": "3.0.3",
+      "description": "Jakarta Expression Language defines an expression language for Java applications",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "528ed6138395d22fb54912b2b889e88e"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "f311ab94bb1d4380690a53d737226a6b879dd4f1"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "47ae0a91fb6dd32fdaa5d9bda63df043ac8148e00c297ccce8ab9c56b95cf261"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "f76c94036f0f49d3cf9d1f90697fa96a97d94aba93a0dccad7b907d6c63ff3bceacc6fd40405ff68d6c248b13d056b3543ccb3d2b405917b2ccddaae78ad8900"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "5796acb1f22b55e2713763584eaf2b62abbcfcee85530138006fbb55abb19b2c534b2887c28a2f5301168783416fb6c8"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "bdb09cc896874c0a4a3c470e355f2b23f954800510986753cfc2d4da41cb6c4de567b9014d618da3f89f04e36cfe620b"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "4fc4437d2638002741f4217003f3a9de47c037458dbeabee1a1a5bec96547466"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "5857452b1eb5e9ad141717dd9e989763e99a98bf49150ebeb66c423daee8e890ae9b89737abdebedd7ef7e47e6c2fd8cfeaa9276014fb6dc88134ccd2234ab5f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-with-classpath-exception"
+          }
+        }
+      ],
+      "purl": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://projects.eclipse.org/projects/ee4j.el"
+        },
+        {
+          "type": "distribution",
+          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/eclipse-ee4j/el-ri/issues"
+        },
+        {
+          "type": "mailing-list",
+          "url": "https://dev.eclipse.org/mhonarc/lists/el-dev"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/eclipse-ee4j/el-ri"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar"
+    },
+    {
+      "publisher": "JBoss by Red Hat",
+      "group": "io.quarkus",
+      "name": "quarkus-jdbc-postgresql",
+      "version": "2.13.5.Final",
+      "description": "Connect to the PostgreSQL database via JDBC",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "3159c8a1b7103614ed0f4e04636645f8"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "1f266e1ac95bc3f6892d5573a77156d3708ab70a"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "09db1f2cf876d54196d0a1275255da8297cb56aedd41abaedca548e263c1e309"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "77318cdb343ffe36d71e2f10a46b56dc308d4de33c9a86d5a0ce37819bf078356dfc549292d25e4905d805b9adaf51cd5e6ed4113f719a2c6095b31f9fe03301"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "b026733e1811efcfd855e60c097e7eb92793ee823043f492c05330653191c0f3f32de869dd215c28f3180b1f9aa5cc02"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "064945f45c00b4dd5010a39c328b3793b52166be2decf196b13536655f7a7f65cb50df987a72d9ce4a09888ca0487845"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "613a14b81f012e85c347ffc2ef57b577a2d8d979384c240bd2610d0759cb88bf"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "0ca2fa9f1d5f64e8481b496717547705a43b5dea2aa290ceaec19e780bd1a51b61dd7c46c7363ed87b41fb506e97045d42e3d2448d2b076935fad27544391571"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/quarkusio/quarkus"
+        },
+        {
+          "type": "distribution",
+          "url": "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/quarkusio/quarkus/issues/"
+        },
+        {
+          "type": "mailing-list",
+          "url": "http://lists.jboss.org/pipermail/jboss-user/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/quarkusio/quarkus"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar"
+    },
+    {
+      "publisher": "JBoss by Red Hat",
+      "group": "io.quarkus",
+      "name": "quarkus-jdbc-h2",
+      "version": "2.13.5.Final",
+      "description": "Connect to the H2 database via JDBC",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
+      "type": "library",
+      "bom-ref": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
+    },
+    {
+      "publisher": "PostgreSQL Global Development Group",
+      "group": "org.postgresql",
+      "name": "postgresql",
+      "version": "42.5.0",
+      "description": "PostgreSQL JDBC Driver Postgresql",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "20c8228267b6c9ce620fddb39467d3eb"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "43751d7ec562aeabcb025844345e39c340d732ba"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "a4d18b5ab1aeb9285a8b17b365f424f268445229cabf8e412115db6152b7dee3"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "0e85898219297d35170305712d0def33449245d2fc0612351e3dfc3b46c9cb160067a31c0ba079b018abe8c0f6e54ad013ee7af5e81cb5bb4603ee8a2b03cec5"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "50cdd3e8e34cd5aa9f71dabd6ca5b54391f2bdf985d200ef2e8ac760508597c66c09a97a1a709daceb8a61779adb1910"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "003c8fd4f48940f1fae039de6f8312f1cbdbbaba54676edc9d5ebd750e93762704ea86942690944718edd91ab8771b52"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "0e4d9d5102d2df74c49b775f6eded5d1f8fabb660acd47ec758351b9c44064cb"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "ee0953f70d67837596d6dcfb0912cd2f5c7b9bd7a7a491dc53b6132f2a298f3ffc77716520d638ab99a4dc2e0ba5c8a2c97b778dbc0fcf20ee5357f0f63ee228"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "url": "https://opensource.org/licenses/BSD-2-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://jdbc.postgresql.org"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/pgjdbc/pgjdbc/issues"
+        },
+        {
+          "type": "mailing-list",
+          "url": "https://www.postgresql.org/list/pgsql-jdbc/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/pgjdbc/pgjdbc"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar"
+    },
+    {
+      "publisher": "FasterXML",
+      "group": "com.fasterxml.jackson.core",
+      "name": "jackson-databind",
+      "version": "2.13.1",
+      "description": "General data-binding functionality for Jackson: works on core streaming API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "f26eab82fa1da09f8e8bc7e52fc82088"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "325c06bdfeb628cfb80ebaaf1a26cc1eb558a585"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "ba1a368137f9b92f48dd07f299ff7a782a69487b853ef5578215426fcde8f08b"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "89b5f58414d541d79f63ddedbcf4d5fafabc68d9bf9cad09f354c151e9685512e1433f2e22f6a7ffc8100c3c5fddbbb99fd64d7c6d4974b2915edb523f99ca16"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "87d3468179690f73868e8e2cad7b5107d4cea86ba7d6481ed288101f9d59b6b9ad27c7cfd1c466bdccc89effeb8291cd"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "16c34d4930500ab5749a3ff95ef5a0672c94b618dea5f88af37e61dbb19e366632f4d06c1a95d5132d451b329a4c32cb"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "222d42b2719c7ae81bc298570d4e37b745909a075e80cdc4beccd72be6a784c6"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "c2024c52d89b423a2049eba07badcb556b12ea953582002d47be7236d23cac7ca3cc4a099fd9f241dfeee8dbb8809a230721a2d7e6a63cdebebaf25f93bcdacd"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "http://github.com/FasterXML/jackson"
+        },
+        {
+          "type": "distribution",
+          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/FasterXML/jackson-databind/issues"
+        },
+        {
+          "type": "vcs",
+          "url": "http://github.com/FasterXML/jackson-databind"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar"
+    },
+    {
+      "publisher": "JBoss by Red Hat",
+      "group": "io.quarkus",
+      "name": "quarkus-narayana-jta",
+      "version": "2.13.5.Final",
+      "description": "Offer JTA transaction support (included in Hibernate ORM)",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "3a66ac81017b996797f93f592f91effd"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "789eb0a7fce6365a4fe1b8834341643adbe7ac32"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3d0af07de832088511d9470a23d9b371fb1e12be1dbfb6b644811a883ae4a032"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "b2a71bda14f8ee2569822ffb69a57f40a1f96693a9dc30cc1c7413cb0db6b5ffae919f4438a98bc656ccc964283ea3e94fae027de2777da13f4208e30e957d63"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "8e38068495d8597e1993c37ed7aa451521669620625b52c77d51f1824ae894bd75b135893ca3e56cdc49f9ac6d7a6ca9"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "528b6510d4456f9434ffb97b66e3edbd043da5d82d49c696d00977c8284244056bcc0194c7d7a2878261ed3f7a533a7c"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "d6d74ea0ea733ed72c330792ae18775c22ea30c13f6e3c5d734d6e38b258ccca"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "125a9c316a235aa12518dd27adb304e160be5ddae1e870e42470dbddfae4a67da04a7a9b87476c288c10ab732e56f0c6ed5dcbae106862c58a54ff1788a697a2"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/quarkusio/quarkus"
+        },
+        {
+          "type": "distribution",
+          "url": "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/quarkusio/quarkus/issues/"
+        },
+        {
+          "type": "mailing-list",
+          "url": "http://lists.jboss.org/pipermail/jboss-user/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/quarkusio/quarkus"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar"
+    },
+    {
+      "publisher": "Eclipse Foundation",
+      "group": "jakarta.interceptor",
+      "name": "jakarta.interceptor-api",
+      "version": "1.2.5",
+      "description": "Jakarta Interceptors defines a means of interposing on business method invocations and specific events—such as lifecycle events and timeout events—that occur on instances of Jakarta EE components and other managed classes.",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "69ab3deaef95f1a6522e7e828694ab14"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "20cbde692c555692ca835fb6ecb4a8c95acbe6e0"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "210c4f0a5a8f387457d58afa3982b9abdd28f0a891e6289b329a6d8cf2210299"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "70f3c36d4e48d52b7c23a5a019e5947b375f8c5c49cf6f305989460217428f62e43b1cb9cadcdeeb61979c6406abd50bbffda08572a048dd45b871566308c1e0"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "de8479983fbe9cb409aefb286a778f58c00e3cc1a04681e73d394e7fff03cb9c2c405961b1c06f328e38be27e22bd2ca"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "8d65c279a249fa0a2d035ce6348bffcc3ba4a6e3cc3543fed8c4d29ea1a2785357b9f19bf55d9c9ce667a06dec081fd7"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "368289095b8324d747b009f448d8b508354eced1abf776d634e75019b4c4c269"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "080b664d0924a44a2afae7c2fee6f314fc991c240c5f727b2e2a6a0d4a0695bbdeb569501c459cf3f15f61ad4b70c087262d8ec155c8cfe3a35b115166843d2c"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-with-classpath-exception"
+          }
+        }
+      ],
+      "purl": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/eclipse-ee4j/interceptor-api"
+        },
+        {
+          "type": "distribution",
+          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/eclipse-ee4j/interceptor-api/issues"
+        },
+        {
+          "type": "mailing-list",
+          "url": "https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/eclipse-ee4j/interceptor-api"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar",
+      "dependsOn": [
+        "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+        "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+        "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+      "dependsOn": [
+        "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+        "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+        "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1?type=jar",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
+      "dependsOn": [
+        "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+        "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+      "dependsOn": [
+        "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar"
+      ]
+    },
+    {
+      "ref": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final?type=jar",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
+      "dependsOn": []
+    }
+  ]
+}

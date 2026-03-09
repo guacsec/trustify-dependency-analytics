@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -85,8 +86,11 @@ public class CycloneDxParser extends SbomParser {
                     rootComponent.get().getName(), rootComponent.get().getVersion()));
       }
     }
-    var tree = treeBuilder.dependencies(buildDependencies(bom, componentPurls, rootRef)).build();
-    return tree;
+    return treeBuilder
+        .root(rootRef)
+        .dependencies(buildDependencies(bom, componentPurls, rootRef))
+        .licenseExpressions(buildLicenses(bom, rootRef))
+        .build();
   }
 
   private Map<PackageRef, DirectDependency> buildDependencies(
@@ -237,5 +241,56 @@ public class CycloneDxParser extends SbomParser {
       case "1.0" -> Version.VERSION_10;
       default -> throw new ParseException("Invalid Spec Version received");
     };
+  }
+
+  private Map<String, String> buildLicenses(Bom bom, PackageRef rootRef) {
+    Map<String, String> licenses = new HashMap<>();
+
+    if (bom.getMetadata() != null && bom.getMetadata().getComponent() != null) {
+      var root = bom.getMetadata().getComponent();
+      if (root != null) {
+        var expression = getLicenseExpression(root);
+        if (expression != null) {
+          licenses.put(rootRef.ref(), expression);
+        }
+      }
+      if (bom.getComponents() != null) {
+        bom.getComponents()
+            .forEach(
+                component -> {
+                  var expression = getLicenseExpression(component);
+                  if (component.getPurl() != null && expression != null) {
+                    licenses.put(
+                        new PackageRef(component.getPurl()).purl().getCoordinates(), expression);
+                  }
+                });
+      }
+    }
+    return licenses;
+  }
+
+  private String getLicenseExpression(Component component) {
+    var licenses = component.getLicenses();
+    if (licenses == null) {
+      return null;
+    }
+    if (licenses.getExpression() != null) {
+      return licenses.getExpression().getValue();
+    } else if (licenses.getLicenses() != null) {
+      return licenses.getLicenses().stream()
+          .map(
+              l -> {
+                if (l.getId() != null && !l.getId().isBlank()) {
+                  return l.getId();
+                }
+                if (l.getName() != null && !l.getName().isBlank()) {
+                  return l.getName();
+                }
+                return null;
+              })
+          .filter(Objects::nonNull)
+          .collect(Collectors.joining(" AND "));
+    }
+    return null;
   }
 }

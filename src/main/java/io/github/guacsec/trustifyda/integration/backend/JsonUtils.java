@@ -40,4 +40,18 @@ public class JsonUtils {
     }
     return null;
   }
+
+  /**
+   * Extracts a boolean value from a JSON node with null-safety.
+   *
+   * @param node the JSON node
+   * @param key the key to extract
+   * @return the boolean value, or false if the key doesn't exist or is null
+   */
+  public static Boolean getBooleanValue(JsonNode node, String key) {
+    if (node != null && node.has(key) && node.hasNonNull(key)) {
+      return node.get(key).asBoolean();
+    }
+    return null;
+  }
 }

@@ -35,7 +35,7 @@ public class SpdxParser extends SbomParser {
   public DependencyTree buildTree(InputStream input) {
     var wrapper = new SpdxWrapper(input);
     var deps = buildDeps(wrapper);
-    return new DependencyTree(deps);
+    return new DependencyTree(deps, null, null);
   }
 
   private Map<PackageRef, DirectDependency> buildDeps(SpdxWrapper wrapper) {

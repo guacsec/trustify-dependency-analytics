@@ -55,6 +55,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
+import io.github.guacsec.trustifyda.api.v5.LicenseProviderResult;
 import io.github.guacsec.trustifyda.api.v5.Scanned;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
@@ -372,10 +373,16 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertNull(osvSource.getDependencies());
     assertNull(csafSource.getDependencies());
 
-    assertEquals(1, report.getLicenses().size());
-    assertNotNull(report.getLicenses().get(0).getSummary());
-    assertNotNull(report.getLicenses().get(0).getStatus());
-    assertTrue(report.getLicenses().get(0).getPackages().isEmpty());
+    assertEquals(2, report.getLicenses().size());
+    var sbomLicense = getLicenseResultByName(report, "SBOM");
+    assertNotNull(sbomLicense.getSummary());
+    assertNotNull(sbomLicense.getStatus());
+    assertTrue(sbomLicense.getPackages().isEmpty());
+
+    var licenses = getLicenseResultByName(report, "deps.dev");
+    assertNotNull(licenses.getSummary());
+    assertNotNull(licenses.getStatus());
+    assertTrue(licenses.getPackages().isEmpty());
 
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyLicensesRequest(1);
@@ -686,8 +693,9 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     // Verify that the licenses provider has a timeout error
-    assertEquals(1, report.getLicenses().size());
-    var licenses = report.getLicenses().get(0);
+    assertEquals(2, report.getLicenses().size());
+
+    var licenses = getLicenseResultByName(report, "deps.dev");
     assertNotNull(licenses, "Expected one result from licenses provider");
 
     assertEquals(500, licenses.getStatus().getCode(), "Internal error should return 500 status");
@@ -722,8 +730,8 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     // Verify that the licenses provider has a timeout error
-    assertEquals(1, report.getLicenses().size());
-    var licenses = report.getLicenses().get(0);
+    assertEquals(2, report.getLicenses().size());
+    var licenses = getLicenseResultByName(report, "deps.dev");
     assertNotNull(licenses, "Expected one result from licenses provider");
 
     // Timeout should result in GATEWAY_TIMEOUT (504) status
@@ -740,6 +748,13 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertTrue(licenses.getPackages().isEmpty(), "Packages should be empty when request times out");
 
     verifyLicensesRequest(1);
+  }
+
+  private LicenseProviderResult getLicenseResultByName(AnalysisReport report, String name) {
+    return report.getLicenses().stream()
+        .filter(l -> l.getStatus().getName().equals(name))
+        .findFirst()
+        .orElse(null);
   }
 
   @Test
@@ -825,8 +840,13 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .body()
             .as(AnalysisReport.class);
 
-    assertEquals(1, firstResponse.getLicenses().size());
-    assertTrue(firstResponse.getLicenses().get(0).getStatus().getOk());
+    assertEquals(2, firstResponse.getLicenses().size());
+    var sbomLicense = getLicenseResultByName(firstResponse, "SBOM");
+    assertNotNull(sbomLicense);
+    assertTrue(sbomLicense.getStatus().getOk());
+    var depsDevLicense = getLicenseResultByName(firstResponse, "deps.dev");
+    assertNotNull(depsDevLicense);
+    assertTrue(depsDevLicense.getStatus().getOk());
     verifyLicensesRequest(1);
 
     // Reset WireMock request count but keep stubs
