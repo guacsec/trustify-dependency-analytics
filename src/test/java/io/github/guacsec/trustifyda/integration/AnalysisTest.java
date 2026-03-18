@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -219,6 +220,52 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     body = replaceMockedDepsDevSourceUrl(body);
     assertJson("reports/report.json", body);
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
+    verifyRecommendRequest();
+    verifyLicensesRequest(1);
+  }
+
+  // The SBOM under test contains a locally resolved package,
+  // which should not be sent to the vulnerability and recommendation API
+  @Test
+  public void testLocalPackages() {
+    stubAllProviders();
+
+    var file =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("cyclonedx/maven-sbom-local-pkg.json")
+                .getPath());
+
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(file)
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    assertEquals(1, report.getProviders().size());
+    assertEquals(
+        3,
+        report
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get("osv-github")
+            .getSummary()
+            .getDependencies());
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyRecommendRequest();
     verifyLicensesRequest(1);
