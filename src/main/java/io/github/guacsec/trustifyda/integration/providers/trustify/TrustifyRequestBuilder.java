@@ -58,6 +58,15 @@ public class TrustifyRequestBuilder {
   }
 
   /**
+   * Returns true when the filtered set of packages (after filterLocalPackages) is null or empty.
+   * Used to short-circuit the split request when all packages were filtered out (e.g., SBOM only
+   * contains repository_url=local packages).
+   */
+  public boolean isEmptyFilteredPackages(Set<?> packages) {
+    return packages == null || packages.isEmpty();
+  }
+
+  /**
    * Splits only the cache misses into batches for processing. Uses the CACHE_MISSES_PROPERTY which
    * contains the Set of PackageRefs that were not found in cache.
    */

@@ -271,6 +271,49 @@ public class AnalysisTest extends AbstractAnalysisTest {
     verifyLicensesRequest(1);
   }
 
+  // SBOM with only repository_url=local packages: all are filtered, no Trustify calls, empty report
+  @Test
+  public void testOnlyLocalPackages() {
+    stubAllProviders();
+
+    var file =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("cyclonedx/maven-sbom-only-local-pkg.json")
+                .getPath());
+
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(file)
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(Status.OK.getStatusCode())
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    assertNotNull(report.getProviders());
+    var provider = report.getProviders().get(TRUSTIFY_PROVIDER);
+    assertNotNull(provider);
+    assertEquals(Status.OK.getStatusCode(), provider.getStatus().getCode());
+    assertTrue(provider.getStatus().getOk());
+    assertTrue(
+        provider.getSources() == null || provider.getSources().isEmpty(),
+        "Provider report should have empty sources when all packages are local");
+
+    verifyNoInteractionsWithTrustify();
+    verifyNoInteractionsWithRecommend();
+  }
+
   @Test
   public void testDefaultTokensOptOutRecommendations() {
     stubAllProviders();
