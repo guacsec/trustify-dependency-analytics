@@ -114,16 +114,22 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
 
     from(direct("trustifySplitRequest"))
       .routeId("trustifySplitRequest")
-      .process(this::lookupCachedItems)
-      .transform(method(requestBuilder, "splitMisses"))
-      .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
-      .parallelProcessing()
-        .transform()
-        .method(requestBuilder, "buildRequest")
-        .to(direct("trustifyRequest"))
-        .bean(cacheService, "cacheItems")
-      .end()
-      .process(this::aggregateCacheHits);
+      .process(this::filterLocalPackages)
+      .choice()
+        .when(method(requestBuilder, "isEmptyFilteredPackages"))
+          .setBody(method(responseHandler, "emptyResponse"))
+        .otherwise()
+          .process(this::lookupCachedItems)
+          .transform(method(requestBuilder, "splitMisses"))
+          .split(body(), AggregationStrategies.beanAllowNull(responseHandler, "aggregateSplit"))
+          .parallelProcessing()
+            .transform()
+            .method(requestBuilder, "buildRequest")
+            .to(direct("trustifyRequest"))
+            .bean(cacheService, "cacheItems")
+          .end()
+          .process(this::aggregateCacheHits)
+      .endChoice();
 
     from(direct("recommendations"))
       .routeId("recommendations")
@@ -413,27 +419,46 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     return b;
   }
 
-  private void lookupCachedItems(Exchange exchange) {
-    DependencyTree tree =
-        exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class);
+  // Locally resolved packages are not sent to the vulnerability and recommendation API
+  private void filterLocalPackages(Exchange exchange) {
+    var tree = exchange.getIn().getBody(DependencyTree.class);
     if (tree == null || tree.dependencies().isEmpty()) {
+      return;
+    }
+    Set<PackageRef> packages =
+        tree.getAll().stream()
+            .filter(
+                p -> {
+                  if (p.purl().getQualifiers() == null) {
+                    return true;
+                  }
+                  var repoUrl = p.purl().getQualifiers().get("repository_url");
+                  return repoUrl == null || !repoUrl.equalsIgnoreCase("local");
+                })
+            .collect(Collectors.toSet());
+    exchange.getIn().setBody(packages);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void lookupCachedItems(Exchange exchange) {
+    Set<PackageRef> packages = exchange.getIn().getBody(Set.class);
+    if (packages == null || packages.isEmpty()) {
       exchange.setProperty(Constants.CACHE_MISSES_PROPERTY, Collections.emptySet());
       exchange.setProperty(Constants.CACHE_HITS_PROPERTY, Collections.emptyMap());
       return;
     }
 
-    Set<PackageRef> allPurls = tree.getAll();
-    Map<PackageRef, PackageItem> cachedItems = cacheService.getCachedItems(allPurls);
+    Map<PackageRef, PackageItem> cachedItems = cacheService.getCachedItems(packages);
 
     exchange.setProperty(Constants.CACHE_HITS_PROPERTY, cachedItems);
 
-    Set<PackageRef> misses = new HashSet<>(allPurls);
+    Set<PackageRef> misses = new HashSet<>(packages);
     misses.removeAll(cachedItems.keySet());
     exchange.setProperty(Constants.CACHE_MISSES_PROPERTY, misses);
 
     LOGGER.debugf(
         "Cache lookup: %d hits, %d misses out of %d total",
-        cachedItems.size(), misses.size(), allPurls.size());
+        cachedItems.size(), misses.size(), packages.size());
   }
 
   @SuppressWarnings("unchecked")
