@@ -8,7 +8,7 @@ import {
 import { DepCompoundTable } from './DepCompoundTable';
 import { LicensesTable } from './LicensesTable';
 import { getSourceName, getSources, Report } from '../api/report';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useAppContext } from '../App';
 import { AnalyticsBrowser, AnalyticsBrowserSettings } from '@segment/analytics-next';
 
@@ -19,10 +19,14 @@ export const TabbedLayout = ({ report }: { report: Report }) => {
   const appContext = useAppContext();
   const sources = getSources(report);
   const hasVuln = sources.length > 0;
-  const hasLicenses = (report.licenses?.length ?? 0) > 0;
+  const nonEmptyLicenses = useMemo(
+    () => (report.licenses ?? []).filter((l) => l.summary.total > 0),
+    [report.licenses]
+  );
+  const hasLicenses = nonEmptyLicenses.length > 0;
 
   const firstVulnKey = hasVuln ? getSourceName(sources[0]) : null;
-  const firstLicenseKey = hasLicenses ? report.licenses![0].status.name : null;
+  const firstLicenseKey = hasLicenses ? nonEmptyLicenses[0].status.name : null;
 
   const [activePrimaryKey, setActivePrimaryKey] = React.useState<string | number>(
     hasVuln ? PRIMARY_VULN : PRIMARY_LICENSES
@@ -44,6 +48,15 @@ export const TabbedLayout = ({ report }: { report: Report }) => {
       analytics.setAnonymousId(appContext.anonymousId);
     }
   }, [analytics, appContext.anonymousId]);
+
+  // Keep secondary license tab in sync when filtered providers change (e.g. summary.total === 0)
+  useEffect(() => {
+    if (!hasLicenses || firstLicenseKey == null) return;
+    const validKeys = new Set(nonEmptyLicenses.map((l) => l.status.name));
+    if (!validKeys.has(String(activeLicenseKey))) {
+      setActiveLicenseKey(firstLicenseKey);
+    }
+  }, [hasLicenses, firstLicenseKey, nonEmptyLicenses, activeLicenseKey]);
 
   // Track the effective tab (primary + secondary) for analytics
   const effectiveTabKey =
@@ -132,7 +145,7 @@ export const TabbedLayout = ({ report }: { report: Report }) => {
           aria-label="License providers"
           role="region"
         >
-          {report.licenses!.filter((license) => license.summary.total > 0).map((license) => (
+          {nonEmptyLicenses.map((license) => (
             <Tab
               key={license.status.name}
               eventKey={license.status.name}
