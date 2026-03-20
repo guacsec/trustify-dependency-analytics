@@ -132,7 +132,7 @@ export const TabbedLayout = ({ report }: { report: Report }) => {
           aria-label="License providers"
           role="region"
         >
-          {report.licenses!.map((license) => (
+          {report.licenses!.filter((license) => license.summary.total > 0).map((license) => (
             <Tab
               key={license.status.name}
               eventKey={license.status.name}

@@ -160,7 +160,7 @@ export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isR
                   gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${CHART_GROUP_MIN_WIDTH}), 1fr))`,
                 }}
               >
-                {licensesReports.map((licenseReport, index) => (
+                {licensesReports.filter((licenseReport) => licenseReport.summary.total > 0).map((licenseReport, index) => (
                   <DescriptionListGroup
                     key={index}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}
