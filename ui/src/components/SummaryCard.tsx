@@ -66,6 +66,7 @@ export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isR
   const showExploreCard = Boolean(brandingConfig.exploreTitle.trim().length > 0) && Boolean(brandingConfig.exploreUrl.trim().length > 0) && Boolean(brandingConfig.exploreDescription.trim().length > 0);
   const showContainerRecommendationsCard = Boolean(isReportMap) && brandingConfig.imageRecommendation.trim().length > 0 && brandingConfig.imageRecommendationLink.trim().length > 0;
   const licensesReports = report.licenses || [];
+  const nonEmptyLicenseReports = (report.licenses ?? []).filter((lr) => lr.summary.total > 0);
   const sbomLicenseReport = report.licenses?.find((l: LicenseReport) => l.status.name === 'SBOM');
   const projectLicense = sbomLicenseReport?.projectLicense;
   const showProjectLicenseCard = Boolean(projectLicense);
@@ -76,7 +77,7 @@ export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isR
   };
 
   // First row: Vendor Issues + License Summary. Stack until lg (1024px), then side-by-side.
-  const firstRowCount = 1 + (licensesReports.length > 0 ? 1 : 0);
+  const firstRowCount = 1 + (nonEmptyLicenseReports.length > 0 ? 1 : 0);
   const firstRowSpan = Math.min(12, Math.max(1, Math.floor(12 / firstRowCount))) as GridItemProps['md'];
   const firstRowSpanLg = firstRowSpan as GridItemProps['lg'];
   
@@ -142,7 +143,7 @@ export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isR
           <Divider/>
         </Card>
       </GridItem>
-      {licensesReports.length > 0 && (
+      {nonEmptyLicenseReports.length > 0 && (
         <GridItem md={12} lg={firstRowSpanLg}>
           <Card isFlat isFullHeight>
             <CardHeader>
@@ -160,7 +161,7 @@ export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isR
                   gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${CHART_GROUP_MIN_WIDTH}), 1fr))`,
                 }}
               >
-                {licensesReports.map((licenseReport, index) => (
+                {nonEmptyLicenseReports.map((licenseReport, index) => (
                   <DescriptionListGroup
                     key={index}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}
