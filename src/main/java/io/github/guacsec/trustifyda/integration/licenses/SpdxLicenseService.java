@@ -168,6 +168,8 @@ public class SpdxLicenseService {
     String trimmed = expression.trim();
     // Use canonical form when input is exactly a deprecated "license-with-exception" id
     String toParse = DEPRECATED_TO_CANONICAL.getOrDefault(trimmed, trimmed);
+    // Normalize deprecated "+" suffix to "-or-later" (e.g., LGPL-3.0+ -> LGPL-3.0-or-later)
+    toParse = toParse.replaceAll("([A-Za-z][A-Za-z0-9.-]*\\d)\\+", "$1-or-later");
     AnyLicenseInfo root;
     try {
       root = LicenseInfoFactory.parseSPDXLicenseString(toParse);
