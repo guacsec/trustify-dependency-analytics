@@ -15,6 +15,9 @@ const PYPI_URL = 'https://pypi.org/project/';
 const DEBIAN_TYPE = 'deb';
 const DEBIAN_URL = 'https://sources.debian.org/patches/';
 
+const CARGO_TYPE = 'cargo';
+const CARGO_URL = 'https://crates.io/crates/';
+
 const ISSUE_PLACEHOLDER = '__ISSUE_ID__';
 
 const PURL_PKG_PREFIX = 'pkg:';
@@ -87,6 +90,8 @@ export const extractDependencyUrl = (name: string) => {
       return `${PYPI_URL}${pkgUrl.name}/${pkgUrl.version}`
     case DEBIAN_TYPE:
       return `${DEBIAN_URL}${pkgUrl.name}/${pkgUrl.version}`
+    case CARGO_TYPE:
+      return `${CARGO_URL}${pkgUrl.name}/${pkgUrl.version}`;
     default: return pkgUrl.toString();
   }
 };
