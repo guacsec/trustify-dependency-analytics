@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.guacsec</groupId>
   <artifactId>trustify-dependency-analytics</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1-SNAPSHOT</version>
   <name>Trustify - Dependency Analytics</name>
   <licenses>
     <license>
@@ -15,7 +15,7 @@
   <scm>
     <connection>scm:git:git@github.com:guacsec/trustify-dependency-analytics.git</connection>
     <developerConnection>scm:git:git@github.com:guacsec/trustify-dependency-analytics.git</developerConnection>
-    <tag>v2.0.0</tag>
+    <tag>v2.0.1-SNAPSHOT</tag>
     <url>https://github.com/guacsec/trustify-dependency-analytics</url>
   </scm>
   <issueManagement>
