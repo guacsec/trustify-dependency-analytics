@@ -910,6 +910,74 @@ public class AnalysisTest extends AbstractAnalysisTest {
         "Both responses should have the same total vulnerabilities");
   }
 
+  /**
+   * Canonical vulnerability data is cached per package; {@code cves} is applied after cache merge.
+   * A second request with a CVE whitelist must not call Trustify again yet must return a subset of
+   * issues.
+   */
+  @Test
+  public void testCachingWithCvesFilterUsesCanonicalCache() {
+    stubAllProviders();
+
+    var firstResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyTrustifyRequest(TRUSTIFY_TOKEN, 1);
+    assertEquals(
+        7,
+        firstResponse
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get(OSV_SOURCE)
+            .getSummary()
+            .getTotal(),
+        "Unfiltered OSV summary should match stubbed report");
+    var firstOsvSource =
+        firstResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+
+    assertEquals(
+        7, firstOsvSource.getSummary().getTotal(), "Expected 7 issues in the first response");
+    server.resetRequests();
+
+    var secondResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .queryParam(Constants.CVES_PARAM, "CVE-2024-1597")
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyNoInteractionsWithTrustify();
+
+    var filteredOsv =
+        secondResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    assertNotNull(filteredOsv);
+    int filteredTotal = filteredOsv.getSummary().getTotal();
+    assertEquals(
+        1, filteredTotal, "At least one issue should remain for the whitelisted CVE CVE-2024-1597");
+  }
+
   @Test
   public void testLicensesCaching() {
     stubAllProviders();

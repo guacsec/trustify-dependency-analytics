@@ -107,15 +107,16 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     List<Issue> issues = new ArrayList<>();
     details.forEach(
         vuln -> {
+          var id = JsonUtils.getTextValue(vuln, "identifier");
           if (vuln.hasNonNull("withdrawn")) {
             return;
           }
+
           var status = (ObjectNode) vuln.get("status");
           if (status == null || !status.hasNonNull("affected")) {
             return;
           }
           var affected = (ArrayNode) status.get("affected");
-          var id = JsonUtils.getTextValue(vuln, "identifier");
           var title = JsonUtils.getTextValue(vuln, "title");
           final String iTitle;
           if (title == null) {

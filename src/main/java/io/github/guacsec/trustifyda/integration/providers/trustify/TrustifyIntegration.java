@@ -129,6 +129,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
             .bean(cacheService, "cacheItems")
           .end()
           .process(this::aggregateCacheHits)
+          .transform(method(responseHandler, "filterCves"))
       .endChoice();
 
     from(direct("recommendations"))
