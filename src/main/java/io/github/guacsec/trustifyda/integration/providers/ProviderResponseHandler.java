@@ -293,6 +293,37 @@ public abstract class ProviderResponseHandler {
     return new ProviderReport().status(response.status()).sources(reports);
   }
 
+  public ProviderResponse filterCves(Exchange exchange) {
+    var response = exchange.getIn().getBody(ProviderResponse.class);
+    var cvesFilter = (List<String>) exchange.getProperty(Constants.CVES_PARAM, List.class);
+    if (response == null || response.pkgItems() == null) {
+      return response;
+    }
+    if (cvesFilter == null || cvesFilter.isEmpty()) {
+      return response;
+    }
+    Map<String, PackageItem> filteredItems =
+        response.pkgItems().entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> {
+                      var item = entry.getValue();
+                      var issues =
+                          item.issues() == null ? Collections.<Issue>emptyList() : item.issues();
+                      var filteredIssues =
+                          issues.stream()
+                              .filter(i -> cvesFilter.contains(i.getId()))
+                              .collect(Collectors.toList());
+                      return new PackageItem(
+                          entry.getKey(),
+                          item.recommendation(),
+                          filteredIssues,
+                          item.warnings() == null ? Collections.emptyList() : item.warnings());
+                    }));
+    return new ProviderResponse(filteredItems, response.status());
+  }
+
   private Map<String, List<String>> getWarnings(Map<String, PackageItem> pkgItems) {
     return pkgItems.entrySet().stream()
         .filter(item -> item.getValue().warnings() != null && !item.getValue().warnings().isEmpty())

@@ -129,6 +129,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
             .bean(cacheService, "cacheItems")
           .end()
           .process(this::aggregateCacheHits)
+          .transform(method(responseHandler, "filterCves"))
       .endChoice();
 
     from(direct("recommendations"))
@@ -436,6 +437,13 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
                   return repoUrl == null || !repoUrl.equalsIgnoreCase("local");
                 })
             .collect(Collectors.toSet());
+    var sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
+    if (sbomId != null && !sbomId.isBlank()) {
+      // Batch analysis injects the SBOM root component as a dependency entry to drive other
+      // processing; it is not necessarily returned by Trustify and would otherwise stay a cache
+      // miss on every request.
+      packages.remove(new PackageRef(sbomId));
+    }
     exchange.getIn().setBody(packages);
   }
 
