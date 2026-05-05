@@ -52,6 +52,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
@@ -78,6 +79,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
   private static final String DEFAULT_TRUST_DA_TOKEN = "example-trust-da-token";
   private static final String OSV_SOURCE = "osv-github";
   private static final String CSAF_SOURCE = "redhat-csaf";
+
+  /** First CycloneDX entry in {@code cyclonedx/batch-sbom.json} — same Maven tree as maven-sbom. */
+  private static final String BATCH_CYCLONEDX_MAVEN_SBOM_ID =
+      "pkg:maven/org.acme.dbaas/postgresql-orm-quarkus@1.0.0-SNAPSHOT?type=jar";
 
   @Override
   @AfterEach
@@ -976,6 +981,242 @@ public class AnalysisTest extends AbstractAnalysisTest {
     int filteredTotal = filteredOsv.getSummary().getTotal();
     assertEquals(
         1, filteredTotal, "At least one issue should remain for the whitelisted CVE CVE-2024-1597");
+  }
+
+  /**
+   * Same scenario as {@link #testCachingWithCvesFilterUsesCanonicalCache()} for {@code
+   * /api/v5/batch-analysis}. The CycloneDX batch fixture also includes OCI SBOMs whose Trustify
+   * responses omit package items, so they are not cached and would still invoke analyze on
+   * follow-up requests; this test uses a single Maven map entry to mirror the single-analysis
+   * assertions.
+   */
+  @Test
+  public void testBatchCachingWithCvesFilterUsesCanonicalCache() throws Exception {
+    stubAllProviders();
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fullBatch =
+        MAPPER.readValue(loadFileAsString("cyclonedx/batch-sbom.json"), Map.class);
+    Object mavenBomEntry = fullBatch.get(BATCH_CYCLONEDX_MAVEN_SBOM_ID);
+    assertNotNull(mavenBomEntry);
+    String singleMavenBatchBody =
+        MAPPER.writeValueAsString(
+            Collections.singletonMap(BATCH_CYCLONEDX_MAVEN_SBOM_ID, mavenBomEntry));
+
+    Map<String, AnalysisReport> firstBatch =
+        MAPPER.readValue(
+            given()
+                .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+                .header("Accept", MediaType.APPLICATION_JSON)
+                .body(singleMavenBatchBody)
+                .when()
+                .post("/api/v5/batch-analysis")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract()
+                .body()
+                .asString(),
+            new TypeReference<Map<String, AnalysisReport>>() {});
+
+    verifyTrustifyRequest(TRUSTIFY_TOKEN, 1);
+
+    var mavenFirst = firstBatch.get(BATCH_CYCLONEDX_MAVEN_SBOM_ID);
+    assertNotNull(mavenFirst);
+    var firstOsv = mavenFirst.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    assertEquals(
+        7, firstOsv.getSummary().getTotal(), "Unfiltered OSV summary should match stubbed report");
+    assertEquals(7, firstOsv.getSummary().getTotal(), "Expected 7 issues in the first response");
+
+    server.resetRequests();
+
+    Map<String, AnalysisReport> secondBatch =
+        MAPPER.readValue(
+            given()
+                .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+                .header("Accept", MediaType.APPLICATION_JSON)
+                .queryParam(Constants.CVES_PARAM, "CVE-2024-1597")
+                .body(singleMavenBatchBody)
+                .when()
+                .post("/api/v5/batch-analysis")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract()
+                .body()
+                .asString(),
+            new TypeReference<Map<String, AnalysisReport>>() {});
+
+    verifyNoInteractionsWithTrustify();
+
+    var filteredOsv =
+        secondBatch
+            .get(BATCH_CYCLONEDX_MAVEN_SBOM_ID)
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get(OSV_SOURCE);
+    assertNotNull(filteredOsv);
+    int filteredTotal = filteredOsv.getSummary().getTotal();
+    assertEquals(
+        1, filteredTotal, "At least one issue should remain for the whitelisted CVE CVE-2024-1597");
+
+    Map<String, AnalysisReport> thirdBatch =
+        MAPPER.readValue(
+            given()
+                .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+                .header("Accept", MediaType.APPLICATION_JSON)
+                .queryParam(Constants.CVES_PARAM, "CVE-2024-1597,CVE-2020-36518")
+                .body(singleMavenBatchBody)
+                .when()
+                .post("/api/v5/batch-analysis")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract()
+                .body()
+                .asString(),
+            new TypeReference<Map<String, AnalysisReport>>() {});
+
+    verifyNoInteractionsWithTrustify();
+
+    filteredOsv =
+        thirdBatch
+            .get(BATCH_CYCLONEDX_MAVEN_SBOM_ID)
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get(OSV_SOURCE);
+    assertNotNull(filteredOsv);
+    filteredTotal = filteredOsv.getSummary().getTotal();
+    assertEquals(2, filteredTotal);
+  }
+
+  /** A second request with a CVE whitelist must return a subset of issues. */
+  @Test
+  public void testCachingWithCvesFilterReturnsSubsetOfIssues() {
+    stubAllProviders();
+
+    var firstResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyTrustifyRequest(TRUSTIFY_TOKEN, 1);
+    assertEquals(
+        7,
+        firstResponse
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get(OSV_SOURCE)
+            .getSummary()
+            .getTotal(),
+        "Unfiltered OSV summary should match stubbed report");
+    var firstOsvSource =
+        firstResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+
+    assertEquals(
+        7, firstOsvSource.getSummary().getTotal(), "Expected 7 issues in the first response");
+    server.resetRequests();
+
+    var secondResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .queryParam(Constants.CVES_PARAM, "CVE-2024-1597,CVE-2022-41946")
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyNoInteractionsWithTrustify();
+
+    var filteredOsv =
+        secondResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    assertNotNull(filteredOsv);
+    int filteredTotal = filteredOsv.getSummary().getTotal();
+    assertEquals(2, filteredTotal);
+  }
+
+  /** A second request with a CVE whitelist that does not exist must return no issues. */
+  @Test
+  public void testCachingWithCvesFilterReturnsNoIssues() {
+    stubAllProviders();
+
+    var firstResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyTrustifyRequest(TRUSTIFY_TOKEN, 1);
+    assertEquals(
+        7,
+        firstResponse
+            .getProviders()
+            .get(TRUSTIFY_PROVIDER)
+            .getSources()
+            .get(OSV_SOURCE)
+            .getSummary()
+            .getTotal(),
+        "Unfiltered OSV summary should match stubbed report");
+    var firstOsvSource =
+        firstResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+
+    assertEquals(
+        7, firstOsvSource.getSummary().getTotal(), "Expected 7 issues in the first response");
+    server.resetRequests();
+
+    var secondResponse =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .queryParam(Constants.CVES_PARAM, "CVE-2888-34444")
+            .body(loadSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .as(AnalysisReport.class);
+
+    verifyNoInteractionsWithTrustify();
+
+    var filteredOsv =
+        secondResponse.getProviders().get(TRUSTIFY_PROVIDER).getSources().get(OSV_SOURCE);
+    assertNull(filteredOsv);
   }
 
   @Test

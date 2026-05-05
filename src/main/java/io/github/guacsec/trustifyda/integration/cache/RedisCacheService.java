@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.cache;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -68,15 +69,20 @@ public class RedisCacheService implements CacheService {
         || Boolean.FALSE.equals(response.status().getOk())) {
       return;
     }
+    var missCoords =
+        misses.stream().map(p -> p.purl().getCoordinates()).collect(Collectors.toSet());
     var count = new AtomicInteger(0);
     response
         .pkgItems()
         .forEach(
             (ref, item) -> {
-              if (misses.contains(new PackageRef(ref))) {
-                itemsCommands.psetex("items:" + ref, itemTtl.toMillis(), item);
-                count.incrementAndGet();
+              PackageRef pref = new PackageRef(ref);
+              if (!missCoords.contains(pref.purl().getCoordinates())) {
+                return;
               }
+              itemsCommands.psetex(
+                  "items:" + pref.purl().getCoordinates(), itemTtl.toMillis(), item);
+              count.incrementAndGet();
             });
     LOGGER.debugf("Cached %d items", count.get());
   }
@@ -86,12 +92,19 @@ public class RedisCacheService implements CacheService {
     if (purls == null || purls.isEmpty()) {
       return Collections.emptyMap();
     }
-    var result =
-        itemsCommands.mget(purls.stream().map(p -> "items:" + p.ref()).toArray(String[]::new));
-    LOGGER.debugf("Got %d cached items for %d purls", result.size(), purls.size());
-    return result.values().stream()
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(v -> new PackageRef(v.packageRef()), Function.identity()));
+    String[] keys =
+        purls.stream().map(p -> "items:" + p.purl().getCoordinates()).toArray(String[]::new);
+    var raw = itemsCommands.mget(keys);
+    LOGGER.debugf("Got %d cached items for %d purls", raw.size(), purls.size());
+    Map<PackageRef, PackageItem> hitByTreeRef = new HashMap<>();
+    for (PackageRef p : purls) {
+      String k = "items:" + p.purl().getCoordinates();
+      PackageItem item = raw.get(k);
+      if (item != null) {
+        hitByTreeRef.put(p, item);
+      }
+    }
+    return hitByTreeRef;
   }
 
   @Override
