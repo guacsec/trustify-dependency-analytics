@@ -60,6 +60,12 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   private static final String LICENSES_POST_BODY_HINT =
       "Expected JSON {\"purls\":[\"pkg:...\"]} with package URL strings.";
 
+  private static final String LICENSES_POST_MALFORMED_JSON_MESSAGE =
+      "Malformed JSON. " + LICENSES_POST_BODY_HINT;
+
+  public static final String LICENSES_POST_INVALID_BODY_MESSAGE =
+      "Invalid request body. " + LICENSES_POST_BODY_HINT;
+
   private static final Logger LOGGER = Logger.getLogger(LicensesIntegration.class);
 
   @ConfigProperty(name = "api.licenses.depsdev.host", defaultValue = "https://api.deps.dev")
@@ -239,9 +245,21 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
   private void setLicensesRequestErrorBody(Exchange exchange) {
     Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
-    String prefix =
-        ex instanceof JsonParseException ? "Malformed JSON. " : "Invalid request body. ";
-    exchange.getMessage().setBody(prefix + LICENSES_POST_BODY_HINT);
+    String body =
+        containsJsonParseException(ex)
+            ? LICENSES_POST_MALFORMED_JSON_MESSAGE
+            : LICENSES_POST_INVALID_BODY_MESSAGE;
+    exchange.getMessage().setBody(body);
+    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+  }
+
+  private static boolean containsJsonParseException(Throwable ex) {
+    for (Throwable t = ex; t != null; t = t.getCause()) {
+      if (t instanceof JsonParseException) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void removeHeaders(Exchange exchange) {
@@ -256,7 +274,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   /** Clears HTTP headers from the REST consumer so the HTTP producer uses only the full URL. */
   private void processRequest(Exchange exchange) {
     removeHeaders(exchange);
-    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, constant(MediaType.APPLICATION_JSON));
+    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     exchange.getMessage().setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
   }
 }

@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration;
 
+import static io.github.guacsec.trustifyda.integration.licenses.LicensesIntegration.LICENSES_POST_INVALID_BODY_MESSAGE;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,10 +48,6 @@ import jakarta.ws.rs.core.Response;
 public class LicensesEndpointTest extends AbstractAnalysisTest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
-
-  /** Matches {@link io.github.guacsec.trustifyda.integration.licenses.LicensesIntegration}. */
-  private static final String INVALID_BODY_MESSAGE =
-      "Invalid request body. Expected JSON {\"purls\":[\"pkg:...\"]} with package URL strings.";
 
   private static final String PURL_QUARKUS_H2 = "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final";
   private static final String PURL_CDI_API =
@@ -121,6 +120,74 @@ public class LicensesEndpointTest extends AbstractAnalysisTest {
     assertTrue(depsDev.getPackages().isEmpty());
   }
 
+  /** Missing {@code purls} is treated like an empty request (same as {@code null}). */
+  @Test
+  public void postLicenses_missingPurls_returnsOkWithoutDepsDevCall() throws Exception {
+    String json =
+        given()
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body("{}")
+            .when()
+            .post("/api/v5/licenses")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asString();
+
+    verifyLicensesRequest(0);
+
+    List<LicenseProviderResult> results =
+        MAPPER.readValue(json, new TypeReference<List<LicenseProviderResult>>() {});
+    assertEquals(1, results.size());
+    assertTrue(results.get(0).getPackages().isEmpty());
+  }
+
+  /** Malformed JSON is rejected by quarkus-rest-jackson before reaching the Camel route. */
+  @Test
+  public void postLicenses_malformedJson_returnsBadRequest() {
+    given()
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+        .body("{\"purls\":[}")
+        .when()
+        .post("/api/v5/licenses")
+        .then()
+        .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+
+    verifyLicensesRequest(0);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "{\"purls\":\"not-array\"}",
+        "{\"purls\":[123]}",
+        "{\"purls\":[true]}",
+      })
+  public void postLicenses_invalidJsonShape_returnsBadRequestAndPlainHint(String requestJson) {
+    String body =
+        given()
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+            .body(requestJson)
+            .when()
+            .post("/api/v5/licenses")
+            .then()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+            .contentType(MediaType.TEXT_PLAIN)
+            .extract()
+            .body()
+            .asString();
+
+    assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
+    verifyLicensesRequest(0);
+  }
+
+  /**
+   * Empty purl string fails PackageRef deserialization, triggering the JsonMappingException
+   * handler.
+   */
   @Test
   public void postLicenses_invalidPurl_returnsBadRequestAndPlainHint() {
     String body =
@@ -136,7 +203,7 @@ public class LicensesEndpointTest extends AbstractAnalysisTest {
             .body()
             .asString();
 
-    assertEquals(INVALID_BODY_MESSAGE, body);
+    assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
     verifyLicensesRequest(0);
   }
 }
