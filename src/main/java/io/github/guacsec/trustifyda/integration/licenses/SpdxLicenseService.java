@@ -70,7 +70,7 @@ public class SpdxLicenseService {
       Map.of(
           "Apache-2.0", "Apache License\nVersion 2.0",
           "MIT", "MIT License",
-          "ISC", "ISC License:",
+          "ISC", "ISC License",
           "GPL-2.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991",
           "GPL-3.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007",
           "LGPL-2.1-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 2.1, February 1999",
@@ -418,7 +418,7 @@ public class SpdxLicenseService {
     if (baseLicense.endsWith("-or-later")) {
       baseLicense = baseLicense.substring(0, baseLicense.length() - "-or-later".length());
     }
-    // Legacy SPDX ids like LGPL-3.0+ / GPL-3.0+ (same family as -or-later for category lookup)
+    // SPDX "+" suffix means "or later" (e.g. GPL-3.0+, LGPL-3.0+); strip for category lookup
     if (baseLicense.endsWith("+")) {
       baseLicense = baseLicense.substring(0, baseLicense.length() - 1);
     }

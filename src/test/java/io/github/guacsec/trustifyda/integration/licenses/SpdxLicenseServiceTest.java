@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -435,7 +436,7 @@ public class SpdxLicenseServiceTest {
       String resourceFile, String expectedId, LicenseCategory expectedCategory) throws IOException {
     try (var in = getClass().getClassLoader().getResourceAsStream("licenses/" + resourceFile)) {
       assertNotNull(in, "Missing classpath resource: licenses/" + resourceFile);
-      var license = service.identifyLicense(new String(in.readAllBytes()));
+      var license = service.identifyLicense(new String(in.readAllBytes(), StandardCharsets.UTF_8));
       assertEquals(expectedId, license.getId());
       assertEquals(expectedCategory, license.getCategory());
     }
@@ -449,7 +450,9 @@ public class SpdxLicenseServiceTest {
             .getResourceAsStream("licenses/GPL-2.0-with-classpath-exception.txt");
     assertThrows(
         NotFoundException.class,
-        () -> service.identifyLicense(new String(licenseContent.readAllBytes())));
+        () ->
+            service.identifyLicense(
+                new String(licenseContent.readAllBytes(), StandardCharsets.UTF_8)));
   }
 
   @Test
