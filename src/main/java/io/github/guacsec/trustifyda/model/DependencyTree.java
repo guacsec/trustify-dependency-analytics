@@ -32,7 +32,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public record DependencyTree(
     Map<PackageRef, DirectDependency> dependencies,
     Map<String, String> licenseExpressions,
-    PackageRef root) {
+    PackageRef root,
+    Map<String, Map<String, String>> componentHashes) {
 
   public static final PackageRef getDefaultRoot(String type) {
     return PackageRef.builder()
@@ -48,6 +49,11 @@ public record DependencyTree(
       dependencies = Collections.unmodifiableMap(dependencies);
     } else {
       dependencies = Collections.emptyMap();
+    }
+    if (componentHashes != null) {
+      componentHashes = Collections.unmodifiableMap(componentHashes);
+    } else {
+      componentHashes = Collections.emptyMap();
     }
   }
 
@@ -91,6 +97,7 @@ public record DependencyTree(
     public Map<PackageRef, DirectDependency> dependencies;
     public Map<String, String> licenseExpressions;
     public PackageRef root;
+    public Map<String, Map<String, String>> componentHashes;
 
     public Builder licenseExpressions(Map<String, String> licenseExpressions) {
       this.licenseExpressions = licenseExpressions;
@@ -107,8 +114,13 @@ public record DependencyTree(
       return this;
     }
 
+    public Builder componentHashes(Map<String, Map<String, String>> componentHashes) {
+      this.componentHashes = componentHashes;
+      return this;
+    }
+
     public DependencyTree build() {
-      return new DependencyTree(dependencies, licenseExpressions, root);
+      return new DependencyTree(dependencies, licenseExpressions, root, componentHashes);
     }
   }
 }

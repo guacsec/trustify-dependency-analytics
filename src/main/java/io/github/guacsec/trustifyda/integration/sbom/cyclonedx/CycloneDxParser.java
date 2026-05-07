@@ -32,6 +32,7 @@ import org.cyclonedx.Version;
 import org.cyclonedx.exception.ParseException;
 import org.cyclonedx.model.Bom;
 import org.cyclonedx.model.Component;
+import org.cyclonedx.model.Hash;
 import org.cyclonedx.parsers.JsonParser;
 import org.jboss.logging.Logger;
 
@@ -59,11 +60,21 @@ public class CycloneDxParser extends SbomParser {
     var treeBuilder = DependencyTree.builder();
     var bom = parseBom(input);
     Map<String, PackageRef> componentPurls = new HashMap<>();
+    Map<String, Map<String, String>> componentHashes = new HashMap<>();
     if (bom.getComponents() != null) {
       componentPurls.putAll(
           bom.getComponents().stream()
               .filter(c -> c.getBomRef() != null && c.getPurl() != null)
               .collect(Collectors.toMap(Component::getBomRef, c -> new PackageRef(c.getPurl()))));
+      for (Component c : bom.getComponents()) {
+        if (c.getPurl() != null && c.getHashes() != null) {
+          Map<String, String> hashes =
+              c.getHashes().stream().collect(Collectors.toMap(Hash::getAlgorithm, Hash::getValue));
+          if (!hashes.isEmpty()) {
+            componentHashes.put(c.getPurl(), hashes);
+          }
+        }
+      }
     }
 
     Optional<Component> rootComponent = Optional.empty();
@@ -90,6 +101,7 @@ public class CycloneDxParser extends SbomParser {
         .root(rootRef)
         .dependencies(buildDependencies(bom, componentPurls, rootRef))
         .licenseExpressions(buildLicenses(bom, rootRef))
+        .componentHashes(componentHashes)
         .build();
   }
 
