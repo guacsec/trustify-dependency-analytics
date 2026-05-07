@@ -33,6 +33,9 @@ import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.LicensesRequest;
 import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
@@ -40,6 +43,7 @@ import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.cache.CacheService;
 import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
+import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -52,6 +56,16 @@ import jakarta.ws.rs.core.Response;
 public class LicensesIntegration extends EndpointRouteBuilder {
 
   private static final String DEPS_DEV_SOURCE = "deps.dev";
+
+  private static final String LICENSES_POST_BODY_HINT =
+      "Expected JSON {\"purls\":[\"pkg:...\"]} with package URL strings.";
+
+  private static final String LICENSES_POST_MALFORMED_JSON_MESSAGE =
+      "Malformed JSON. " + LICENSES_POST_BODY_HINT;
+
+  public static final String LICENSES_POST_INVALID_BODY_MESSAGE =
+      "Invalid request body. " + LICENSES_POST_BODY_HINT;
+
   private static final Logger LOGGER = Logger.getLogger(LicensesIntegration.class);
 
   @ConfigProperty(name = "api.licenses.depsdev.host", defaultValue = "https://api.deps.dev")
@@ -64,6 +78,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   @Inject DepsDevResponseHandler responseHandler;
   @Inject SpdxLicenseService spdxLicenseService;
   @Inject CacheService cacheService;
+  @Inject MonitoringProcessor monitoringProcessor;
 
   @Override
   public void configure() {
@@ -81,6 +96,16 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
       .handled(true)
       .setBody().simple("${exception.message}");
+
+    onException(JsonParseException.class, JsonMappingException.class)
+      .routeId("onLicensesInvalidJson")
+      .useOriginalMessage()
+      .process(monitoringProcessor::processClientException)
+      .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.BAD_REQUEST.getStatusCode()))
+      .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
+      .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
+      .handled(true)
+      .process(this::setLicensesRequestErrorBody);
 
     from(direct("getLicense"))
       .routeId("getLicense")
@@ -218,6 +243,25 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
   }
 
+  private void setLicensesRequestErrorBody(Exchange exchange) {
+    Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+    String body =
+        containsJsonParseException(ex)
+            ? LICENSES_POST_MALFORMED_JSON_MESSAGE
+            : LICENSES_POST_INVALID_BODY_MESSAGE;
+    exchange.getMessage().setBody(body);
+    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+  }
+
+  private static boolean containsJsonParseException(Throwable ex) {
+    for (Throwable t = ex; t != null; t = t.getCause()) {
+      if (t instanceof JsonParseException) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void removeHeaders(Exchange exchange) {
     Message message = exchange.getMessage();
     message.removeHeader(Exchange.HTTP_RAW_QUERY);
@@ -230,7 +274,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   /** Clears HTTP headers from the REST consumer so the HTTP producer uses only the full URL. */
   private void processRequest(Exchange exchange) {
     removeHeaders(exchange);
-    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, constant(MediaType.APPLICATION_JSON));
+    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     exchange.getMessage().setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
   }
 }
