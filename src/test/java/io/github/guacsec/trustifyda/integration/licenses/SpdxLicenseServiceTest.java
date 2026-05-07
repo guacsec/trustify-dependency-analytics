@@ -21,14 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.library.LicenseInfoFactory;
 import org.spdx.library.SpdxModelFactory;
@@ -414,25 +416,29 @@ public class SpdxLicenseServiceTest {
     assertThrows(NotFoundException.class, () -> service.fromLicenseId("   ", null, null));
   }
 
-  @Test
-  void testIdentifyLicense_apache20() throws InvalidSPDXAnalysisException {
-    var licenseContent = getClass().getClassLoader().getResourceAsStream("licenses/Apache-2.0.txt");
-    try {
-      var license = service.identifyLicense(new String(licenseContent.readAllBytes()));
-      assertEquals("Apache-2.0", license.getId());
-    } catch (NotFoundException | IOException e) {
-      fail("Error identifying license", e);
-    }
-  }
-
-  @Test
-  void testIdentifyLicense_mit() throws InvalidSPDXAnalysisException {
-    var licenseContent = getClass().getClassLoader().getResourceAsStream("licenses/MIT.txt");
-    try {
-      var license = service.identifyLicense(new String(licenseContent.readAllBytes()));
-      assertEquals("MIT", license.getId());
-    } catch (NotFoundException | IOException e) {
-      fail("Error identifying license", e);
+  /**
+   * SPDX-listed license texts (popular ids) resolve to the expected id and policy category.
+   * Fixtures are from <a
+   * href="https://github.com/spdx/license-list-data">spdx/license-list-data</a> where noted in
+   * tree, except legacy project {@code MIT.txt} / {@code Apache-2.0.txt}.
+   */
+  @ParameterizedTest(name = "{0} -> {1}")
+  @CsvSource({
+    "Apache-2.0.txt, Apache-2.0, PERMISSIVE",
+    "MIT.txt, MIT, PERMISSIVE",
+    "ISC.txt, ISC, PERMISSIVE",
+    "BSD-2-Clause.txt, BSD-2-Clause, PERMISSIVE",
+    "BSD-3-Clause.txt, BSD-3-Clause, PERMISSIVE",
+    "GPL-3.0-only.txt, GPL-3.0-only, STRONG_COPYLEFT",
+    "LGPL-3.0-only.txt, LGPL-3.0-only, WEAK_COPYLEFT"
+  })
+  void identifyLicense_popularSpdxTexts(
+      String resourceFile, String expectedId, LicenseCategory expectedCategory) throws IOException {
+    try (var in = getClass().getClassLoader().getResourceAsStream("licenses/" + resourceFile)) {
+      assertNotNull(in, "Missing classpath resource: licenses/" + resourceFile);
+      var license = service.identifyLicense(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+      assertEquals(expectedId, license.getId());
+      assertEquals(expectedCategory, license.getCategory());
     }
   }
 
@@ -444,7 +450,9 @@ public class SpdxLicenseServiceTest {
             .getResourceAsStream("licenses/GPL-2.0-with-classpath-exception.txt");
     assertThrows(
         NotFoundException.class,
-        () -> service.identifyLicense(new String(licenseContent.readAllBytes())));
+        () ->
+            service.identifyLicense(
+                new String(licenseContent.readAllBytes(), StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -453,5 +461,16 @@ public class SpdxLicenseServiceTest {
         Unknown License
         """;
     assertThrows(NotFoundException.class, () -> service.identifyLicense(licenseContent));
+  }
+
+  /**
+   * Deprecated SPDX {@code +} ids must map to the same policy bucket as {@code -or-later} for YAML
+   * categories (e.g. LGPL-3.0 in license-categories.yaml).
+   */
+  @Test
+  void testFromLicenseId_lgpl30Plus_weakCopyleftCategory() {
+    LicenseInfo info = service.fromLicenseId("LGPL-3.0+", null, null);
+    assertEquals(1, info.getIdentifiers().size());
+    assertEquals(LicenseCategory.WEAK_COPYLEFT, info.getIdentifiers().get(0).getCategory());
   }
 }

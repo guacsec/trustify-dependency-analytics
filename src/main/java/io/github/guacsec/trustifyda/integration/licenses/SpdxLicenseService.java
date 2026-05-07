@@ -70,10 +70,11 @@ public class SpdxLicenseService {
       Map.of(
           "Apache-2.0", "Apache License\nVersion 2.0",
           "MIT", "MIT License",
+          "ISC", "ISC License",
           "GPL-2.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 2, June 1991",
-          "GPL-3.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 3, June 2007",
+          "GPL-3.0-only", "GNU GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007",
           "LGPL-2.1-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 2.1, February 1999",
-          "LGPL-3.0-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 3, February 2007",
+          "LGPL-3.0-only", "GNU LESSER GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007",
           "BSD-2-Clause", "BSD 2-Clause License",
           "BSD-3-Clause", "BSD 3-Clause License");
 
@@ -416,6 +417,10 @@ public class SpdxLicenseService {
     }
     if (baseLicense.endsWith("-or-later")) {
       baseLicense = baseLicense.substring(0, baseLicense.length() - "-or-later".length());
+    }
+    // SPDX "+" suffix means "or later" (e.g. GPL-3.0+, LGPL-3.0+); strip for category lookup
+    if (baseLicense.endsWith("+")) {
+      baseLicense = baseLicense.substring(0, baseLicense.length() - 1);
     }
     if (licenseConfig.permissive().contains(baseLicense)) {
       return LicenseCategory.PERMISSIVE;
