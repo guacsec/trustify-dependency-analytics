@@ -33,6 +33,9 @@ import org.apache.camel.builder.endpoint.EndpointRouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.LicensesRequest;
 import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
@@ -40,6 +43,7 @@ import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.cache.CacheService;
 import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
+import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -52,6 +56,10 @@ import jakarta.ws.rs.core.Response;
 public class LicensesIntegration extends EndpointRouteBuilder {
 
   private static final String DEPS_DEV_SOURCE = "deps.dev";
+
+  private static final String LICENSES_POST_BODY_HINT =
+      "Expected JSON {\"purls\":[\"pkg:...\"]} with package URL strings.";
+
   private static final Logger LOGGER = Logger.getLogger(LicensesIntegration.class);
 
   @ConfigProperty(name = "api.licenses.depsdev.host", defaultValue = "https://api.deps.dev")
@@ -64,6 +72,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   @Inject DepsDevResponseHandler responseHandler;
   @Inject SpdxLicenseService spdxLicenseService;
   @Inject CacheService cacheService;
+  @Inject MonitoringProcessor monitoringProcessor;
 
   @Override
   public void configure() {
@@ -81,6 +90,16 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
       .handled(true)
       .setBody().simple("${exception.message}");
+
+    onException(JsonParseException.class, JsonMappingException.class)
+      .routeId("onLicensesInvalidJson")
+      .useOriginalMessage()
+      .process(monitoringProcessor::processClientException)
+      .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.BAD_REQUEST.getStatusCode()))
+      .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
+      .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
+      .handled(true)
+      .process(this::setLicensesRequestErrorBody);
 
     from(direct("getLicense"))
       .routeId("getLicense")
@@ -216,6 +235,13 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     Map<String, PackageLicenseResult> merged = new HashMap<>(result.packages());
     cacheHits.forEach((ref, r) -> merged.put(ref.ref(), r));
     exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
+  }
+
+  private void setLicensesRequestErrorBody(Exchange exchange) {
+    Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+    String prefix =
+        ex instanceof JsonParseException ? "Malformed JSON. " : "Invalid request body. ";
+    exchange.getMessage().setBody(prefix + LICENSES_POST_BODY_HINT);
   }
 
   private void removeHeaders(Exchange exchange) {
