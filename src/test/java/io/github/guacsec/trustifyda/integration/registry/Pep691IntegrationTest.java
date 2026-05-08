@@ -17,17 +17,15 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,72 +34,52 @@ import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.Source;
-import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 
 public class Pep691IntegrationTest {
 
   private Pep691Integration integration;
-  private Exchange exchange;
-  private Message message;
 
   @BeforeEach
   void setUp() {
     integration = new Pep691Integration();
-    exchange = mock(Exchange.class);
-    message = mock(Message.class);
-    when(exchange.getIn()).thenReturn(message);
   }
 
   @Test
-  void skipWhenRegistryHostEmpty() {
+  void disabledWhenRegistryHostEmpty() {
     integration.registryHost = "";
-    var report = new AnalysisReport();
-    when(message.getBody()).thenReturn(report);
-
-    integration.enrichRecommendations(exchange);
+    assertFalse(integration.isEnabled());
   }
 
   @Test
-  void skipWhenRegistryHostNull() {
+  void disabledWhenRegistryHostNull() {
     integration.registryHost = null;
-    var report = new AnalysisReport();
-    when(message.getBody()).thenReturn(report);
-
-    integration.enrichRecommendations(exchange);
+    assertFalse(integration.isEnabled());
   }
 
   @Test
-  void skipWhenBodyNotAnalysisReport() {
+  void enabledWhenRegistryHostConfigured() {
     integration.registryHost = "https://registry.example.com";
-    when(message.getBody()).thenReturn("not a report");
-
-    integration.enrichRecommendations(exchange);
+    assertTrue(integration.isEnabled());
   }
 
   @Test
-  void proceedWhenNoComponentHashes() {
+  void enrichWithNoComponentHashes() {
     integration.registryHost = "https://registry.example.com";
     var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
-    when(message.getBody()).thenReturn(report);
-    when(exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class))
-        .thenReturn(
-            DependencyTree.builder()
-                .dependencies(Collections.emptyMap())
-                .componentHashes(Collections.emptyMap())
-                .build());
+    var tree =
+        DependencyTree.builder()
+            .dependencies(Collections.emptyMap())
+            .componentHashes(Collections.emptyMap())
+            .build();
 
-    integration.enrichRecommendations(exchange);
+    integration.enrich(report, tree);
 
     var dep = getFirstDep(report);
     assertNull(dep.getRecommendation());
   }
 
   private AnalysisReport buildReportWithPypiDep(String purl) {
-    return buildReportWithDep(purl);
-  }
-
-  private AnalysisReport buildReportWithDep(String purl) {
     var dep = new DependencyReport();
     dep.ref(PackageRef.builder().purl(purl).build());
 

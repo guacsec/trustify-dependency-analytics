@@ -39,7 +39,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.HttpMethod;
 
 @ApplicationScoped
-public class Pep691Integration extends EndpointRouteBuilder {
+public class Pep691Integration extends EndpointRouteBuilder implements RegistryIntegration {
 
   private static final Logger LOGGER = Logger.getLogger(Pep691Integration.class);
 
@@ -61,12 +61,18 @@ public class Pep691Integration extends EndpointRouteBuilder {
   @Inject ProducerTemplate producerTemplate;
 
   @Override
+  public boolean isEnabled() {
+    return registryHost != null && !registryHost.isBlank();
+  }
+
+  @Override
+  public void enrich(AnalysisReport report, DependencyTree tree) {
+    enrichmentService.enrichReport(report, tree, PKG_PYPI_PREFIX, this::queryRegistryAndCompare);
+  }
+
+  @Override
   public void configure() {
     // fmt:off
-    from(direct("enrichPypiRecommendations"))
-      .routeId("enrichPypiRecommendations")
-      .process(this::enrichRecommendations);
-
     from(direct("pep691Lookup"))
       .routeId("pep691Lookup")
       .circuitBreaker()
@@ -102,25 +108,6 @@ public class Pep691Integration extends EndpointRouteBuilder {
   private void handleLookupFallback(Exchange exchange) {
     exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 504);
     exchange.getMessage().setBody(null);
-  }
-
-  void enrichRecommendations(Exchange exchange) {
-    if (registryHost == null || registryHost.isBlank()) {
-      return;
-    }
-
-    var body = exchange.getIn().getBody();
-    if (!(body instanceof AnalysisReport report)) {
-      return;
-    }
-
-    DependencyTree tree =
-        exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class);
-    if (tree == null) {
-      return;
-    }
-
-    enrichmentService.enrichReport(report, tree, PKG_PYPI_PREFIX, this::queryRegistryAndCompare);
   }
 
   Optional<PackageRef> queryRegistryAndCompare(String purlRef, String sbomSha256) {
