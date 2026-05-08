@@ -1,0 +1,123 @@
+{
+  "nextPageToken": "",
+  "responses": [
+    {
+      "request": {
+        "purl": "pkg:pypi/flask@3.0.0"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "BSD-3-Clause",
+              "spdx": "BSD-3-Clause"
+            }
+          ],
+          "licenses": [
+            "BSD-3-Clause"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/pallets/flask"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://flask.palletsprojects.com/"
+            }
+          ],
+          "publishedAt": "2023-09-30T00:00:00Z",
+          "purl": "pkg:pypi/flask@3.0.0",
+          "registries": [
+            "https://pypi.org/simple/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/pallets/flask"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "flask",
+              "source": "PYPI",
+              "versionString": "3.0.0"
+            }
+          ],
+          "versionKey": {
+            "name": "flask",
+            "system": "PYPI",
+            "version": "3.0.0"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "purl": "pkg:pypi/requests@2.31.0"
+      },
+      "result": {
+        "version": {
+          "advisoryKeys": [],
+          "attestations": [],
+          "isDefault": false,
+          "isDeprecated": false,
+          "licenseDetails": [
+            {
+              "license": "Apache-2.0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": [
+            {
+              "label": "SOURCE_REPO",
+              "url": "https://github.com/psf/requests"
+            },
+            {
+              "label": "HOMEPAGE",
+              "url": "https://requests.readthedocs.io"
+            }
+          ],
+          "publishedAt": "2023-05-22T00:00:00Z",
+          "purl": "pkg:pypi/requests@2.31.0",
+          "registries": [
+            "https://pypi.org/simple/"
+          ],
+          "relatedProjects": [
+            {
+              "projectKey": {
+                "id": "github.com/psf/requests"
+              },
+              "relationProvenance": "UNVERIFIED_METADATA",
+              "relationType": "SOURCE_REPO"
+            }
+          ],
+          "slsaProvenances": [],
+          "upstreamIdentifiers": [
+            {
+              "packageName": "requests",
+              "source": "PYPI",
+              "versionString": "2.31.0"
+            }
+          ],
+          "versionKey": {
+            "name": "requests",
+            "system": "PYPI",
+            "version": "2.31.0"
+          }
+        }
+      }
+    }
+  ]
+}

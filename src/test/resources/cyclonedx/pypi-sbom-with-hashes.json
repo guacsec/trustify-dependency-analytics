@@ -1,0 +1,52 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.6",
+    "version": 1,
+    "metadata": {
+        "component": {
+            "bom-ref": "pkg:pypi/my-python-app@1.0.0",
+            "type": "application",
+            "name": "my-python-app",
+            "version": "1.0.0",
+            "purl": "pkg:pypi/my-python-app@1.0.0"
+        }
+    },
+    "components": [
+        {
+            "bom-ref": "pkg:pypi/my-python-app@1.0.0",
+            "type": "application",
+            "name": "my-python-app",
+            "version": "1.0.0",
+            "purl": "pkg:pypi/my-python-app@1.0.0"
+        },
+        {
+            "bom-ref": "pkg:pypi/requests@2.31.0",
+            "type": "library",
+            "name": "requests",
+            "version": "2.31.0",
+            "purl": "pkg:pypi/requests@2.31.0",
+            "hashes": [
+                {
+                    "alg": "SHA-256",
+                    "content": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+                }
+            ]
+        },
+        {
+            "bom-ref": "pkg:pypi/flask@3.0.0",
+            "type": "library",
+            "name": "flask",
+            "version": "3.0.0",
+            "purl": "pkg:pypi/flask@3.0.0"
+        }
+    ],
+    "dependencies": [
+        {
+            "ref": "pkg:pypi/my-python-app@1.0.0",
+            "dependsOn": [
+                "pkg:pypi/requests@2.31.0",
+                "pkg:pypi/flask@3.0.0"
+            ]
+        }
+    ]
+}

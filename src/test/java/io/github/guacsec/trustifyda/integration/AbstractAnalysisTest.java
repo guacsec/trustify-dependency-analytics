@@ -444,6 +444,12 @@ public abstract class AbstractAnalysisTest {
         "\"sourceUrl\": \"http://localhost:(\\d+)\"", "\"sourceUrl\": \"https://api.deps.dev\"");
   }
 
+  protected String replaceMockedRegistryUrl(String body) {
+    return body.replaceAll(
+        "repository_url=http%3A%2F%2Flocalhost%3A(\\d+)",
+        "repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython");
+  }
+
   protected void verifyNoInteractions() {
     verifyNoInteractionsWithTrustify();
   }
