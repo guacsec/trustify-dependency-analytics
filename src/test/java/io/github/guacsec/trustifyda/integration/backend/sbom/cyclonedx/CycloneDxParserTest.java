@@ -18,6 +18,7 @@
 package io.github.guacsec.trustifyda.integration.backend.sbom.cyclonedx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -138,6 +139,55 @@ class CycloneDxParserTest {
         assertNotNull(tree);
         assertTrue(tree.dependencies().isEmpty());
       }
+    }
+  }
+
+  /** Verifies that all hashes are extracted from CycloneDX component entries. */
+  @Test
+  void testParseHashesFromComponents() throws IOException {
+    CycloneDxParser parser = new CycloneDxParser();
+    try (InputStream input =
+        getClass().getResourceAsStream(TEST_RESOURCES_PATH + "sbom-with-hashes.json")) {
+      assertNotNull(input, "Test resource not found");
+
+      DependencyTree tree = parser.buildTree(input);
+      Map<String, Map<String, String>> hashes = tree.componentHashes();
+
+      assertNotNull(hashes);
+      assertEquals(2, hashes.size());
+
+      Map<String, String> dep1Hashes = hashes.get("pkg:maven/com.example/dep1@1.0.0");
+      assertNotNull(dep1Hashes);
+      assertEquals(1, dep1Hashes.size());
+      assertEquals(
+          "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+          dep1Hashes.get("SHA-256"));
+
+      Map<String, String> dep2Hashes = hashes.get("pkg:maven/com.example/dep2@1.0.0");
+      assertNotNull(dep2Hashes);
+      assertEquals(2, dep2Hashes.size());
+      assertEquals("d41d8cd98f00b204e9800998ecf8427e", dep2Hashes.get("MD5"));
+      assertEquals(
+          "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+          dep2Hashes.get("SHA-256"));
+
+      assertFalse(hashes.containsKey("pkg:maven/com.example/dep3@1.0.0"));
+    }
+  }
+
+  /** Verifies that parsing a SBOM without hashes produces an empty hash map without errors. */
+  @Test
+  void testParseHashesFromComponentsWithoutHashes() throws IOException {
+    CycloneDxParser parser = new CycloneDxParser();
+    try (InputStream input =
+        getClass().getResourceAsStream(TEST_RESOURCES_PATH + "valid-1.6.json")) {
+      assertNotNull(input, "Test resource not found");
+
+      DependencyTree tree = parser.buildTree(input);
+      Map<String, Map<String, String>> hashes = tree.componentHashes();
+
+      assertNotNull(hashes);
+      assertTrue(hashes.isEmpty());
     }
   }
 

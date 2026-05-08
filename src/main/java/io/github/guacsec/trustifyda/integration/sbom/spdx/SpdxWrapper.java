@@ -20,6 +20,7 @@ package io.github.guacsec.trustifyda.integration.sbom.spdx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -31,6 +32,7 @@ import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.core.TypedValue;
 import org.spdx.jacksonstore.MultiFormatStore;
 import org.spdx.library.SpdxModelFactory;
+import org.spdx.library.model.v2.Checksum;
 import org.spdx.library.model.v2.ExternalRef;
 import org.spdx.library.model.v2.SpdxConstantsCompatV2;
 import org.spdx.library.model.v2.SpdxDocument;
@@ -51,6 +53,7 @@ public class SpdxWrapper {
   private String docUri;
   private Map<PackageRef, Set<PackageRef>> relationships;
   private Set<PackageRef> startFrom = new HashSet<>();
+  private Map<String, Map<String, String>> componentHashes = new HashMap<>();
 
   static {
     SpdxModelFactory.init();
@@ -185,6 +188,7 @@ public class SpdxWrapper {
                   setStartFromPackages(pkg, validationErrors, uriToRef);
                 }
                 var pkgRef = toPackageRefCached(pkg, uriToRef);
+                extractChecksum(pkg, pkgRef);
                 for (var relationship : pkg.getRelationships()) {
                   var rType = relationship.getRelationshipType();
                   var related = relationship.getRelatedSpdxElement();
@@ -246,6 +250,21 @@ public class SpdxWrapper {
 
   public Map<PackageRef, Set<PackageRef>> getRelationships() {
     return this.relationships;
+  }
+
+  public Map<String, Map<String, String>> getComponentHashes() {
+    return this.componentHashes;
+  }
+
+  private void extractChecksum(SpdxPackage pkg, PackageRef pkgRef)
+      throws InvalidSPDXAnalysisException {
+    Map<String, String> hashes = new HashMap<>();
+    for (Checksum checksum : pkg.getChecksums()) {
+      hashes.put(checksum.getAlgorithm().toString(), checksum.getValue());
+    }
+    if (!hashes.isEmpty()) {
+      componentHashes.put(pkgRef.ref(), Collections.unmodifiableMap(hashes));
+    }
   }
 
   private boolean isRoot(String rootUri, SpdxPackage spdxPackage)

@@ -1,0 +1,70 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.6",
+    "version": 1,
+    "metadata": {
+        "component": {
+            "bom-ref": "pkg:maven/com.example/app@1.0.0",
+            "type": "application",
+            "name": "app",
+            "version": "1.0.0",
+            "purl": "pkg:maven/com.example/app@1.0.0"
+        }
+    },
+    "components": [
+        {
+            "bom-ref": "pkg:maven/com.example/app@1.0.0",
+            "type": "application",
+            "name": "app",
+            "version": "1.0.0",
+            "purl": "pkg:maven/com.example/app@1.0.0"
+        },
+        {
+            "bom-ref": "pkg:maven/com.example/dep1@1.0.0",
+            "type": "library",
+            "name": "dep1",
+            "version": "1.0.0",
+            "purl": "pkg:maven/com.example/dep1@1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-256",
+                    "content": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+                }
+            ]
+        },
+        {
+            "bom-ref": "pkg:maven/com.example/dep2@1.0.0",
+            "type": "library",
+            "name": "dep2",
+            "version": "1.0.0",
+            "purl": "pkg:maven/com.example/dep2@1.0.0",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "d41d8cd98f00b204e9800998ecf8427e"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3"
+                }
+            ]
+        },
+        {
+            "bom-ref": "pkg:maven/com.example/dep3@1.0.0",
+            "type": "library",
+            "name": "dep3",
+            "version": "1.0.0",
+            "purl": "pkg:maven/com.example/dep3@1.0.0"
+        }
+    ],
+    "dependencies": [
+        {
+            "ref": "pkg:maven/com.example/app@1.0.0",
+            "dependsOn": [
+                "pkg:maven/com.example/dep1@1.0.0",
+                "pkg:maven/com.example/dep2@1.0.0",
+                "pkg:maven/com.example/dep3@1.0.0"
+            ]
+        }
+    ]
+}
