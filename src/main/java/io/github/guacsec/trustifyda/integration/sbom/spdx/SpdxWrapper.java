@@ -20,6 +20,7 @@ package io.github.guacsec.trustifyda.integration.sbom.spdx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -262,7 +263,7 @@ public class SpdxWrapper {
       hashes.put(checksum.getAlgorithm().toString(), checksum.getValue());
     }
     if (!hashes.isEmpty()) {
-      componentHashes.put(pkgRef.ref(), hashes);
+      componentHashes.put(pkgRef.ref(), Collections.unmodifiableMap(hashes));
     }
   }
 

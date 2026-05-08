@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.sbom.cyclonedx;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -68,10 +69,12 @@ public class CycloneDxParser extends SbomParser {
               .collect(Collectors.toMap(Component::getBomRef, c -> new PackageRef(c.getPurl()))));
       for (Component c : bom.getComponents()) {
         if (c.getPurl() != null && c.getHashes() != null) {
-          Map<String, String> hashes =
-              c.getHashes().stream().collect(Collectors.toMap(Hash::getAlgorithm, Hash::getValue));
+          Map<String, String> hashes = new HashMap<>();
+          for (Hash h : c.getHashes()) {
+            hashes.put(h.getAlgorithm(), h.getValue());
+          }
           if (!hashes.isEmpty()) {
-            componentHashes.put(c.getPurl(), hashes);
+            componentHashes.put(c.getPurl(), Collections.unmodifiableMap(hashes));
           }
         }
       }
