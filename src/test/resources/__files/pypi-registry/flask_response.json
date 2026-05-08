@@ -1,0 +1,20 @@
+{
+  "meta": {"api-version": "1.1"},
+  "name": "flask",
+  "files": [
+    {
+      "filename": "flask-3.0.0-py3-none-any.whl",
+      "url": "https://packages.redhat.com/api/pulp-content/flask-3.0.0-py3-none-any.whl",
+      "hashes": {
+        "sha256": "21128f47e4e3b9d29385149c0a8a0f4d14be5e42a3371f4e8a9b6c4e4edeab39"
+      }
+    },
+    {
+      "filename": "flask-3.0.0.tar.gz",
+      "url": "https://packages.redhat.com/api/pulp-content/flask-3.0.0.tar.gz",
+      "hashes": {
+        "sha256": "7278c54e1bbff2a0b53e5c9fc729c0e35b7de9aabc6a9f7c9e1bbb3a6e3f0d9b"
+      }
+    }
+  ]
+}

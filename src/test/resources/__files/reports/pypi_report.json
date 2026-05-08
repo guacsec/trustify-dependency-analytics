@@ -12,7 +12,7 @@
                 "code": 200,
                 "message": "OK",
                 "warnings": {
-                    
+
                 }
             },
             "sources": {
@@ -27,7 +27,7 @@
                         "medium": 1,
                         "low": 0,
                         "remediations": 0,
-                        "recommendations": 0,
+                        "recommendations": 2,
                         "unscanned": 0
                     },
                     "dependencies": [
@@ -52,7 +52,7 @@
                                 }
                             ],
                             "transitive": [
-                                
+
                             ],
                             "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython",
                             "highestVulnerability": {
@@ -71,6 +71,10 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "ref": "pkg:pypi/flask@3.0.0",
+                            "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
                         }
                     ]
                 }
@@ -85,7 +89,7 @@
                 "code": 504,
                 "message": "Request timed out",
                 "warnings": {
-                    
+
                 }
             },
             "summary": {
@@ -100,7 +104,7 @@
                 "fsfLibre": 0
             },
             "packages": {
-                
+
             }
         }
     ]

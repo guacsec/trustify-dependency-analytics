@@ -119,5 +119,14 @@ public class Pep691AnalysisTest extends AbstractAnalysisTest {
                     .withStatus(200)
                     .withHeader(Exchange.CONTENT_TYPE, "application/vnd.pypi.simple.v1+json")
                     .withBodyFile("pypi-registry/requests_response.json")));
+
+    server.stubFor(
+        get(urlPathEqualTo("/flask/"))
+            .withHeader("Accept", equalTo("application/vnd.pypi.simple.v1+json"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(Exchange.CONTENT_TYPE, "application/vnd.pypi.simple.v1+json")
+                    .withBodyFile("pypi-registry/flask_response.json")));
   }
 }
