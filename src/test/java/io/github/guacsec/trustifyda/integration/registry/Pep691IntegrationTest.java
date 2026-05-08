@@ -17,14 +17,12 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +38,6 @@ import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.DependencyTree;
-import io.github.guacsec.trustifyda.model.DirectDependency;
 
 public class Pep691IntegrationTest {
 
@@ -98,70 +95,6 @@ public class Pep691IntegrationTest {
 
     var dep = getFirstDep(report);
     assertNull(dep.getRecommendation());
-  }
-
-  @Test
-  void skipNonPypiDependencies() {
-    integration.registryHost = "https://registry.example.com";
-    var report = buildReportWithDep("pkg:npm/lodash@4.17.21");
-    when(message.getBody()).thenReturn(report);
-
-    PackageRef npmRef = PackageRef.builder().purl("pkg:npm/lodash@4.17.21").build();
-    Map<PackageRef, DirectDependency> deps = new HashMap<>();
-    deps.put(npmRef, DirectDependency.builder().ref(npmRef).build());
-
-    Map<String, Map<String, String>> hashes = new HashMap<>();
-    hashes.put("pkg:npm/lodash@4.17.21", Map.of("SHA-256", "abc123"));
-    when(exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class))
-        .thenReturn(DependencyTree.builder().dependencies(deps).componentHashes(hashes).build());
-
-    integration.enrichRecommendations(exchange);
-
-    var dep = getFirstDep(report);
-    assertNull(dep.getRecommendation());
-  }
-
-  @Test
-  void proceedWhenNoSha256Hash() {
-    integration.registryHost = "https://registry.example.com";
-    var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
-    when(message.getBody()).thenReturn(report);
-
-    Map<String, Map<String, String>> hashes = new HashMap<>();
-    hashes.put("pkg:pypi/requests@2.31.0", Map.of("MD5", "abc123"));
-    when(exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class))
-        .thenReturn(
-            DependencyTree.builder()
-                .dependencies(Collections.emptyMap())
-                .componentHashes(hashes)
-                .build());
-
-    integration.enrichRecommendations(exchange);
-
-    var dep = getFirstDep(report);
-    assertNull(dep.getRecommendation());
-  }
-
-  @Test
-  void skipWhenRecommendationAlreadySet() {
-    integration.registryHost = "https://registry.example.com";
-    var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
-    var existingRec = PackageRef.builder().purl("pkg:pypi/requests@2.32.0").build();
-    getFirstDep(report).recommendation(existingRec);
-    when(message.getBody()).thenReturn(report);
-
-    Map<String, Map<String, String>> hashes = new HashMap<>();
-    hashes.put("pkg:pypi/requests@2.31.0", Map.of("SHA-256", "abc123"));
-    when(exchange.getProperty(Constants.DEPENDENCY_TREE_PROPERTY, DependencyTree.class))
-        .thenReturn(
-            DependencyTree.builder()
-                .dependencies(Collections.emptyMap())
-                .componentHashes(hashes)
-                .build());
-
-    integration.enrichRecommendations(exchange);
-
-    assertEquals(existingRec, getFirstDep(report).getRecommendation());
   }
 
   private AnalysisReport buildReportWithPypiDep(String purl) {

@@ -17,10 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -33,9 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
-import io.github.guacsec.trustifyda.api.v5.DependencyReport;
-import io.github.guacsec.trustifyda.api.v5.Remediation;
-import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.registry.Pep691Response;
@@ -51,7 +45,6 @@ public class Pep691Integration extends EndpointRouteBuilder {
 
   private static final String PEP691_ACCEPT = "application/vnd.pypi.simple.v1+json";
   private static final String PKG_PYPI_PREFIX = "pkg:pypi/";
-  private static final String HASH_ALG_SHA256 = "SHA-256";
   private static final String PEP691_URL_PROPERTY = "pep691RegistryUrl";
   private static final String PEP691_PACKAGE_PROPERTY = "pep691PackageName";
 
@@ -60,6 +53,8 @@ public class Pep691Integration extends EndpointRouteBuilder {
 
   @ConfigProperty(name = "api.pypi.registry.timeout", defaultValue = "10s")
   String timeout;
+
+  private final RegistryEnrichmentService enrichmentService = new RegistryEnrichmentService();
 
   @Inject ObjectMapper objectMapper;
 
@@ -125,121 +120,7 @@ public class Pep691Integration extends EndpointRouteBuilder {
       return;
     }
 
-    Map<String, Map<String, String>> hashes = tree.componentHashes();
-    var providers = report.getProviders();
-    if (providers == null || providers.isEmpty()) {
-      return;
-    }
-
-    Set<String> processedPurls = new HashSet<>();
-
-    for (var providerEntry : providers.entrySet()) {
-      var providerReport = providerEntry.getValue();
-      if (providerReport == null
-          || providerReport.getSources() == null
-          || providerReport.getSources().isEmpty()) {
-        continue;
-      }
-
-      for (var sourceEntry : providerReport.getSources().entrySet()) {
-        var sourceReport = sourceEntry.getValue();
-        if (sourceReport == null || sourceReport.getDependencies() == null) {
-          continue;
-        }
-
-        for (var depReport : sourceReport.getDependencies()) {
-          if (depReport == null || depReport.getRef() == null) {
-            continue;
-          }
-
-          String purlRef = depReport.getRef().ref();
-          if (purlRef == null || !purlRef.startsWith(PKG_PYPI_PREFIX)) {
-            continue;
-          }
-
-          processedPurls.add(purlRef);
-
-          if (depReport.getRecommendation() != null) {
-            continue;
-          }
-
-          Map<String, String> purlHashes = hashes.get(purlRef);
-          String sbomSha256 = (purlHashes != null) ? purlHashes.get(HASH_ALG_SHA256) : null;
-          Optional<PackageRef> recommendedRef = queryRegistryAndCompare(purlRef, sbomSha256);
-          if (recommendedRef.isEmpty()) {
-            continue;
-          }
-
-          var trustedContent = new RemediationTrustedContent().ref(recommendedRef.get());
-
-          if (depReport.getIssues() != null) {
-            depReport
-                .getIssues()
-                .forEach(
-                    issue -> issue.remediation(new Remediation().trustedContent(trustedContent)));
-          }
-
-          depReport.recommendation(recommendedRef.get());
-        }
-      }
-    }
-
-    for (PackageRef pkgRef : tree.getAll()) {
-      String purlRef = pkgRef.ref();
-      if (purlRef == null || !purlRef.startsWith(PKG_PYPI_PREFIX)) {
-        continue;
-      }
-      if (processedPurls.contains(purlRef)) {
-        continue;
-      }
-
-      Map<String, String> purlHashes = hashes.get(purlRef);
-      String sbomSha256 = (purlHashes != null) ? purlHashes.get(HASH_ALG_SHA256) : null;
-      Optional<PackageRef> recommendedRef = queryRegistryAndCompare(purlRef, sbomSha256);
-      if (recommendedRef.isEmpty()) {
-        continue;
-      }
-
-      var depReport = new DependencyReport().ref(pkgRef).recommendation(recommendedRef.get());
-
-      for (var providerEntry : providers.entrySet()) {
-        var providerReport = providerEntry.getValue();
-        if (providerReport == null
-            || providerReport.getSources() == null
-            || providerReport.getSources().isEmpty()) {
-          continue;
-        }
-        for (var sourceEntry : providerReport.getSources().entrySet()) {
-          var sourceReport = sourceEntry.getValue();
-          if (sourceReport != null) {
-            sourceReport.addDependenciesItem(depReport);
-            break;
-          }
-        }
-        break;
-      }
-    }
-
-    for (var providerEntry : providers.entrySet()) {
-      var providerReport = providerEntry.getValue();
-      if (providerReport == null || providerReport.getSources() == null) {
-        continue;
-      }
-      for (var sourceEntry : providerReport.getSources().entrySet()) {
-        var sourceReport = sourceEntry.getValue();
-        if (sourceReport == null
-            || sourceReport.getDependencies() == null
-            || sourceReport.getSummary() == null) {
-          continue;
-        }
-        int recCount =
-            (int)
-                sourceReport.getDependencies().stream()
-                    .filter(d -> d.getRecommendation() != null)
-                    .count();
-        sourceReport.getSummary().setRecommendations(recCount);
-      }
-    }
+    enrichmentService.enrichReport(report, tree, PKG_PYPI_PREFIX, this::queryRegistryAndCompare);
   }
 
   Optional<PackageRef> queryRegistryAndCompare(String purlRef, String sbomSha256) {
