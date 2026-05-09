@@ -48,8 +48,8 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
   private static final String PEP691_URL_PROPERTY = "pep691RegistryUrl";
   private static final String PEP691_PACKAGE_PROPERTY = "pep691PackageName";
 
-  @ConfigProperty(name = "api.pypi.registry.host", defaultValue = "")
-  String registryHost;
+  @ConfigProperty(name = "api.pypi.registry.host")
+  Optional<String> registryHost;
 
   @ConfigProperty(name = "api.pypi.registry.timeout", defaultValue = "10s")
   String timeout;
@@ -62,7 +62,7 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
 
   @Override
   public boolean isEnabled() {
-    return registryHost != null && !registryHost.isBlank();
+    return registryHost.isPresent() && !registryHost.get().isBlank();
   }
 
   @Override
@@ -120,7 +120,7 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
       }
 
       String normalizedName = name.toLowerCase().replace("-", "_").replace(".", "_");
-      String baseUrl = registryHost.replaceAll("/+$", "");
+      String baseUrl = registryHost.get().replaceAll("/+$", "");
 
       Exchange response =
           producerTemplate.send(

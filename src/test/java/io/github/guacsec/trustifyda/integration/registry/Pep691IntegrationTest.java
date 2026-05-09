@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,25 +48,25 @@ public class Pep691IntegrationTest {
 
   @Test
   void disabledWhenRegistryHostEmpty() {
-    integration.registryHost = "";
+    integration.registryHost = Optional.of("");
     assertFalse(integration.isEnabled());
   }
 
   @Test
-  void disabledWhenRegistryHostNull() {
-    integration.registryHost = null;
+  void disabledWhenRegistryHostAbsent() {
+    integration.registryHost = Optional.empty();
     assertFalse(integration.isEnabled());
   }
 
   @Test
   void enabledWhenRegistryHostConfigured() {
-    integration.registryHost = "https://registry.example.com";
+    integration.registryHost = Optional.of("https://registry.example.com");
     assertTrue(integration.isEnabled());
   }
 
   @Test
   void enrichWithNoComponentHashes() {
-    integration.registryHost = "https://registry.example.com";
+    integration.registryHost = Optional.of("https://registry.example.com");
     var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
     var tree =
         DependencyTree.builder()
