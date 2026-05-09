@@ -17,18 +17,32 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
@@ -36,6 +50,7 @@ import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.model.DependencyTree;
+import io.github.guacsec.trustifyda.model.registry.Pep691Response;
 
 public class Pep691IntegrationTest {
 
@@ -93,6 +108,43 @@ public class Pep691IntegrationTest {
     var report = new AnalysisReport();
     report.providers(Map.of("provider1", providerReport));
     return report;
+  }
+
+  /** Verifies that registry URLs with special characters are URL-encoded in the PURL qualifier. */
+  @Test
+  void queryRegistryAndCompareEncodesRepositoryUrl() throws Exception {
+    // Given a registry URL with special characters
+    String registryUrl = "https://registry.example.com/path?token=abc&flag=true";
+    integration.registryHost = Optional.of(registryUrl);
+    integration.producerTemplate = mock(ProducerTemplate.class);
+    integration.objectMapper = mock(ObjectMapper.class);
+
+    Exchange responseExchange = mock(Exchange.class);
+    Message responseMessage = mock(Message.class);
+    when(responseExchange.getMessage()).thenReturn(responseMessage);
+    when(responseMessage.getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class)).thenReturn(200);
+    when(responseMessage.getBody(String.class)).thenReturn("{}");
+    when(integration.producerTemplate.send(anyString(), any(Processor.class)))
+        .thenReturn(responseExchange);
+
+    Pep691Response.FileInfo fileInfo =
+        new Pep691Response.FileInfo(
+            "requests-2.31.0.tar.gz",
+            "https://files.example.com/requests-2.31.0.tar.gz",
+            Map.of("sha256", "registrysha256"));
+    Pep691Response pep691Response = new Pep691Response("requests", List.of(fileInfo));
+    when(integration.objectMapper.readValue(anyString(), eq(Pep691Response.class)))
+        .thenReturn(pep691Response);
+
+    // When querying the registry with a non-matching hash
+    Optional<PackageRef> result =
+        integration.queryRegistryAndCompare("pkg:pypi/requests@2.31.0", "sbomsha256");
+
+    // Then the PURL should contain the URL-encoded registry URL
+    assertTrue(result.isPresent());
+    String expectedEncodedUrl = URLEncoder.encode(registryUrl, StandardCharsets.UTF_8);
+    String expectedPurl = "pkg:pypi/requests@2.31.0?repository_url=" + expectedEncodedUrl;
+    assertEquals(expectedPurl, result.get().purl().toString());
   }
 
   private DependencyReport getFirstDep(AnalysisReport report) {

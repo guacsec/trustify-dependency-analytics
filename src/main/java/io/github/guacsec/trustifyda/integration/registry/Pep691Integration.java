@@ -17,6 +17,8 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.camel.Exchange;
@@ -160,7 +162,13 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
           }
           return Optional.of(
               PackageRef.builder()
-                  .purl(PKG_PYPI_PREFIX + name + "@" + version + "?repository_url=" + baseUrl)
+                  .purl(
+                      PKG_PYPI_PREFIX
+                          + name
+                          + "@"
+                          + version
+                          + "?repository_url="
+                          + URLEncoder.encode(baseUrl, StandardCharsets.UTF_8))
                   .build());
         }
       }
