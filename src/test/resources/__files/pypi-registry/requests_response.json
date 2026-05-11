@@ -1,0 +1,20 @@
+{
+  "meta": {"api-version": "1.1"},
+  "name": "requests",
+  "files": [
+    {
+      "filename": "requests-2.31.0-py3-none-any.whl",
+      "url": "https://packages.redhat.com/api/pulp-content/requests-2.31.0-py3-none-any.whl",
+      "hashes": {
+        "sha256": "5c1ba4cdf158728aead706c29999090cafc6c08a7261d0884f203f0c6628db08"
+      }
+    },
+    {
+      "filename": "requests-2.31.0.tar.gz",
+      "url": "https://packages.redhat.com/api/pulp-content/requests-2.31.0.tar.gz",
+      "hashes": {
+        "sha256": "30237cd9fffe9312aa27e9750d463f7fae71dd3671bf4db5e3a5d65f5e2e854d"
+      }
+    }
+  ]
+}

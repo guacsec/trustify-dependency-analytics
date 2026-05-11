@@ -1,0 +1,6 @@
+{
+  "purls": [
+    "pkg:pypi/flask@3.0.0",
+    "pkg:pypi/requests@2.31.0"
+  ]
+}

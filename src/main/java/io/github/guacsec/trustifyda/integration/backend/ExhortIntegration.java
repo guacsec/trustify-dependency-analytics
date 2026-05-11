@@ -218,6 +218,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .process(this::processAnalysisRequest)
       .process(monitoringProcessor::processOriginalRequest)
       .to(direct("analyzeSbom"))
+      .to(direct("enrichTrustedLibraries"))
       .to(direct("report"))
       .to(direct("postProcessAnalysisRequest"));
 

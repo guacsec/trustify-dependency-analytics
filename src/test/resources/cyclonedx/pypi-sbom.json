@@ -11,8 +11,8 @@
 		"type": "library",
 		"bom-ref": "d574b448-4022-4dd8-9612-e6296d717e7f",
 		"name": "amqp",
-		"version": "2.6.1",
-		"purl": "pkg:pypi/amqp@2.6.1"
+		"version": "5.3.1",
+		"purl": "pkg:pypi/amqp@5.3.1"
 	}, {
 		"type": "library",
 		"bom-ref": "82565562-7694-473b-a0ff-631faf77d488",
