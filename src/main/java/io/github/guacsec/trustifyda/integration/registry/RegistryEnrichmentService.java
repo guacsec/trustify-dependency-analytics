@@ -17,6 +17,8 @@
 
 package io.github.guacsec.trustifyda.integration.registry;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,8 @@ import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
+import io.github.guacsec.trustifyda.api.v5.Source;
+import io.github.guacsec.trustifyda.api.v5.SourceSummary;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 
 class RegistryEnrichmentService {
@@ -141,10 +145,17 @@ class RegistryEnrichmentService {
 
       for (var providerEntry : providers.entrySet()) {
         var providerReport = providerEntry.getValue();
-        if (providerReport == null
-            || providerReport.getSources() == null
-            || providerReport.getSources().isEmpty()) {
+        if (providerReport == null) {
           continue;
+        }
+        if (providerReport.getSources() == null) {
+          providerReport.sources(new HashMap<>());
+        }
+        if (providerReport.getSources().isEmpty()) {
+          var defaultSource = new Source();
+          defaultSource.dependencies(new ArrayList<>());
+          defaultSource.summary(new SourceSummary());
+          providerReport.getSources().put(providerEntry.getKey(), defaultSource);
         }
         for (var sourceEntry : providerReport.getSources().entrySet()) {
           var sourceReport = sourceEntry.getValue();

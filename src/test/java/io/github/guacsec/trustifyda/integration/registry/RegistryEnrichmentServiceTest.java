@@ -18,6 +18,7 @@
 package io.github.guacsec.trustifyda.integration.registry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -209,6 +210,37 @@ public class RegistryEnrichmentServiceTest {
     service.enrichReport(report, tree, PKG_PYPI_PREFIX, capturingQuery);
 
     assertEquals("expected-hash", capturedHash[0]);
+  }
+
+  @Test
+  void enrichCreatesSourceWhenProvidersHaveEmptySources() {
+    var providerReport = new ProviderReport();
+    providerReport.sources(new HashMap<>());
+    var report = new AnalysisReport();
+    report.providers(new HashMap<>(Map.of("provider1", providerReport)));
+
+    var tree = buildTree("pkg:pypi/amqp@5.3.1", Map.of("SHA-256", "abc123"));
+
+    service.enrichReport(report, tree, PKG_PYPI_PREFIX, alwaysRecommend);
+
+    assertFalse(providerReport.getSources().isEmpty());
+    var deps = providerReport.getSources().values().iterator().next().getDependencies();
+    assertEquals(1, deps.size());
+    assertNotNull(deps.get(0).getRecommendation());
+  }
+
+  @Test
+  void enrichCreatesSourceWhenSourcesIsNull() {
+    var providerReport = new ProviderReport();
+    var report = new AnalysisReport();
+    report.providers(new HashMap<>(Map.of("provider1", providerReport)));
+
+    var tree = buildTree("pkg:pypi/amqp@5.3.1", Map.of("SHA-256", "abc123"));
+
+    service.enrichReport(report, tree, PKG_PYPI_PREFIX, alwaysRecommend);
+
+    assertNotNull(providerReport.getSources());
+    assertFalse(providerReport.getSources().isEmpty());
   }
 
   private AnalysisReport buildReportWithPypiDep(String purl) {
