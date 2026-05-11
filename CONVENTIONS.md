@@ -30,11 +30,12 @@
 ## Naming Conventions
 
 - **Packages**: `io.github.guacsec.trustifyda.<feature>` (domain-driven)
-  - Subpackages: `integration.providers`, `integration.licenses`, `integration.backend`, `integration.sbom`
+  - Subpackages: `integration.providers`, `integration.licenses`, `integration.backend`, `integration.sbom`, `integration.registry`
 - **Classes**: PascalCase
   - Services: `*Service` (`ModelCardService`, `CacheService`, `SpdxLicenseService`)
   - Repositories: `*Repository` (`ModelCardRepository`, `GuardrailRepository`)
-  - Route Builders: `*Integration` (`ExhortIntegration`, `LicensesIntegration`)
+  - Route Builders: `*Integration` (`ExhortIntegration`, `LicensesIntegration`, `Pep691Integration`)
+  - Enrichment Services: `*EnrichmentService` — stateless helpers instantiated directly, not CDI-managed (e.g., `RegistryEnrichmentService`)
   - Exceptions: `*Exception` (`DetailedException`, `SbomValidationException`)
   - Utility: Private constructor, `final` class (e.g., `ExceptionUtils`)
 - **Methods**: camelCase, verb-first (`get*`, `find*`, `process*`, `validate*`, `is*`)
@@ -57,6 +58,7 @@ src/main/java/io/github/guacsec/trustifyda/
 │   ├── providers/                  # Vulnerability providers
 │   │   └── trustify/
 │   ├── report/                     # Report generation
+│   ├── registry/                   # Ecosystem registry integrations (PEP 691, etc.)
 │   ├── sbom/                       # SBOM parsing
 │   │   ├── cyclonedx/
 │   │   └── spdx/
@@ -64,6 +66,7 @@ src/main/java/io/github/guacsec/trustifyda/
 ├── model/                          # Domain models
 │   ├── trustify/
 │   ├── modelcards/
+│   ├── registry/                   # Registry response records (Pep691Response, etc.)
 │   └── licenses/
 ├── modelcards/                     # Model card service layer
 ├── monitoring/                     # Sentry, observability
@@ -87,6 +90,53 @@ ui/                                 # React frontend for HTML report
 - Feature/capability-based organization, not layered
 - Integration routes separated from business logic
 
+## Configuration Properties
+
+- **Required properties**: Use plain `String` or typed field. Quarkus throws `DeploymentException` at startup if the value is missing.
+- **Optional properties**: Use `Optional<String>` **without** `defaultValue`. This allows the application to start when the environment variable is unset. Do **not** use `String` with `defaultValue = ""` — it prevents distinguishing "unconfigured" from "explicitly empty". Example:
+  ```java
+  @ConfigProperty(name = "api.pypi.registry.host")
+  Optional<String> registryHost;
+  ```
+  Check with `registryHost.isPresent() && !registryHost.get().isBlank()`.
+- **Timeout properties**: Use `String` type with a duration suffix (e.g., `"10s"`), passed to Camel fault tolerance configuration.
+
+## CDI Extensibility Pattern
+
+When a feature needs to support multiple ecosystem implementations (e.g., registry lookups for pypi, maven, npm), use CDI `Instance<T>` discovery:
+
+1. **Define a package-private interface** (not public) with `isEnabled()` and the operation method:
+   ```java
+   interface RegistryIntegration {
+       boolean isEnabled();
+       void enrich(AnalysisReport report, DependencyTree tree);
+   }
+   ```
+2. **Implement per-ecosystem** as `@ApplicationScoped` beans extending `EndpointRouteBuilder` and implementing the interface. Each implementation owns its own Camel routes and config properties.
+3. **Orchestrate via `Instance<T>`** in a single orchestrator class that iterates all discovered implementations, calls only enabled ones, and isolates exceptions:
+   ```java
+   @Inject Instance<RegistryIntegration> registryIntegrations;
+   ```
+4. **Keep Camel concerns out of the interface** — the interface methods accept domain objects (`AnalysisReport`, `DependencyTree`), not `Exchange`. The orchestrator handles Exchange extraction.
+5. **Run sequentially** — enrichment services mutate shared report structures that are not thread-safe.
+6. **Adding a new ecosystem** requires only one new class implementing the interface. No changes to the orchestrator or main route.
+
+## Stateless Helper Services
+
+For reusable business logic shared across multiple CDI beans (e.g., report enrichment), use package-private stateless classes instantiated directly (not CDI-managed):
+
+```java
+class RegistryEnrichmentService {
+    void enrichReport(AnalysisReport report, DependencyTree tree,
+                      String packagePrefix,
+                      BiFunction<String, String, Optional<PackageRef>> registryQuery) { ... }
+}
+```
+
+Instantiate in the field initializer of the owning bean: `private final RegistryEnrichmentService enrichmentService = new RegistryEnrichmentService();`
+
+Use this pattern when the helper has no injected dependencies and serves as a pure function container. If the helper needs CDI injection, make it `@ApplicationScoped` instead.
+
 ## Error Handling
 
 - **Exception hierarchy**:
@@ -99,6 +149,15 @@ ui/                                 # React frontend for HTML report
 - **Error responses**: `text/plain` for validation errors, JSON for complex errors, all include `ex-request-id` header
 - **Utilities**: `ExceptionUtils.findInChain()`, `ExceptionUtils.getLongestMessage()`
 
+## Camel Integration Patterns
+
+- **Circuit breaker**: Use MicroProfile Fault Tolerance via Camel for external HTTP calls. Configure `timeoutEnabled(true)` and `timeoutDuration()` from a config property.
+- **Fallback handling**: Define `.onFallback().process(this::handleLookupFallback)` to return a safe default (e.g., 504 status, null body) when a circuit breaker trips.
+- **HTTP header cleanup**: Before making outbound HTTP calls, remove stale headers (`HTTP_RAW_QUERY`, `HTTP_QUERY`, `HTTP_URI`, `HTTP_PATH`, `HTTP_HOST`, `ACCEPT_ENCODING`, `CONTENT_TYPE`) to prevent header leakage between requests.
+- **Route naming**: Route IDs must match the method/direct endpoint name (e.g., `direct("pep691Lookup")` → `.routeId("pep691Lookup")`).
+- **Dynamic URLs**: Use `.toD("${exchangeProperty.propertyName}?throwExceptionOnFailure=false")` for URLs resolved at runtime from exchange properties.
+- **Single entry point**: The main analysis route (`ExhortIntegration`) calls `direct:enrichTrustedLibraries` as a single entry point. The orchestrator (`TrustedLibrariesIntegration`) discovers and runs all registry integrations. Never add ecosystem-specific routes directly to the main analysis route.
+
 ## Testing Conventions
 
 - **Frameworks**: JUnit 5 (Jupiter), Quarkus Test, Mockito (via `quarkus-junit5-mockito`)
@@ -109,8 +168,18 @@ ui/                                 # React frontend for HTML report
 - **Custom extensions**: `WiremockExtension`, `OidcWiremockExtension`, `@InjectWireMock`
 - **REST Assured pattern**: `given().header(...).body(...).when().post(...).then().assertThat().statusCode(...)`
 - **Cache testing**: Two-request pattern to verify cache hits; `server.resetRequests()` between tests
-- **Test data**: JSON fixtures in `src/test/resources/{format}/`
+- **Test data**: JSON fixtures in `src/test/resources/{format}/` (e.g., `pypi-registry/`, `depsdev/`, `trustify/`, `reports/`)
 - **Assertions**: JUnit static imports + Hamcrest matchers
+- **Unit testing CDI beans**: For non-Quarkus unit tests, instantiate beans directly and set `@Inject`/`@ConfigProperty` fields manually (package-private visibility). Mock CDI `Instance<T>` with Mockito.
+- **Unit testing Camel routes**: For route builder tests that don't need full Camel context, test the `process()` methods directly by constructing mock `Exchange` and `Message` objects.
+- **Integration testing with WireMock**: Register WireMock stubs for external registries in test setup. Use `AbstractAnalysisTest` helpers like `replaceMockedRegistryUrl()` to inject WireMock URLs into test fixtures.
+
+## PURL Construction
+
+When constructing Package URL (PURL) strings with qualifiers:
+- **URL-encode qualifier values** using `URLEncoder.encode(value, StandardCharsets.UTF_8)`, especially for `repository_url` which contains full URLs with `://` and path separators.
+- **Use `PackageRef.builder().purl(...)` pattern** for constructing PURL-based references.
+- **Normalize package names** for registry lookups: lowercase, replace `-` and `.` with `_` (PEP 503/PEP 691 normalization for pypi).
 
 ## Commit Messages
 
