@@ -241,6 +241,10 @@ public class RegistryEnrichmentServiceTest {
 
     assertNotNull(providerReport.getSources());
     assertFalse(providerReport.getSources().isEmpty());
+
+    var deps = providerReport.getSources().values().iterator().next().getDependencies();
+    assertEquals(1, deps.size());
+    assertNotNull(deps.get(0).getRecommendation());
   }
 
   private AnalysisReport buildReportWithPypiDep(String purl) {
