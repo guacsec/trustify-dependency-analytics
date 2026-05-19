@@ -41,13 +41,13 @@ function countMoreRestrictiveThan(packages: { [key: string]: LicensePackageRepor
   let count = 0;
   const projectRank = getCategoryRank(projectCategory);
   for (const p of Object.values(packages)) {
+    if (!p.concluded) continue;
     const packageRank = getCategoryRank(p.concluded.category);
     if (packageRank < projectRank) {
       count++;
     }
   }
   return count;
- 
 }
 
 export const SummaryCard = ({ report, isReportMap, purl }: { report: Report; isReportMap?: boolean; purl?: string }) => {
