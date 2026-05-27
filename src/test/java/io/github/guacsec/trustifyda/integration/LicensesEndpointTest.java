@@ -206,4 +206,43 @@ public class LicensesEndpointTest extends AbstractAnalysisTest {
     assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
     verifyLicensesRequest(0);
   }
+
+  /** Verifies that an empty string body returns 400 instead of 500. */
+  @Test
+  public void postLicenses_emptyBody_returnsBadRequest() {
+    String body =
+        given()
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+            .body("")
+            .when()
+            .post("/api/v5/licenses")
+            .then()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+            .contentType(MediaType.TEXT_PLAIN)
+            .extract()
+            .body()
+            .asString();
+
+    assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
+    verifyLicensesRequest(0);
+  }
+
+  /** Verifies that a request with no body at all returns 400 instead of 500. */
+  @Test
+  public void postLicenses_nullBody_returnsBadRequest() {
+    String body =
+        given()
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+            .when()
+            .post("/api/v5/licenses")
+            .then()
+            .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+            .contentType(MediaType.TEXT_PLAIN)
+            .extract()
+            .body()
+            .asString();
+
+    assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
+    verifyLicensesRequest(0);
+  }
 }
