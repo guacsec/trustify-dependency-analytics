@@ -124,8 +124,8 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .routeId("getLicensesFromEndpoint")
       .choice()
         .when(e -> {
-          Object b = e.getMessage().getBody();
-          return b == null || b.toString().isBlank();
+          byte[] b = e.getMessage().getBody(byte[].class);
+          return b == null || b.length == 0;
         })
           .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.BAD_REQUEST.getStatusCode()))
           .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
