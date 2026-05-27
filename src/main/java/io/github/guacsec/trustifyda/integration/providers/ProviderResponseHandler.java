@@ -409,14 +409,22 @@ public abstract class ProviderResponseHandler {
         && !transitiveItem.issues().isEmpty()) {
       transitiveIssues =
           transitiveItem.issues().stream()
-              .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+              .sorted(
+                  Comparator.comparing(
+                          Issue::getCvssScore, Comparator.nullsFirst(Comparator.naturalOrder()))
+                      .reversed())
               .collect(Collectors.toList());
     }
     var highestTransitive = transitiveIssues.stream().findFirst();
     if (highestTransitive.isPresent()) {
+      var currentScore =
+          directReport.getHighestVulnerability() == null
+              ? null
+              : directReport.getHighestVulnerability().getCvssScore();
+      var transitiveScore = highestTransitive.get().getCvssScore();
       if (directReport.getHighestVulnerability() == null
-          || directReport.getHighestVulnerability().getCvssScore()
-              < highestTransitive.get().getCvssScore()) {
+          || (transitiveScore != null
+              && (currentScore == null || currentScore < transitiveScore))) {
         directReport.setHighestVulnerability(highestTransitive.get());
       }
     }
@@ -442,7 +450,10 @@ public abstract class ProviderResponseHandler {
     if (packageItem != null && packageItem.issues() != null && !packageItem.issues().isEmpty()) {
       var issues =
           packageItem.issues().stream()
-              .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+              .sorted(
+                  Comparator.comparing(
+                          Issue::getCvssScore, Comparator.nullsFirst(Comparator.naturalOrder()))
+                      .reversed())
               .collect(Collectors.toList());
       directReport.issues(issues);
       directReport.setHighestVulnerability(issues.stream().findFirst().orElse(null));
