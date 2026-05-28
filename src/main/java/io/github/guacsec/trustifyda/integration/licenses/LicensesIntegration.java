@@ -122,6 +122,17 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
     from(direct("getLicensesFromEndpoint"))
       .routeId("getLicensesFromEndpoint")
+      .choice()
+        .when(e -> {
+          byte[] b = e.getMessage().getBody(byte[].class);
+          return b == null || b.length == 0;
+        })
+          .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.BAD_REQUEST.getStatusCode()))
+          .setHeader(Exchange.CONTENT_TYPE, constant(MediaType.TEXT_PLAIN))
+          .setHeader(Constants.EXHORT_REQUEST_ID_HEADER, exchangeProperty(Constants.EXHORT_REQUEST_ID_HEADER))
+          .setBody(constant(LICENSES_POST_INVALID_BODY_MESSAGE))
+          .stop()
+      .end()
       .unmarshal().json(LicensesRequest.class)
       .transform(method(requestBuilder, "fromEndpoint"))
       .to(direct("getLicenses"))
