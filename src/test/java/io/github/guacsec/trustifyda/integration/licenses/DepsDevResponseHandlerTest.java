@@ -458,6 +458,70 @@ class DepsDevResponseHandlerTest {
     assertEquals(LicenseCategory.UNKNOWN, packageResult.getEvidence().get(0).getCategory());
   }
 
+  /** Verifies that non-standard SPDX values preserve the original license name from deps.dev. */
+  @Test
+  void testHandleResponse_nonStandardLicense_preservesOriginalName() {
+    String jsonResponse =
+        """
+        {
+          "responses": [
+            {
+              "request": {"purl": "pkg:maven/org.example/test@1.0"},
+              "result": {
+                "version": {
+                  "licenseDetails": [
+                    {"license": "GPL Version 2.0", "spdx": "non-standard"}
+                  ]
+                }
+              }
+            }
+          ]
+        }
+        """;
+
+    // When
+    Exchange exchange = buildExchange(jsonResponse);
+    handler.handleResponse(exchange);
+
+    // Then
+    LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
+    var packageResult = result.packages().get("pkg:maven/org.example/test@1.0");
+    assertNotNull(packageResult);
+    assertEquals(1, packageResult.getEvidence().size());
+    var licenseInfo = packageResult.getEvidence().get(0);
+    assertEquals(LicenseCategory.UNKNOWN, licenseInfo.getCategory());
+    assertEquals("GPL Version 2.0", licenseInfo.getName());
+    assertEquals("non-standard", licenseInfo.getIdentifiers().get(0).getId());
+    assertEquals("GPL Version 2.0", licenseInfo.getIdentifiers().get(0).getName());
+  }
+
+  /** Verifies that non-standard licenses preserve name in maven_response.json fixture. */
+  @Test
+  void testHandleResponse_mavenFixture_nonStandardLicenseHasOriginalName() throws IOException {
+    byte[] jsonResponseBytes;
+    try (var in =
+        getClass().getClassLoader().getResourceAsStream("__files/depsdev/maven_response.json")) {
+      jsonResponseBytes = in.readAllBytes();
+    }
+
+    Exchange exchange = buildExchange(new String(jsonResponseBytes));
+    handler.handleResponse(exchange);
+
+    LicenseSplitResult result = exchange.getMessage().getBody(LicenseSplitResult.class);
+
+    // jakarta.interceptor-api has "EPL 2.0" as license with "non-standard" spdx
+    var interceptorResult =
+        result.packages().get("pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5");
+    assertNotNull(interceptorResult);
+    var nonStandardEvidence =
+        interceptorResult.getEvidence().stream()
+            .filter(e -> "non-standard".equals(e.getExpression()))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("non-standard license not found"));
+    assertEquals("EPL 2.0", nonStandardEvidence.getName());
+    assertEquals("EPL 2.0", nonStandardEvidence.getIdentifiers().get(0).getName());
+  }
+
   private Exchange buildExchange(String body) {
     Exchange exchange = mock(Exchange.class);
     Message inMessage = mock(Message.class);

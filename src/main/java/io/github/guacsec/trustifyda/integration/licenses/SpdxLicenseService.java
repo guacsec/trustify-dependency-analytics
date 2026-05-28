@@ -163,6 +163,16 @@ public class SpdxLicenseService {
   }
 
   public LicenseInfo fromLicenseId(String expression, String sourceId, String sourceUrl) {
+    return fromLicenseId(expression, sourceId, sourceUrl, null);
+  }
+
+  /**
+   * Resolves a license expression to a {@link LicenseInfo} with identifiers, category, and
+   * human-readable name. When the expression is not a valid SPDX identifier (e.g., "non-standard"),
+   * {@code originalName} is used as the display name if provided.
+   */
+  public LicenseInfo fromLicenseId(
+      String expression, String sourceId, String sourceUrl, String originalName) {
     if (expression == null || expression.isBlank()) {
       throw new NotFoundException("License expression is required");
     }
@@ -177,10 +187,17 @@ public class SpdxLicenseService {
     } catch (InvalidSPDXAnalysisException e) {
       if (!trimmed.contains(" AND ") && !trimmed.contains(" OR ") && !trimmed.contains(" WITH ")) {
         LicenseCategory category = LicenseCategory.UNKNOWN;
+        String displayName =
+            (originalName != null && !originalName.isBlank()) ? originalName : trimmed;
         return new LicenseInfo()
-            .identifiers(List.of(toUnknownLicenseIdentifier(trimmed)))
+            .identifiers(
+                List.of(
+                    new LicenseIdentifier()
+                        .id(trimmed)
+                        .name(displayName)
+                        .category(LicenseCategory.UNKNOWN)))
             .category(category)
-            .name(trimmed)
+            .name(displayName)
             .source(sourceId == null ? SPDX_SOURCE : sourceId)
             .sourceUrl(sourceUrl == null ? SPDX_SOURCE_URL : sourceUrl)
             .expression(trimmed);
