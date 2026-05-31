@@ -971,12 +971,12 @@
               "identifiers": [
                 {
                   "id": "non-standard",
-                  "name": "non-standard",
+                  "name": "EPL 2.0",
                   "category": "UNKNOWN"
                 }
               ],
               "expression": "non-standard",
-              "name": "non-standard",
+              "name": "EPL 2.0",
               "category": "UNKNOWN",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
@@ -1099,12 +1099,12 @@
               "identifiers": [
                 {
                   "id": "non-standard",
-                  "name": "non-standard",
+                  "name": "EPL 2.0",
                   "category": "UNKNOWN"
                 }
               ],
               "expression": "non-standard",
-              "name": "non-standard",
+              "name": "EPL 2.0",
               "category": "UNKNOWN",
               "source": "deps.dev",
               "sourceUrl": "https://api.deps.dev"
