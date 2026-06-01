@@ -84,8 +84,14 @@ public class DepsDevResponseHandler {
                 licensesNode.forEach(
                     licenseNode -> {
                       var spdx = licenseNode.get("spdx").asText();
+                      var licenseField = licenseNode.get("license");
+                      var license =
+                          licenseField != null && !licenseField.isNull()
+                              ? licenseField.asText()
+                              : null;
                       var info =
-                          spdxLicenseService.fromLicenseId(spdx, DEPS_DEV_SOURCE, depsDevHost);
+                          spdxLicenseService.fromLicenseId(
+                              spdx, DEPS_DEV_SOURCE, depsDevHost, license);
                       infos.add(info);
                     });
               }

@@ -416,6 +416,36 @@ public class SpdxLicenseServiceTest {
     assertThrows(NotFoundException.class, () -> service.fromLicenseId("   ", null, null));
   }
 
+  /** When SPDX value is "non-standard", the original license name is preserved in name fields. */
+  @Test
+  void testFromLicenseId_nonStandard_preservesOriginalName() {
+    LicenseInfo info = service.fromLicenseId("non-standard", null, null, "GPL Version 2.0");
+    assertEquals(LicenseCategory.UNKNOWN, info.getCategory());
+    assertEquals("GPL Version 2.0", info.getName());
+    assertEquals(1, info.getIdentifiers().size());
+    assertEquals("non-standard", info.getIdentifiers().get(0).getId());
+    assertEquals("GPL Version 2.0", info.getIdentifiers().get(0).getName());
+  }
+
+  /** When SPDX value is "non-standard" and no original name is provided, the SPDX value is used. */
+  @Test
+  void testFromLicenseId_nonStandard_fallsBackToSpdxValue() {
+    LicenseInfo info = service.fromLicenseId("non-standard", null, null, null);
+    assertEquals(LicenseCategory.UNKNOWN, info.getCategory());
+    assertEquals("non-standard", info.getName());
+    assertEquals("non-standard", info.getIdentifiers().get(0).getName());
+  }
+
+  /** When SPDX value is a valid identifier, the original name parameter is ignored. */
+  @Test
+  void testFromLicenseId_validSpdx_ignoresOriginalName() {
+    LicenseInfo info = service.fromLicenseId("MIT", null, null, "Some Other Name");
+    assertEquals(LicenseCategory.PERMISSIVE, info.getCategory());
+    assertEquals("MIT", info.getIdentifiers().get(0).getId());
+    // Name comes from SPDX library, not the original name parameter
+    assertNotNull(info.getName());
+  }
+
   /**
    * SPDX-listed license texts (popular ids) resolve to the expected id and policy category.
    * Fixtures are from <a
