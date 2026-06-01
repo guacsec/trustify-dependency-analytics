@@ -30,6 +30,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -337,7 +338,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
                           throw new SbomValidationException(
                               "Failed to parse SBOM " + parseEx.getMessage(), parseEx);
                         }
-                      }));
+                      },
+                      (a, b) -> a,
+                      LinkedHashMap::new));
       exchange.getIn().setBody(trees);
     } catch (DetailedException e) {
       throw e;
@@ -433,7 +436,11 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
   public Map<String, AnalysisReport> transformBatchAnalysisReportList(
       @Body List<Map.Entry<String, AnalysisReport>> reports) {
-    return reports.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return reports.stream()
+        .sorted(Map.Entry.comparingByKey())
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
   }
 
   private void setProviderConfiguration(Exchange exchange) {
