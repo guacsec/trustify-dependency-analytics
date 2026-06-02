@@ -111,7 +111,9 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       .routeId("getLicense")
       .process(this::removeHeaders)
       .setBody(header("licenseId"))
-      .transform(method(spdxLicenseService, "fromLicenseId"))
+      .process(exchange -> exchange.getMessage().setBody(
+          spdxLicenseService.fromLicenseId(
+              exchange.getMessage().getBody(String.class), null, null)))
       .marshal().json();
 
     from(direct("identifyLicense"))
