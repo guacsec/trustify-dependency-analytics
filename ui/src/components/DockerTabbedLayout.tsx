@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {Grid, GridItem, PageSection, PageSectionVariants, Tab, Tabs, TabTitleText,} from '@patternfly/react-core';
 import {SummaryCard} from '../components/SummaryCard';
 import {TabbedLayout} from "../components/TabbedLayout";
@@ -8,10 +8,24 @@ import {constructImageName} from '../utils/utils';
 
 export const DockerTabbedLayout = ({report}: { report: ReportMap }) => {
 
-  const [activeTabKey, setActiveTabKey] = React.useState<string | number>(Object.keys(report)[0] || '');
+  const sortedEntries = useMemo(
+    () => Object.entries(report).sort(([a], [b]) => a.localeCompare(b)),
+    [report]
+  );
+
+  const [activeTabKey, setActiveTabKey] = React.useState<string | number>(
+    sortedEntries[0]?.[0] || ''
+  );
   const [isTabsLightScheme] = React.useState<boolean>(true);
 
-  // Toggle currently active tab
+  useEffect(() => {
+    const firstKey = sortedEntries[0]?.[0] || '';
+    setActiveTabKey((prev) => {
+      const validKeys = new Set(sortedEntries.map(([k]) => k));
+      return validKeys.has(String(prev)) ? prev : firstKey;
+    });
+  }, [sortedEntries]);
+
   const handleTabClick = (
     event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
     tabIndex: string | number,
@@ -19,7 +33,7 @@ export const DockerTabbedLayout = ({report}: { report: ReportMap }) => {
     setActiveTabKey(tabIndex);
   };
 
-  const tabs = Object.entries(report).map(([key, reportValue]) => {
+  const tabs = sortedEntries.map(([key, reportValue]) => {
     return (
       <Tab
         eventKey={key}

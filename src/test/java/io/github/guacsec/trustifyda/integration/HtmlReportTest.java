@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.text.MatchesPattern;
@@ -317,6 +318,54 @@ public class HtmlReportTest extends AbstractAnalysisTest {
         page.getByXPath("//a[contains(@href, 'https://test-catalog.example.com/containers')]");
     assertTrue(!anchorElements.isEmpty(), "At least one href contains the desired substring");
     verifyTrustifyRequest(OK_TOKEN, 3);
+  }
+
+  /** Verifies that batch HTML report tabs are rendered in alphabetical order by PURL key. */
+  @Test
+  public void testBatchHtmlTabsAreSortedAlphabetically() throws IOException {
+    stubAllProviders();
+
+    // Given a batch analysis request with multiple SBOMs
+    String body =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .body(loadBatchSBOMFile(CYCLONEDX))
+            .header("Accept", MediaType.TEXT_HTML)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
+            .when()
+            .post("/api/v5/batch-analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.TEXT_HTML)
+            .extract()
+            .body()
+            .asString();
+
+    // When the HTML page is rendered
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
+
+    // Then the outer tab buttons appear in alphabetical order by PURL key.
+    // DockerTabbedLayout tab buttons have aria-label="${purlKey} source".
+    List<HtmlButton> tabButtons =
+        page.getByXPath(
+            "//button[contains(@aria-label, 'pkg:') and contains(@aria-label, ' source')]");
+    assertTrue(
+        tabButtons.size() >= 2, "Expected at least 2 batch tabs but found " + tabButtons.size());
+
+    List<String> ariaLabels = new ArrayList<>();
+    for (HtmlButton btn : tabButtons) {
+      ariaLabels.add(btn.getAttribute("aria-label"));
+    }
+
+    for (int i = 0; i < ariaLabels.size() - 1; i++) {
+      assertTrue(
+          ariaLabels.get(i).compareTo(ariaLabels.get(i + 1)) <= 0,
+          String.format(
+              "Tab at index %d ('%s') should come before tab at index %d ('%s') alphabetically",
+              i, ariaLabels.get(i), i + 1, ariaLabels.get(i + 1)));
+    }
   }
 
   private HtmlTableBody getTableBodyForDependency(String depRef, DomElement table) {
