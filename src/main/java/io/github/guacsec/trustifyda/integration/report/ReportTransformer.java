@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.report;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +74,11 @@ public class ReportTransformer {
       @Header(Constants.VERBOSE_MODE_HEADER) Boolean verbose) {
     return reports.entrySet().stream()
         .collect(
-            Collectors.toMap(Map.Entry::getKey, e -> filterVerboseResult(e.getValue(), verbose)));
+            Collectors.toMap(
+                Map.Entry::getKey,
+                e -> filterVerboseResult(e.getValue(), verbose),
+                (a, b) -> a,
+                LinkedHashMap::new));
   }
 
   public void attachHtmlReport(Exchange exchange) {
