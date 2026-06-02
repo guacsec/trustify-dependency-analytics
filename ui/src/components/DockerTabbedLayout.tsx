@@ -8,7 +8,9 @@ import {constructImageName} from '../utils/utils';
 
 export const DockerTabbedLayout = ({report}: { report: ReportMap }) => {
 
-  const [activeTabKey, setActiveTabKey] = React.useState<string | number>(Object.keys(report)[0] || '');
+  const [activeTabKey, setActiveTabKey] = React.useState<string | number>(
+    Object.keys(report).sort((a, b) => a.localeCompare(b))[0] || ''
+  );
   const [isTabsLightScheme] = React.useState<boolean>(true);
 
   // Toggle currently active tab
@@ -19,7 +21,7 @@ export const DockerTabbedLayout = ({report}: { report: ReportMap }) => {
     setActiveTabKey(tabIndex);
   };
 
-  const tabs = Object.entries(report).map(([key, reportValue]) => {
+  const tabs = Object.entries(report).sort(([a], [b]) => a.localeCompare(b)).map(([key, reportValue]) => {
     return (
       <Tab
         eventKey={key}
