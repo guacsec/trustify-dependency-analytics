@@ -36,7 +36,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -665,6 +667,36 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertJson("reports/batch_report.json", body);
     verifyTrustifyRequest(OK_TOKEN, 3);
     verifyLicensesRequest(3);
+  }
+
+  /** Verifies that batch analysis response keys are sorted alphabetically. */
+  @Test
+  public void testBatchResponseKeysAreSorted() throws Exception {
+    stubAllProviders();
+
+    var body =
+        given()
+            .header(CONTENT_TYPE, getContentType(CYCLONEDX))
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .header(Constants.TRUSTIFY_TOKEN_HEADER, OK_TOKEN)
+            .body(loadBatchSBOMFile(CYCLONEDX))
+            .when()
+            .post("/api/v5/batch-analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asString();
+
+    // Parse the response preserving key order
+    Map<String, Object> result =
+        MAPPER.readValue(body, new TypeReference<LinkedHashMap<String, Object>>() {});
+    List<String> keys = new ArrayList<>(result.keySet());
+    List<String> sortedKeys = new ArrayList<>(keys);
+    Collections.sort(sortedKeys);
+    assertEquals(sortedKeys, keys, "Batch analysis response keys should be in alphabetical order");
   }
 
   private void assertScanned(Scanned scanned) {
