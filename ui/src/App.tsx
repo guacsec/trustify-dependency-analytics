@@ -4,6 +4,7 @@ import {Grid, GridItem, PageSection, PageSectionVariants} from '@patternfly/reac
 import {AppData, Report, ReportMap, isReportMap} from './api/report';
 import {SummaryCard} from './components/SummaryCard';
 import {ReportErrorAlert} from './components/ReportErrorAlert';
+import {ErrorBoundary} from './components/ErrorBoundary';
 
 import {MOCK_REPORT} from './mocks/report.mock';
 import {TabbedLayout} from "./components/TabbedLayout";
@@ -18,6 +19,7 @@ export const useAppContext = (): AppData => useContext(AppContext);
 function App() {
   return (
     <AppContext.Provider value={data}>
+      <ErrorBoundary>
       {isReportMap(data.report) ? (
         <PageSection variant={PageSectionVariants.default}>
           <DockerTabbedLayout report={data.report as ReportMap}/>
@@ -37,6 +39,7 @@ function App() {
           </PageSection>
         </>
       )}
+      </ErrorBoundary>
     </AppContext.Provider>
   );
 }

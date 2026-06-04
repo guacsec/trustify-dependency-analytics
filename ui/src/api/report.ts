@@ -206,7 +206,7 @@ export interface Vulnerability {
   source: string;
   cvss?: Cvss | null;
   cvssScore: number;
-  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   cves?: string[] | null;
   unique: boolean;
   remediation?: {
