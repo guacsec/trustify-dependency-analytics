@@ -29,6 +29,9 @@ import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
+import io.github.guacsec.trustifyda.api.v5.RecommendationReport;
+import io.github.guacsec.trustifyda.api.v5.RecommendationSource;
+import io.github.guacsec.trustifyda.api.v5.RecommendationSummary;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.Source;
@@ -38,6 +41,7 @@ import io.github.guacsec.trustifyda.model.DependencyTree;
 class RegistryEnrichmentService {
 
   private static final String HASH_ALG_SHA256 = "SHA-256";
+  private static final String TRUSTED_LIBRARIES_SOURCE = "trusted-libraries";
 
   void enrichReport(
       AnalysisReport report,
@@ -110,7 +114,11 @@ class RegistryEnrichmentService {
                     issue -> issue.remediation(new Remediation().trustedContent(trustedContent)));
           }
 
+          // Backward compat: set deprecated per-dependency recommendation
           depReport.recommendation(recommendedRef.get());
+
+          // Populate provider-level recommendations map
+          addToRecommendationsMap(providerReport, depReport.getRef(), recommendedRef.get());
         }
       }
     }
@@ -141,6 +149,7 @@ class RegistryEnrichmentService {
         continue;
       }
 
+      // Backward compat: add deprecated per-dependency recommendation to a source
       var depReport = new DependencyReport().ref(pkgRef).recommendation(recommendedRef.get());
 
       for (var providerEntry : providers.entrySet()) {
@@ -164,9 +173,34 @@ class RegistryEnrichmentService {
             break;
           }
         }
+
+        // Populate provider-level recommendations map
+        addToRecommendationsMap(providerReport, pkgRef, recommendedRef.get());
         break;
       }
     }
+  }
+
+  /**
+   * Adds a recommendation entry to the provider-level "trusted-libraries" recommendation source.
+   */
+  private void addToRecommendationsMap(
+      ProviderReport providerReport, PackageRef ref, PackageRef recommendedRef) {
+    if (providerReport.getRecommendations() == null) {
+      providerReport.recommendations(new HashMap<>());
+    }
+    var recSource =
+        providerReport
+            .getRecommendations()
+            .computeIfAbsent(
+                TRUSTED_LIBRARIES_SOURCE,
+                k ->
+                    new RecommendationSource()
+                        .summary(new RecommendationSummary().total(0))
+                        .dependencies(new ArrayList<>()));
+    var recReport = new RecommendationReport().ref(ref).recommendation(recommendedRef);
+    recSource.addDependenciesItem(recReport);
+    recSource.getSummary().total(recSource.getDependencies().size());
   }
 
   private void recountRecommendations(Map<String, ProviderReport> providers) {

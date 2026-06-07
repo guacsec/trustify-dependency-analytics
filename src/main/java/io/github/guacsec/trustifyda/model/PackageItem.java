@@ -22,5 +22,16 @@ import java.util.List;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 
+/** Aggregated data for a single package: its recommendation, vulnerability issues, and warnings. */
 public record PackageItem(
-    String packageRef, Recommendation recommendation, List<Issue> issues, List<String> warnings) {}
+    String packageRef,
+    Recommendation recommendation,
+    List<Issue> issues,
+    List<String> warnings,
+    String recommendationSource) {
+
+  public PackageItem(
+      String packageRef, Recommendation recommendation, List<Issue> issues, List<String> warnings) {
+    this(packageRef, recommendation, issues, warnings, null);
+  }
+}

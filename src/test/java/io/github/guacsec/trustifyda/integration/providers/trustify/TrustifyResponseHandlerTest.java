@@ -1079,7 +1079,7 @@ public class TrustifyResponseHandlerTest {
 
     PackageRef sbomRef = new PackageRef(sbomId);
     IndexedRecommendation recommendation =
-        new IndexedRecommendation(new PackageRef("pkg:oci/ubi@0.0.2"), null);
+        new IndexedRecommendation(new PackageRef("pkg:oci/ubi@0.0.2"), null, "hardened-images");
     assertEquals(1, recommendations.size());
     assertEquals(recommendation, recommendations.get(sbomRef));
   }

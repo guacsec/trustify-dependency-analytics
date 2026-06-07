@@ -41,6 +41,9 @@ import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
+import io.github.guacsec.trustifyda.api.v5.RecommendationReport;
+import io.github.guacsec.trustifyda.api.v5.RecommendationSource;
+import io.github.guacsec.trustifyda.api.v5.RecommendationSummary;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
 import io.github.guacsec.trustifyda.api.v5.TransitiveDependencyReport;
@@ -188,24 +191,19 @@ public abstract class ProviderResponseHandler {
   }
 
   /**
-   * Groups PackageItems by source from their issues. Each PackageItem can have issues from
-   * different sources, so we group them accordingly while preserving recommendations.
+   * Groups PackageItems by vulnerability source from their issues. Each PackageItem can have issues
+   * from different sources, so we group them accordingly. Recommendations are not propagated into
+   * vulnerability sources — they are handled separately via the provider-level recommendations map.
    */
   private Map<String, Map<String, PackageItem>> groupPackageItemsBySource(
-      Map<String, PackageItem> pkgItems, String defaultSource) {
+      Map<String, PackageItem> pkgItems) {
     Map<String, Map<String, PackageItem>> sourcesData = new HashMap<>();
     if (pkgItems == null) {
       return sourcesData;
     }
 
-    var recommendations =
-        pkgItems.values().stream()
-            .filter(item -> item.recommendation() != null)
-            .collect(Collectors.toMap(PackageItem::packageRef, PackageItem::recommendation));
-
     pkgItems.forEach(
         (packageRef, packageItem) -> {
-          // If there are issues, group by their source
           if (packageItem.issues() != null && !packageItem.issues().isEmpty()) {
             packageItem
                 .issues()
@@ -216,56 +214,32 @@ public abstract class ProviderResponseHandler {
                         return;
                       }
                       var sourceItems = sourcesData.computeIfAbsent(source, k -> new HashMap<>());
-                      // Get or create PackageItem for this source and package
                       var existingItem = sourceItems.get(packageRef);
-                      var recommendation = recommendations.get(packageRef);
                       if (existingItem == null) {
-                        // Create new PackageItem with this issue and the recommendation
                         sourceItems.put(
                             packageRef,
                             new PackageItem(
                                 packageRef,
-                                recommendation,
+                                packageItem.recommendation(),
                                 new ArrayList<>(List.of(issue)),
-                                packageItem.warnings()));
+                                packageItem.warnings(),
+                                packageItem.recommendationSource()));
                       } else {
-                        // Add issue to existing PackageItem if not already present
                         if (!existingItem.issues().contains(issue)) {
                           var updatedIssues = new ArrayList<>(existingItem.issues());
                           updatedIssues.add(issue);
-
                           sourceItems.put(
                               packageRef,
                               new PackageItem(
                                   packageRef,
-                                  recommendation,
+                                  packageItem.recommendation(),
                                   updatedIssues,
-                                  packageItem.warnings()));
+                                  packageItem.warnings(),
+                                  packageItem.recommendationSource()));
                         }
                       }
                     });
           }
-        });
-    if (sourcesData.isEmpty() && !recommendations.isEmpty()) {
-      sourcesData.put(defaultSource, new HashMap<>());
-    }
-    sourcesData.forEach(
-        (source, items) -> {
-          recommendations.forEach(
-              (packageRef, recommendation) -> {
-                if (!items.containsKey(packageRef)) {
-                  var originalItem = pkgItems.get(packageRef);
-                  items.put(
-                      packageRef,
-                      new PackageItem(
-                          packageRef,
-                          recommendation,
-                          Collections.emptyList(),
-                          originalItem != null
-                              ? originalItem.warnings()
-                              : Collections.emptyList()));
-                }
-              });
         });
     return sourcesData;
   }
@@ -278,8 +252,7 @@ public abstract class ProviderResponseHandler {
     if (response.status() != null && response.pkgItems() == null) {
       return new ProviderReport().status(response.status()).sources(Collections.emptyMap());
     }
-    var providerName = getProviderName(exchange);
-    var sourcesData = groupPackageItemsBySource(response.pkgItems(), providerName);
+    var sourcesData = groupPackageItemsBySource(response.pkgItems());
 
     Map<String, Source> reports = new HashMap<>();
     sourcesData
@@ -290,7 +263,13 @@ public abstract class ProviderResponseHandler {
     if (response.status() != null) {
       response.status().warnings(warnings);
     }
-    return new ProviderReport().status(response.status()).sources(reports);
+
+    var recommendations = buildRecommendationsMap(response.pkgItems());
+
+    return new ProviderReport()
+        .status(response.status())
+        .sources(reports)
+        .recommendations(recommendations);
   }
 
   public ProviderResponse filterCves(Exchange exchange) {
@@ -319,7 +298,8 @@ public abstract class ProviderResponseHandler {
                           entry.getKey(),
                           item.recommendation(),
                           filteredIssues,
-                          item.warnings() == null ? Collections.emptyList() : item.warnings());
+                          item.warnings() == null ? Collections.emptyList() : item.warnings(),
+                          item.recommendationSource());
                     }));
     return new ProviderResponse(filteredItems, response.status());
   }
@@ -478,6 +458,41 @@ public abstract class ProviderResponseHandler {
         sourceReport.stream().filter(s -> s.getRecommendation() != null).count();
     counter.recommendations.set(recommendationsCount.intValue());
     return counter.getSummary();
+  }
+
+  /**
+   * Builds the provider-level recommendations map from all PackageItems that have recommendations.
+   * Groups recommendations by their source name (e.g. "trusted-content", "hardened-images").
+   */
+  private Map<String, RecommendationSource> buildRecommendationsMap(
+      Map<String, PackageItem> pkgItems) {
+    if (pkgItems == null) {
+      return Collections.emptyMap();
+    }
+    Map<String, List<RecommendationReport>> bySource = new HashMap<>();
+    pkgItems.forEach(
+        (packageRef, item) -> {
+          if (item.recommendation() == null || item.recommendation().packageName() == null) {
+            return;
+          }
+          String sourceName = item.recommendationSource();
+          if (sourceName == null) {
+            return;
+          }
+          var recReport =
+              new RecommendationReport()
+                  .ref(new PackageRef(packageRef))
+                  .recommendation(item.recommendation().packageName());
+          bySource.computeIfAbsent(sourceName, k -> new ArrayList<>()).add(recReport);
+        });
+
+    Map<String, RecommendationSource> result = new HashMap<>();
+    bySource.forEach(
+        (sourceName, reports) -> {
+          var summary = new RecommendationSummary().total(reports.size());
+          result.put(sourceName, new RecommendationSource().summary(summary).dependencies(reports));
+        });
+    return result;
   }
 
   private void incrementCounter(PackageItem item, VulnerabilityCounter counter, boolean isDirect) {

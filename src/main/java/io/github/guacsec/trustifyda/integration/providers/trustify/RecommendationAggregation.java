@@ -157,15 +157,19 @@ public class RecommendationAggregation implements AggregationStrategy {
                       key.ref(),
                       recommendation,
                       issues,
-                      pkgItem != null ? pkgItem.warnings() : Collections.emptyList()));
+                      pkgItem != null ? pkgItem.warnings() : Collections.emptyList(),
+                      value.sourceName()));
         });
   }
 
   private Recommendation toRecommendation(IndexedRecommendation recommendation) {
     if (recommendation.vulnerabilities() == null) {
-      return new Recommendation(recommendation.packageName(), Collections.emptyList());
+      return new Recommendation(
+          recommendation.packageName(), Collections.emptyList(), recommendation.sourceName());
     }
     return new Recommendation(
-        recommendation.packageName(), recommendation.vulnerabilities().values().stream().toList());
+        recommendation.packageName(),
+        recommendation.vulnerabilities().values().stream().toList(),
+        recommendation.sourceName());
   }
 }

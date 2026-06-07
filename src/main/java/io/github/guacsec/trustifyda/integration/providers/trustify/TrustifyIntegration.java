@@ -389,7 +389,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
               var recommendationPkgRef = pkgRef.toGav();
               if (!sourcePkgRef.equals(recommendationPkgRef)) {
                 result.put(
-                    new PackageRef(e.getKey()), new IndexedRecommendation(pkgRef, vulnerabilities));
+                    new PackageRef(e.getKey()),
+                    new IndexedRecommendation(pkgRef, vulnerabilities, "trusted-content"));
               }
             });
     return result;
@@ -407,7 +408,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
 
     var recommendedUBIPurl = ubiRecommendation.mapping().get(pkgRef.name());
     if (recommendedUBIPurl != null) {
-      var recommendation = new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null);
+      var recommendation =
+          new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null, "hardened-images");
       return Collections.singletonMap(pkgRef, recommendation);
     }
     return Collections.emptyMap();

@@ -24,9 +24,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/** A recommendation mapping a dependency to its trusted-content alternative. */
 @RegisterForReflection
 public record Recommendation(
-    @JsonProperty("package") PackageRef packageName, List<Vulnerability> vulnerabilities) {
+    @JsonProperty("package") PackageRef packageName,
+    List<Vulnerability> vulnerabilities,
+    String sourceName) {
+
+  public Recommendation(PackageRef packageName, List<Vulnerability> vulnerabilities) {
+    this(packageName, vulnerabilities, null);
+  }
 
   public static Builder builder() {
     return new Builder();
@@ -36,6 +43,8 @@ public record Recommendation(
     public PackageRef packageName;
 
     public List<Vulnerability> vulnerabilities;
+
+    public String sourceName;
 
     public Builder packageName(PackageRef packageName) {
       this.packageName = packageName;
@@ -47,8 +56,13 @@ public record Recommendation(
       return this;
     }
 
+    public Builder sourceName(String sourceName) {
+      this.sourceName = sourceName;
+      return this;
+    }
+
     public Recommendation build() {
-      return new Recommendation(packageName, vulnerabilities);
+      return new Recommendation(packageName, vulnerabilities, sourceName);
     }
   }
 }
