@@ -411,7 +411,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     var recommendedUBIPurl = ubiRecommendation.mapping().get(pkgRef.name());
     if (recommendedUBIPurl != null) {
       var recommendation =
-          new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null, HARDENED_IMAGES_SOURCE);
+          new IndexedRecommendation(
+              new PackageRef(recommendedUBIPurl), null, HARDENED_IMAGES_SOURCE);
       return Collections.singletonMap(pkgRef, recommendation);
     }
     return Collections.emptyMap();

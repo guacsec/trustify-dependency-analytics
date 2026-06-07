@@ -164,12 +164,9 @@ public class RecommendationAggregation implements AggregationStrategy {
 
   private Recommendation toRecommendation(IndexedRecommendation recommendation) {
     if (recommendation.vulnerabilities() == null) {
-      return new Recommendation(
-          recommendation.packageName(), Collections.emptyList(), recommendation.sourceName());
+      return new Recommendation(recommendation.packageName(), Collections.emptyList());
     }
     return new Recommendation(
-        recommendation.packageName(),
-        recommendation.vulnerabilities().values().stream().toList(),
-        recommendation.sourceName());
+        recommendation.packageName(), recommendation.vulnerabilities().values().stream().toList());
   }
 }
