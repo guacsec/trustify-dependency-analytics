@@ -91,6 +91,8 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   // see https://www.cisa.gov/sites/default/files/2023-01/VEX_Status_Justification_Jun22.pdf
   private static final List<String> FIXED_STATUSES = List.of("NotAffected", "Fixed");
   private static final String OCI_PURL_TYPE = "oci";
+  private static final String TRUSTED_CONTENT_SOURCE = "trusted-content";
+  private static final String HARDENED_IMAGES_SOURCE = "hardened-images";
 
   @Override
   public void configure() throws Exception {
@@ -390,7 +392,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
               if (!sourcePkgRef.equals(recommendationPkgRef)) {
                 result.put(
                     new PackageRef(e.getKey()),
-                    new IndexedRecommendation(pkgRef, vulnerabilities, "trusted-content"));
+                    new IndexedRecommendation(pkgRef, vulnerabilities, TRUSTED_CONTENT_SOURCE));
               }
             });
     return result;
@@ -409,7 +411,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     var recommendedUBIPurl = ubiRecommendation.mapping().get(pkgRef.name());
     if (recommendedUBIPurl != null) {
       var recommendation =
-          new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null, "hardened-images");
+          new IndexedRecommendation(new PackageRef(recommendedUBIPurl), null, HARDENED_IMAGES_SOURCE);
       return Collections.singletonMap(pkgRef, recommendation);
     }
     return Collections.emptyMap();
