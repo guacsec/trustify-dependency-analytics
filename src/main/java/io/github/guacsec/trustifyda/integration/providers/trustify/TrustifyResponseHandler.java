@@ -141,7 +141,9 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
                 }
                 var issue = new Issue().id(id).title(iTitle).source(source).cves(List.of(id));
                 setCvssData(issue, data);
-                issuesByCveSource.put(key, issue);
+                if (issue.getCvssScore() != null) {
+                  issuesByCveSource.put(key, issue);
+                }
               });
           issues.addAll(issuesByCveSource.values());
         });

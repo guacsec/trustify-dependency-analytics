@@ -40,10 +40,8 @@ public interface CvssScoreComparable {
       if (d1.getHighestVulnerability() == null && d2.getHighestVulnerability() != null) {
         return -1;
       }
-      return Comparator.<Float>nullsFirst(Comparator.naturalOrder())
-          .compare(
-              d1.getHighestVulnerability().getCvssScore(),
-              d2.getHighestVulnerability().getCvssScore());
+      return Float.compare(
+          d1.getHighestVulnerability().getCvssScore(), d2.getHighestVulnerability().getCvssScore());
     }
   }
 
@@ -60,10 +58,8 @@ public interface CvssScoreComparable {
       if (d1.getHighestVulnerability() == null && d2.getHighestVulnerability() != null) {
         return -1;
       }
-      return Comparator.<Float>nullsFirst(Comparator.naturalOrder())
-          .compare(
-              d1.getHighestVulnerability().getCvssScore(),
-              d2.getHighestVulnerability().getCvssScore());
+      return Float.compare(
+          d1.getHighestVulnerability().getCvssScore(), d2.getHighestVulnerability().getCvssScore());
     }
   }
 }

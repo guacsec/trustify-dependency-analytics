@@ -21,7 +21,6 @@ import static io.github.guacsec.trustifyda.integration.providers.ProviderRespons
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.mock;
@@ -648,9 +647,6 @@ public class TrustifyResponseHandlerTest {
     assertTrue(issues.isEmpty());
   }
 
-  /**
-   * Verifies that a vulnerability with no scores is reported with null severity and null cvssScore.
-   */
   @Test
   void testResponseToIssuesWithNoScores() throws IOException {
     String jsonResponse =
@@ -665,9 +661,6 @@ public class TrustifyResponseHandlerTest {
             "affected": [
               {
                 "id": "advisory-1",
-                "labels": {
-                  "importer": "redhat-csaf"
-                },
                 "ranges": [
                   {
                     "events": [
@@ -690,22 +683,11 @@ public class TrustifyResponseHandlerTest {
     ProviderResponse result =
         handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
 
-    // Given a vulnerability with no scores array
     assertNotNull(result);
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
     List<Issue> issues = packageItem.issues();
-
-    // Then the vulnerability is still reported with null severity and null cvssScore
-    assertEquals(1, issues.size());
-    Issue issue = issues.get(0);
-    assertEquals("CVE-2024-1597", issue.getId());
-    assertNull(issue.getCvssScore(), "cvssScore should be null when no scores are available");
-    assertNull(issue.getSeverity(), "severity should be null when no scores are available");
-
-    // Then remediation data is still populated
-    assertNotNull(issue.getRemediation());
-    assertEquals(List.of("42.5.5"), issue.getRemediation().getFixedIn());
+    assertTrue(issues.isEmpty());
   }
 
   @Test
@@ -1200,10 +1182,6 @@ public class TrustifyResponseHandlerTest {
         "Package without warnings should not be marked as unscanned");
   }
 
-  /**
-   * Verifies that vulnerabilities with only invalid severity scores (e.g., "none") are reported
-   * with null severity, and that valid scores in mixed-score advisories are used correctly.
-   */
   @Test
   void testResponseToIssuesWithInvalidSeverity() throws IOException {
     String jsonResponse =
@@ -1289,85 +1267,20 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(result.pkgItems());
     assertEquals(2, result.pkgItems().size());
 
-    // Package with only invalid severity should be reported with null severity
+    // Package with empty details and warnings with data should be marked as unscanned
     PackageItem packageItem1 = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
-    assertNotNull(packageItem1);
+    assertNotNull(packageItem1, "Package with no valid scores should be ignored");
     List<Issue> issues = packageItem1.issues();
-    assertEquals(1, issues.size(), "Vulnerability with invalid severity should still be reported");
-    assertNull(
-        issues.get(0).getCvssScore(),
-        "cvssScore should be null when all scores have invalid severity");
-    assertNull(
-        issues.get(0).getSeverity(),
-        "severity should be null when all scores have invalid severity");
+    assertTrue(issues.isEmpty(), "Package with no valid scores should have no issues");
 
-    // Package with mixed valid/invalid scores should use the valid score
+    // Package with invalid severity should be marked as unscanned
     PackageItem packageItem2 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
     assertNotNull(packageItem2);
     issues = packageItem2.issues();
     assertFalse(issues.isEmpty(), "Package should have an issue");
-    assertEquals(1, issues.size(), "Package should have one issue");
-    assertEquals(7.5f, issues.get(0).getCvssScore(), "Issue should have the correct CVSS score");
+    assertEquals(issues.size(), 1, "Package should have one issue");
+    assertEquals(issues.get(0).getCvssScore(), 7.5f, "Issue should have the correct CVSS score");
     assertEquals(
-        Severity.HIGH, issues.get(0).getSeverity(), "Issue should have the correct severity");
-  }
-
-  /** Verifies that a vulnerability with an empty scores array is reported with null severity. */
-  @Test
-  void testResponseToIssuesWithEmptyScoresArray() throws IOException {
-    String jsonResponse =
-        """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2025-24898",
-            "title": "Test CVE with empty scores",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "importer": "osv-rustsec"
-                  },
-                  "scores": [],
-                  "ranges": [
-                    {
-                      "events": [
-                        {
-                          "fixed": "0.10.70"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ],
-        "warnings": []
-      }
-    }
-    """;
-
-    byte[] responseBytes = jsonResponse.getBytes();
-    ProviderResponse result =
-        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
-
-    // Given a vulnerability with an empty scores array
-    assertNotNull(result);
-    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
-    assertNotNull(packageItem);
-    List<Issue> issues = packageItem.issues();
-
-    // Then the vulnerability is reported with null severity and null cvssScore
-    assertEquals(1, issues.size());
-    Issue issue = issues.get(0);
-    assertEquals("CVE-2025-24898", issue.getId());
-    assertNull(issue.getCvssScore(), "cvssScore should be null when scores array is empty");
-    assertNull(issue.getSeverity(), "severity should be null when scores array is empty");
-
-    // Then remediation data is still populated
-    assertNotNull(issue.getRemediation());
-    assertEquals(List.of("0.10.70"), issue.getRemediation().getFixedIn());
+        issues.get(0).getSeverity(), Severity.HIGH, "Issue should have the correct severity");
   }
 }
