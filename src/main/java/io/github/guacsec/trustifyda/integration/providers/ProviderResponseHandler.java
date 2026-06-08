@@ -467,7 +467,7 @@ public abstract class ProviderResponseHandler {
   private Map<String, RecommendationSource> buildRecommendationsMap(
       Map<String, PackageItem> pkgItems) {
     if (pkgItems == null) {
-      return Collections.emptyMap();
+      return new HashMap<>();
     }
     Map<String, List<RecommendationReport>> bySource = new HashMap<>();
     pkgItems.forEach(
