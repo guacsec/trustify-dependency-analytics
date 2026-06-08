@@ -22,9 +22,14 @@ import java.util.Map;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/** An intermediate recommendation model used during aggregation, before conversion to API types. */
 @RegisterForReflection
 public record IndexedRecommendation(
-    PackageRef packageName, Map<String, Vulnerability> vulnerabilities) {
+    PackageRef packageName, Map<String, Vulnerability> vulnerabilities, String sourceName) {
+
+  public IndexedRecommendation(PackageRef packageName, Map<String, Vulnerability> vulnerabilities) {
+    this(packageName, vulnerabilities, null);
+  }
 
   public static Builder builder() {
     return new Builder();
@@ -34,6 +39,8 @@ public record IndexedRecommendation(
     public PackageRef packageName;
 
     public Map<String, Vulnerability> vulnerabilities;
+
+    public String sourceName;
 
     public Builder packageName(PackageRef packageName) {
       this.packageName = packageName;
@@ -45,8 +52,13 @@ public record IndexedRecommendation(
       return this;
     }
 
+    public Builder sourceName(String sourceName) {
+      this.sourceName = sourceName;
+      return this;
+    }
+
     public IndexedRecommendation build() {
-      return new IndexedRecommendation(packageName, vulnerabilities);
+      return new IndexedRecommendation(packageName, vulnerabilities, sourceName);
     }
   }
 }

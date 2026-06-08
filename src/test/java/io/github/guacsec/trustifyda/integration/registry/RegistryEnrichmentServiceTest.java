@@ -247,6 +247,46 @@ public class RegistryEnrichmentServiceTest {
     assertNotNull(deps.get(0).getRecommendation());
   }
 
+  @Test
+  void enrichPopulatesProviderLevelRecommendationsMap() {
+    var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
+    var tree = buildTree("pkg:pypi/requests@2.31.0", Map.of("SHA-256", "abc123"));
+
+    service.enrichReport(report, tree, PKG_PYPI_PREFIX, alwaysRecommend);
+
+    var providerReport = report.getProviders().values().iterator().next();
+    assertNotNull(providerReport.getRecommendations());
+    var recSource = providerReport.getRecommendations().get("trusted-libraries");
+    assertNotNull(recSource);
+    assertEquals(1, recSource.getDependencies().size());
+    assertEquals(1, recSource.getSummary().getTotal());
+    assertEquals("pkg:pypi/requests@2.31.0", recSource.getDependencies().get(0).getRef().ref());
+    assertNotNull(recSource.getDependencies().get(0).getRecommendation());
+  }
+
+  @Test
+  void enrichPopulatesRecommendationsMapForUnreportedDeps() {
+    var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
+
+    PackageRef requestsRef = PackageRef.builder().purl("pkg:pypi/requests@2.31.0").build();
+    PackageRef flaskRef = PackageRef.builder().purl("pkg:pypi/flask@3.0.0").build();
+    Map<PackageRef, DirectDependency> deps = new HashMap<>();
+    deps.put(requestsRef, DirectDependency.builder().ref(requestsRef).build());
+    deps.put(flaskRef, DirectDependency.builder().ref(flaskRef).build());
+
+    var tree =
+        DependencyTree.builder().dependencies(deps).componentHashes(Collections.emptyMap()).build();
+
+    service.enrichReport(report, tree, PKG_PYPI_PREFIX, alwaysRecommend);
+
+    var providerReport = report.getProviders().values().iterator().next();
+    assertNotNull(providerReport.getRecommendations());
+    var recSource = providerReport.getRecommendations().get("trusted-libraries");
+    assertNotNull(recSource);
+    assertEquals(2, recSource.getDependencies().size());
+    assertEquals(2, recSource.getSummary().getTotal());
+  }
+
   private AnalysisReport buildReportWithPypiDep(String purl) {
     return buildReportWithDep(purl);
   }

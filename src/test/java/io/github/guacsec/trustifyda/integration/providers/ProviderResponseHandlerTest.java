@@ -21,6 +21,7 @@ import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.Justific
 import static io.github.guacsec.trustifyda.model.trustify.Vulnerability.StatusEnum.Fixed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -93,24 +94,6 @@ public class ProviderResponseHandlerTest {
 
   private static Stream<Arguments> getSummaryValues() {
     return Stream.of(
-        // Case 1: 0 issues 2 recommendations
-        Arguments.of(
-            Map.of(
-                "pkg:npm/aa@1",
-                    new PackageItem(
-                        "pkg:npm/aa@1",
-                        buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
-                        Collections.emptyList(),
-                        Collections.emptyList()),
-                "pkg:npm/ab@1",
-                    new PackageItem(
-                        "pkg:npm/ab@1",
-                        buildRecommendation("pkg:npm/ab@2", Collections.emptyMap()),
-                        Collections.emptyList(),
-                        Collections.emptyList())),
-            tree().direct("aa").direct("ab").build(),
-            new SourceSummary().direct(0).total(0).dependencies(0).recommendations(2),
-            TEST_PROVIDER),
         // Case 2: 2 issues 0 recommendations 3 unscanned
         Arguments.of(
             Map.of(
@@ -182,7 +165,7 @@ public class ProviderResponseHandlerTest {
                 .total(1)
                 .medium(1)
                 .dependencies(1)
-                .recommendations(2)
+                .recommendations(1)
                 .remediations(1),
             TEST_SOURCE),
         // Case 4: 2 direct issues with 4 transitive
@@ -331,6 +314,198 @@ public class ProviderResponseHandlerTest {
     DependencyReport highest = getValidSource(response, TEST_SOURCE).getDependencies().get(0);
     assertEquals("ISSUE-002", highest.getHighestVulnerability().getId());
     assertEquals(9f, highest.getHighestVulnerability().getCvssScore());
+  }
+
+  /**
+   * Verifies that recommendation-only PackageItems populate the recommendations map, not sources.
+   */
+  @Test
+  public void testRecommendationsMapWithNoIssues() throws IOException {
+    // Given two packages with recommendations but no issues
+    Map<String, PackageItem> data =
+        Map.of(
+            "pkg:npm/aa@1",
+            new PackageItem(
+                "pkg:npm/aa@1",
+                buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "trusted-content"),
+            "pkg:npm/ab@1",
+            new PackageItem(
+                "pkg:npm/ab@1",
+                buildRecommendation("pkg:npm/ab@2", Collections.emptyMap()),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "trusted-content"));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    // When building the report
+    ProviderReport response =
+        handler.buildReport(
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(data, new ProviderStatus()),
+            tree().direct("aa").direct("ab").build());
+
+    // Then no vulnerability sources are created
+    assertTrue(response.getSources().isEmpty());
+
+    // Then the recommendations map contains the trusted-content source with 2 entries
+    assertNotNull(response.getRecommendations());
+    assertTrue(response.getRecommendations().containsKey("trusted-content"));
+    var recSource = response.getRecommendations().get("trusted-content");
+
+    assertEquals(2, recSource.getDependencies().size());
+    assertEquals(2, recSource.getSummary().getTotal());
+  }
+
+  /** Verifies that recommendations are not duplicated across vulnerability sources. */
+  @Test
+  public void testRecommendationsNotDuplicatedAcrossSources() throws IOException {
+    // Given a package with a recommendation and issues from two different sources
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-b");
+    Map<String, PackageItem> data =
+        Map.of(
+            "pkg:npm/aa@1",
+            new PackageItem(
+                "pkg:npm/aa@1",
+                buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                List.of(issue1, issue2),
+                Collections.emptyList(),
+                "trusted-content"));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    // When building the report
+    ProviderReport response =
+        handler.buildReport(
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(data, new ProviderStatus()),
+            tree().direct("aa").build());
+
+    // Then the recommendation appears once in the recommendations map
+    assertNotNull(response.getRecommendations());
+    var recSource = response.getRecommendations().get("trusted-content");
+    assertNotNull(recSource);
+
+    assertEquals(1, recSource.getDependencies().size());
+    assertEquals(1, recSource.getSummary().getTotal());
+
+    // Then DependencyReport.recommendation is still set for backward compat in each source
+    assertNotNull(response.getSources().get("source-a"));
+    assertEquals(1, response.getSources().get("source-a").getDependencies().size());
+    assertNotNull(
+        response.getSources().get("source-a").getDependencies().get(0).getRecommendation());
+    assertNotNull(response.getSources().get("source-b"));
+    assertEquals(1, response.getSources().get("source-b").getDependencies().size());
+    assertNotNull(
+        response.getSources().get("source-b").getDependencies().get(0).getRecommendation());
+  }
+
+  /** Verifies that DependencyReport.recommendation is populated for backward compatibility. */
+  @Test
+  public void testBackwardCompatRecommendation() throws IOException {
+    // Given a package with both issues and a recommendation
+    Map<String, PackageItem> data =
+        Map.of(
+            "pkg:npm/aa@1",
+            new PackageItem(
+                "pkg:npm/aa@1",
+                buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                List.of(buildIssue(1, 5f)),
+                Collections.emptyList(),
+                "trusted-content"));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    // When building the report
+    ProviderReport response =
+        handler.buildReport(
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(data, new ProviderStatus()),
+            tree().direct("aa").build());
+
+    // Then DependencyReport.recommendation is set (backward compat)
+    var source = getValidSource(response, TEST_SOURCE);
+    assertEquals(1, source.getDependencies().size());
+    assertNotNull(source.getDependencies().get(0).getRecommendation());
+    assertEquals("pkg:npm/aa@2", source.getDependencies().get(0).getRecommendation().ref());
+
+    // Then the recommendations map also has the entry
+    assertNotNull(response.getRecommendations());
+    var recSource = response.getRecommendations().get("trusted-content");
+    assertNotNull(recSource);
+
+    assertEquals(1, recSource.getDependencies().size());
+  }
+
+  /** Verifies that recommendations from different sources have independent entries. */
+  @Test
+  public void testMultipleRecommendationSources() throws IOException {
+    // Given packages with recommendations from different sources
+    Map<String, PackageItem> data =
+        Map.of(
+            "pkg:npm/aa@1",
+            new PackageItem(
+                "pkg:npm/aa@1",
+                buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                List.of(buildIssue(1, 5f)),
+                Collections.emptyList(),
+                "trusted-content"),
+            "pkg:oci/image@1",
+            new PackageItem(
+                "pkg:oci/image@1",
+                buildRecommendation("pkg:oci/image@2", Collections.emptyMap()),
+                List.of(buildIssue(2, 7f)),
+                Collections.emptyList(),
+                "hardened-images"));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    // When building the report
+    ProviderReport response =
+        handler.buildReport(
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(data, new ProviderStatus()),
+            tree().direct("aa").direct("image").build());
+
+    // Then the recommendations map has separate entries per source
+    assertNotNull(response.getRecommendations());
+    assertEquals(2, response.getRecommendations().size());
+    assertTrue(response.getRecommendations().containsKey("trusted-content"));
+    assertTrue(response.getRecommendations().containsKey("hardened-images"));
+
+    assertEquals(1, response.getRecommendations().get("trusted-content").getSummary().getTotal());
+    assertEquals(1, response.getRecommendations().get("hardened-images").getSummary().getTotal());
+  }
+
+  /** Verifies that PackageItems without a recommendationSource are excluded from the map. */
+  @Test
+  public void testRecommendationsWithoutSourceNameExcluded() throws IOException {
+    // Given a package with a recommendation but no source name
+    Map<String, PackageItem> data =
+        Map.of(
+            "pkg:npm/aa@1",
+            new PackageItem(
+                "pkg:npm/aa@1",
+                buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+                List.of(buildIssue(1, 5f)),
+                Collections.emptyList()));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    // When building the report
+    ProviderReport response =
+        handler.buildReport(
+            Mockito.mock(Exchange.class),
+            new ProviderResponse(data, new ProviderStatus()),
+            tree().direct("aa").build());
+
+    // Then the recommendations map is empty (no source name)
+    assertTrue(response.getRecommendations().isEmpty());
+
+    // Then DependencyReport.recommendation is still set for backward compat
+    var source = getValidSource(response, TEST_SOURCE);
+    assertNotNull(source.getDependencies().get(0).getRecommendation());
   }
 
   private Source getValidSource(ProviderReport report, String sourceName) {

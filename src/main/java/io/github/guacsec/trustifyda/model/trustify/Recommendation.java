@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/** A recommendation mapping a dependency to its trusted-content alternative. */
 @RegisterForReflection
 public record Recommendation(
     @JsonProperty("package") PackageRef packageName, List<Vulnerability> vulnerabilities) {

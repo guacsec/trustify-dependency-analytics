@@ -78,6 +78,23 @@
                         }
                     ]
                 }
+            },
+            "recommendations": {
+                "trusted-libraries": {
+                    "summary": {
+                        "total": 2
+                    },
+                    "dependencies": [
+                        {
+                            "ref": "pkg:pypi/requests@2.31.0",
+                            "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                        },
+                        {
+                            "ref": "pkg:pypi/flask@3.0.0",
+                            "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                        }
+                    ]
+                }
             }
         }
     },

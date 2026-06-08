@@ -157,7 +157,8 @@ public class RecommendationAggregation implements AggregationStrategy {
                       key.ref(),
                       recommendation,
                       issues,
-                      pkgItem != null ? pkgItem.warnings() : Collections.emptyList()));
+                      pkgItem != null ? pkgItem.warnings() : Collections.emptyList(),
+                      value.sourceName()));
         });
   }
 

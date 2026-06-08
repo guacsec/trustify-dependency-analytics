@@ -369,10 +369,18 @@ public class RecommendationAggregationTest {
 
   private static Map<PackageRef, IndexedRecommendation> createRecommendations(
       String packageRef, String recommendedPackage, Map<String, Vulnerability> vulnerabilities) {
+    return createRecommendations(packageRef, recommendedPackage, vulnerabilities, null);
+  }
+
+  private static Map<PackageRef, IndexedRecommendation> createRecommendations(
+      String packageRef,
+      String recommendedPackage,
+      Map<String, Vulnerability> vulnerabilities,
+      String sourceName) {
     Map<PackageRef, IndexedRecommendation> recommendations = new HashMap<>();
     PackageRef recPkgRef = new PackageRef(packageRef);
     IndexedRecommendation recommendation =
-        new IndexedRecommendation(new PackageRef(recommendedPackage), vulnerabilities);
+        new IndexedRecommendation(new PackageRef(recommendedPackage), vulnerabilities, sourceName);
     recommendations.put(recPkgRef, recommendation);
     return recommendations;
   }
@@ -469,6 +477,84 @@ public class RecommendationAggregationTest {
     ProviderResponse resultResponse = result.getIn().getBody(ProviderResponse.class);
     assertNotNull(resultResponse);
     testCase.verifier().accept(resultResponse);
+  }
+
+  @Test
+  void testSourceNamePreservedThroughAggregation() {
+    Exchange oldExchange = mock(Exchange.class);
+    Exchange newExchange = mock(Exchange.class);
+    Message oldMessage = createMessageWithBodyStorage();
+    Message newMessage = mock(Message.class);
+
+    oldMessage.setBody(new ProviderResponse(new HashMap<>(), null));
+    when(oldExchange.getIn()).thenReturn(oldMessage);
+    when(newExchange.getIn()).thenReturn(newMessage);
+    when(newMessage.getBody())
+        .thenReturn(
+            createRecommendations(
+                "pkg:npm/package1@1.0.0",
+                "pkg:npm/package1@2.0.0",
+                Collections.emptyMap(),
+                "trusted-content"));
+
+    Exchange result = aggregation.aggregate(oldExchange, newExchange);
+    ProviderResponse response = result.getIn().getBody(ProviderResponse.class);
+
+    PackageItem item = response.pkgItems().get("pkg:npm/package1@1.0.0");
+    assertNotNull(item);
+    assertEquals("trusted-content", item.recommendationSource());
+  }
+
+  @Test
+  void testNullSourceNamePreservedThroughAggregation() {
+    Exchange oldExchange = mock(Exchange.class);
+    Exchange newExchange = mock(Exchange.class);
+    Message oldMessage = createMessageWithBodyStorage();
+    Message newMessage = mock(Message.class);
+
+    oldMessage.setBody(new ProviderResponse(new HashMap<>(), null));
+    when(oldExchange.getIn()).thenReturn(oldMessage);
+    when(newExchange.getIn()).thenReturn(newMessage);
+    when(newMessage.getBody())
+        .thenReturn(
+            createRecommendations(
+                "pkg:npm/package1@1.0.0", "pkg:npm/package1@2.0.0", Collections.emptyMap()));
+
+    Exchange result = aggregation.aggregate(oldExchange, newExchange);
+    ProviderResponse response = result.getIn().getBody(ProviderResponse.class);
+
+    PackageItem item = response.pkgItems().get("pkg:npm/package1@1.0.0");
+    assertNotNull(item);
+    assertNull(item.recommendationSource());
+  }
+
+  @Test
+  void testSourceNamePreservedWhenMergingWithIssues() {
+    Exchange oldExchange = mock(Exchange.class);
+    Exchange newExchange = mock(Exchange.class);
+    Message oldMessage = createMessageWithBodyStorage();
+    Message newMessage = mock(Message.class);
+
+    oldMessage.setBody(
+        createProviderResponseWithIssues(List.of(createIssue("CVE-001", "Issue 1", 5.0f))));
+    when(oldExchange.getIn()).thenReturn(oldMessage);
+    when(newExchange.getIn()).thenReturn(newMessage);
+    when(newMessage.getBody())
+        .thenReturn(
+            createRecommendations(
+                "pkg:npm/package1@1.0.0",
+                "pkg:npm/package1@2.0.0",
+                Map.of("CVE-001", new Vulnerability("CVE-001", Fixed, NotProvided)),
+                "trusted-content"));
+
+    Exchange result = aggregation.aggregate(oldExchange, newExchange);
+    ProviderResponse response = result.getIn().getBody(ProviderResponse.class);
+
+    PackageItem item = response.pkgItems().get("pkg:npm/package1@1.0.0");
+    assertNotNull(item);
+    assertEquals("trusted-content", item.recommendationSource());
+    assertNotNull(item.recommendation());
+    assertEquals(1, item.issues().size());
   }
 
   /** Creates a mock Message that actually stores and retrieves the body. */
