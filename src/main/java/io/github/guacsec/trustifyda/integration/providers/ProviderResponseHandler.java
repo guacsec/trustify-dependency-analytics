@@ -517,6 +517,7 @@ public abstract class ProviderResponseHandler {
                   case HIGH -> counter.high.addAndGet(vulnerabilities);
                   case MEDIUM -> counter.medium.addAndGet(vulnerabilities);
                   case LOW -> counter.low.addAndGet(vulnerabilities);
+                  case UNKNOWN -> counter.unknown.addAndGet(vulnerabilities);
                 }
               }
               counter.total.addAndGet(vulnerabilities);
@@ -549,6 +550,7 @@ public abstract class ProviderResponseHandler {
       AtomicInteger high,
       AtomicInteger medium,
       AtomicInteger low,
+      AtomicInteger unknown,
       AtomicInteger direct,
       AtomicInteger dependencies,
       AtomicInteger remediations,
@@ -556,6 +558,7 @@ public abstract class ProviderResponseHandler {
 
     VulnerabilityCounter() {
       this(
+          new AtomicInteger(),
           new AtomicInteger(),
           new AtomicInteger(),
           new AtomicInteger(),
@@ -574,6 +577,7 @@ public abstract class ProviderResponseHandler {
           .high(high.get())
           .medium(medium.get())
           .low(low.get())
+          .unknown(unknown.get())
           .direct(direct.get())
           .transitive(total.get() - direct.get())
           .dependencies(dependencies.get())
