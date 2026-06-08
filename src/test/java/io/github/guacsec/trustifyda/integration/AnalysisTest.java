@@ -227,6 +227,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
 
     body = replaceMockedDepsDevSourceUrl(body);
     assertJson("reports/report.json", body);
+    assertProviderRecommendations(body, TRUSTIFY_PROVIDER, "trusted-content", 9);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyRecommendRequest();
     verifyLicensesRequest(1);
@@ -345,6 +346,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asPrettyString();
     assertRecommendations(body, TRUSTIFY_PROVIDER, CSAF_SOURCE, 0);
     assertRecommendations(body, TRUSTIFY_PROVIDER, OSV_SOURCE, 0);
+    assertProviderRecommendationsEmpty(body, TRUSTIFY_PROVIDER);
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyNoInteractionsWithRecommend();
   }
@@ -373,6 +375,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asPrettyString();
     body = replaceMockedDepsDevSourceUrl(body);
     assertJson("reports/report.json", body);
+    assertProviderRecommendations(body, TRUSTIFY_PROVIDER, "trusted-content", 9);
     verifyTrustifyRequest(OK_TOKEN);
     verifyLicensesRequest(1);
   }
@@ -745,6 +748,38 @@ public class AnalysisTest extends AbstractAnalysisTest {
               .get(source)
               .getSummary()
               .getRecommendations());
+    } catch (IOException e) {
+      fail("Failed to read report: " + e.getMessage());
+    }
+  }
+
+  private void assertProviderRecommendations(
+      String body, String provider, String recommendationSource, int expectedTotal) {
+    try {
+      var report = MAPPER.readValue(body, AnalysisReport.class);
+      var providerReport = report.getProviders().get(provider);
+      assertNotNull(providerReport, "Provider not found: " + provider);
+      assertNotNull(
+          providerReport.getRecommendations(),
+          "Provider-level recommendations map should not be null");
+      var recSource = providerReport.getRecommendations().get(recommendationSource);
+      assertNotNull(recSource, "Recommendation source not found: " + recommendationSource);
+      assertEquals(expectedTotal, recSource.getSummary().getTotal());
+      assertEquals(expectedTotal, recSource.getDependencies().size());
+    } catch (IOException e) {
+      fail("Failed to read report: " + e.getMessage());
+    }
+  }
+
+  private void assertProviderRecommendationsEmpty(String body, String provider) {
+    try {
+      var report = MAPPER.readValue(body, AnalysisReport.class);
+      var providerReport = report.getProviders().get(provider);
+      assertNotNull(providerReport, "Provider not found: " + provider);
+      assertTrue(
+          providerReport.getRecommendations() == null
+              || providerReport.getRecommendations().isEmpty(),
+          "Provider-level recommendations map should be empty");
     } catch (IOException e) {
       fail("Failed to read report: " + e.getMessage());
     }

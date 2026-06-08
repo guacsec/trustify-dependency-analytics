@@ -354,6 +354,7 @@ public class ProviderResponseHandlerTest {
     assertNotNull(response.getRecommendations());
     assertTrue(response.getRecommendations().containsKey("trusted-content"));
     var recSource = response.getRecommendations().get("trusted-content");
+
     assertEquals(2, recSource.getDependencies().size());
     assertEquals(2, recSource.getSummary().getTotal());
   }
@@ -388,6 +389,7 @@ public class ProviderResponseHandlerTest {
     assertNotNull(response.getRecommendations());
     var recSource = response.getRecommendations().get("trusted-content");
     assertNotNull(recSource);
+
     assertEquals(1, recSource.getDependencies().size());
     assertEquals(1, recSource.getSummary().getTotal());
 
@@ -434,6 +436,7 @@ public class ProviderResponseHandlerTest {
     assertNotNull(response.getRecommendations());
     var recSource = response.getRecommendations().get("trusted-content");
     assertNotNull(recSource);
+
     assertEquals(1, recSource.getDependencies().size());
   }
 
@@ -471,6 +474,7 @@ public class ProviderResponseHandlerTest {
     assertEquals(2, response.getRecommendations().size());
     assertTrue(response.getRecommendations().containsKey("trusted-content"));
     assertTrue(response.getRecommendations().containsKey("hardened-images"));
+
     assertEquals(1, response.getRecommendations().get("trusted-content").getSummary().getTotal());
     assertEquals(1, response.getRecommendations().get("hardened-images").getSummary().getTotal());
   }
