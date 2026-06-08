@@ -32,6 +32,7 @@ export const reportWithWarning: AppData = {
               "high": 4,
               "medium": 2,
               "low": 0,
+              "unknown": 0,
               "remediations": 2,
               "recommendations": 6
             },
@@ -251,6 +252,7 @@ export const reportWithWarning: AppData = {
               "high": 1,
               "medium": 0,
               "low": 0,
+              "unknown": 0,
               "remediations": 0,
               "recommendations": 7,
               "unscanned": 0

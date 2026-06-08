@@ -104,6 +104,7 @@ export interface Summary {
   high: number;
   medium: number;
   low: number;
+  unknown: number;
   remediations: number;
   recommendations: number;
   unscanned?: number;
@@ -206,7 +207,7 @@ export interface Vulnerability {
   source: string;
   cvss?: Cvss | null;
   cvssScore: number;
-  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
   cves?: string[] | null;
   unique: boolean;
   remediation?: {

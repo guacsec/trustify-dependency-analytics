@@ -29,6 +29,7 @@ export const dockerReport: AppData = {
                 "high": 5,
                 "medium": 2,
                 "low": 0,
+                "unknown": 0,
                 "remediations": 2,
                 "recommendations": 2,
                 "unscanned": 0
@@ -389,6 +390,7 @@ export const dockerReport: AppData = {
                 "high": 109,
                 "medium": 13,
                 "low": 0,
+                "unknown": 0,
                 "remediations": 26,
                 "recommendations": 2,
                 "unscanned": 0
@@ -1694,6 +1696,7 @@ export const dockerReport: AppData = {
                 "high": 0,
                 "medium": 0,
                 "low": 0,
+                "unknown": 0,
                 "remediations": 0,
                 "recommendations": 1,
                 "unscanned": 0
