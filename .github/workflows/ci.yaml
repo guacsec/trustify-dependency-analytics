@@ -1,5 +1,8 @@
 name: CI
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - '*'
@@ -33,6 +36,8 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     name: Integration Tests
+    permissions:
+      id-token: write
     needs: commitlint
     steps:
       - name: Checkout
@@ -49,3 +54,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          flags: integration-tests
+          files: target/site/jacoco/jacoco.xml
