@@ -158,6 +158,39 @@ Use this pattern when the helper has no injected dependencies and serves as a pu
 - **Dynamic URLs**: Use `.toD("${exchangeProperty.propertyName}?throwExceptionOnFailure=false")` for URLs resolved at runtime from exchange properties.
 - **Single entry point**: The main analysis route (`ExhortIntegration`) calls `direct:enrichTrustedLibraries` as a single entry point. The orchestrator (`TrustedLibrariesIntegration`) discovers and runs all registry integrations. Never add ecosystem-specific routes directly to the main analysis route.
 
+## Telemetry and Metrics
+
+Every Camel route that makes external HTTP requests must be instrumented with `ProviderRoutePolicy` so it appears in the Grafana provider dashboards. This applies to vulnerability providers, license providers, registry integrations, and any future integration that calls an external service.
+
+### How to instrument a route
+
+1. **Inject `MeterRegistry`** into the route builder class:
+   ```java
+   @Inject MeterRegistry registry;
+   ```
+2. **Attach `ProviderRoutePolicy`** immediately after `.routeId(...)`:
+   ```java
+   .routePolicy(new ProviderRoutePolicy(registry))
+   ```
+3. **Set the provider name** on the exchange before the circuit breaker:
+   ```java
+   .setProperty(Constants.PROVIDER_NAME_PROPERTY, constant("provider-name"))
+   ```
+
+This produces a `camel.route.provider.requests` timer with `provider` and `routeId` tags, p90/p95/p99 percentiles, and SLO histogram buckets.
+
+### Currently instrumented routes
+
+| Integration | Route ID | Provider tag | Status |
+|---|---|---|---|
+| TrustifyIntegration | `trustifyRequest`, `trustifyToken`, `trustifyPurls`, `trustifyLookup` | `trustify` | Instrumented |
+| LicensesIntegration | `depsDevRequest` | `deps.dev` | Instrumented |
+| Pep691Integration | `pep691Lookup` | `pypi` | Instrumented |
+
+### Routes pending instrumentation
+
+- **Hardened images integration** (not yet implemented) — should include `ProviderRoutePolicy` from the start
+
 ## Testing Conventions
 
 - **Frameworks**: JUnit 5 (Jupiter), Quarkus Test, Mockito (via `quarkus-junit5-mockito`)

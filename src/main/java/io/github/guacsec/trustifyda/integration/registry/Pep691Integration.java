@@ -33,8 +33,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.integration.Constants;
+import io.github.guacsec.trustifyda.integration.providers.trustify.ProviderRoutePolicy;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.registry.Pep691Response;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -49,6 +51,7 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
   private static final String PKG_PYPI_PREFIX = "pkg:pypi/";
   private static final String PEP691_URL_PROPERTY = "pep691RegistryUrl";
   private static final String PEP691_PACKAGE_PROPERTY = "pep691PackageName";
+  private static final String PYPI_SOURCE = "pypi";
 
   @ConfigProperty(name = "api.pypi.registry.host")
   Optional<String> registryHost;
@@ -61,6 +64,8 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
   @Inject ObjectMapper objectMapper;
 
   @Inject ProducerTemplate producerTemplate;
+
+  @Inject MeterRegistry registry;
 
   @Override
   public boolean isEnabled() {
@@ -77,6 +82,8 @@ public class Pep691Integration extends EndpointRouteBuilder implements RegistryI
     // fmt:off
     from(direct("pep691Lookup"))
       .routeId("pep691Lookup")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .setProperty(Constants.PROVIDER_NAME_PROPERTY, constant(PYPI_SOURCE))
       .circuitBreaker()
         .faultToleranceConfiguration()
           .timeoutEnabled(true)
