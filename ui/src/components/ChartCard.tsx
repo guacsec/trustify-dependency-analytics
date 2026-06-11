@@ -2,7 +2,7 @@ import {Bullseye, CardBody} from '@patternfly/react-core';
 import {ChartDonut} from '@patternfly/react-charts';
 import {Summary} from '../api/report';
 
-const customColors = ['#800000', '#FF0000', '#FFA500', '#5BA352'];
+const customColors = ['#800000', '#FF0000', '#FFA500', '#5BA352', '#808080'];
 
 export const ChartCard = ({summary}: { summary: Summary }) => {
 
@@ -10,9 +10,10 @@ export const ChartCard = ({summary}: { summary: Summary }) => {
   const high = summary?.high ?? 0;
   const medium = summary?.medium ?? 0;
   const low = summary?.low ?? 0;
+  const unknown = summary?.unknown ?? 0;
   const total = summary?.total ?? 0;
 
-  const hasValues = critical + high + medium + low > 0;
+  const hasValues = critical + high + medium + low + unknown > 0;
   const zeroColor = '#D5F5E3';
   const colorScale = hasValues ? customColors : [zeroColor];
 
@@ -21,6 +22,7 @@ export const ChartCard = ({summary}: { summary: Summary }) => {
     {name: `High: ${high}`, symbol: {type: 'square', fill: customColors[1]}},
     {name: `Medium: ${medium}`, symbol: {type: 'square', fill: customColors[2]}},
     {name: `Low: ${low}`, symbol: {type: 'square', fill: customColors[3]}},
+    {name: `Unknown: ${unknown}`, symbol: {type: 'square', fill: customColors[4]}},
   ];
 
   return (
@@ -36,6 +38,7 @@ export const ChartCard = ({summary}: { summary: Summary }) => {
                 {x: 'High', y: high},
                 {x: 'Medium', y: medium},
                 {x: 'Low', y: low},
+                {x: 'Unknown', y: unknown},
               ] : [{x: 'Empty', y: 1e-10}]}
               labels={({datum}) => hasValues ? `${datum.x}: ${datum.y}` : 'No vulnerabilities'}
               legendData={legendData}

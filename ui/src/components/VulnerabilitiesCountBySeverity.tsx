@@ -16,6 +16,7 @@ export const VulnerabilitiesCountBySeverity = ({
         HIGH: 0,
         MEDIUM: 0,
         LOW: 0,
+        UNKNOWN: 0,
     };
     if (vulnerabilities.length > 0) {
         // Loop through the issues and increment severity counts
@@ -67,7 +68,15 @@ export const VulnerabilitiesCountBySeverity = ({
                     <Icon isInline>
                         <SecurityIcon style={{fill: '#5BA352', height: '13px'}}/>
                     </Icon>&nbsp;
-                    {severityCounts.LOW}
+                    {severityCounts.LOW}&nbsp;
+                </>
+            )}
+            {severityCounts.UNKNOWN > 0 && (
+                <>
+                    <Icon isInline>
+                        <SecurityIcon style={{fill: '#808080', height: '13px'}}/>
+                    </Icon>&nbsp;
+                    {severityCounts.UNKNOWN}
                 </>
             )}
         </FlexItem>
