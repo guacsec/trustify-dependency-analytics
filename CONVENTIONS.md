@@ -183,7 +183,7 @@ This produces a `camel.route.provider.requests` timer with `provider` and `route
 
 | Integration | Route ID | Provider tag | Status |
 |---|---|---|---|
-| TrustifyIntegration | `trustifyRequest`, `trustifyToken`, `trustifyPurls`, `trustifyLookup` | `trustify` | Instrumented |
+| TrustifyIntegration | `recommendations`, `vulnerabilities`, `trustifyHealthCheck`, `trustifyValidateCredentials` | `trustify` | Instrumented |
 | LicensesIntegration | `depsDevRequest` | `deps.dev` | Instrumented |
 | Pep691Integration | `pep691Lookup` | `pypi` | Instrumented |
 
