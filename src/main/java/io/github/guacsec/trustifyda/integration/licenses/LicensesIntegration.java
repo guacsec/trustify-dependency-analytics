@@ -42,8 +42,10 @@ import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.cache.CacheService;
+import io.github.guacsec.trustifyda.integration.providers.trustify.ProviderRoutePolicy;
 import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
 import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -79,6 +81,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
   @Inject SpdxLicenseService spdxLicenseService;
   @Inject CacheService cacheService;
   @Inject MonitoringProcessor monitoringProcessor;
+  @Inject MeterRegistry registry;
 
   @Override
   public void configure() {
@@ -172,6 +175,8 @@ public class LicensesIntegration extends EndpointRouteBuilder {
 
     from(direct("depsDevRequest"))
       .routeId("depsDevRequest")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .setProperty(Constants.PROVIDER_NAME_PROPERTY, constant(DEPS_DEV_SOURCE))
       .circuitBreaker()
       .faultToleranceConfiguration()
         .timeoutEnabled(true)
