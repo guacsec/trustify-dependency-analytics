@@ -37,6 +37,7 @@ import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicense;
 import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicenseException;
 import org.spdx.library.model.v3_0_1.expandedlicensing.WithAdditionOperator;
 import org.spdx.library.model.v3_0_1.simplelicensing.AnyLicenseInfo;
+import org.spdx.storage.simple.InMemSpdxStore;
 import org.spdx.utility.compare.LicenseCompareHelper;
 import org.spdx.utility.compare.SpdxCompareException;
 
@@ -183,7 +184,9 @@ public class SpdxLicenseService {
     toParse = toParse.replaceAll("([A-Za-z][A-Za-z0-9.-]*\\d)\\+", "$1-or-later");
     AnyLicenseInfo root;
     try {
-      root = LicenseInfoFactory.parseSPDXLicenseString(toParse);
+      root =
+          LicenseInfoFactory.parseSPDXLicenseString(
+              toParse, new InMemSpdxStore(), null, null, null);
     } catch (InvalidSPDXAnalysisException e) {
       if (!trimmed.contains(" AND ") && !trimmed.contains(" OR ") && !trimmed.contains(" WITH ")) {
         LicenseCategory category = LicenseCategory.UNKNOWN;
@@ -287,7 +290,9 @@ public class SpdxLicenseService {
 
   private List<LicenseIdentifier> parseExpressionToIdentifiers(String expression)
       throws InvalidSPDXAnalysisException {
-    AnyLicenseInfo root = LicenseInfoFactory.parseSPDXLicenseString(expression.trim());
+    AnyLicenseInfo root =
+        LicenseInfoFactory.parseSPDXLicenseString(
+            expression.trim(), new InMemSpdxStore(), null, null, null);
     List<LicenseIdentifier> out = new ArrayList<>();
     collectIdentifiers(root, out);
     return out;
