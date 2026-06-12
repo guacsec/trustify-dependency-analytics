@@ -38,6 +38,10 @@ public class DepsDevRequestBuilder {
 
   private static final int BATCH_SIZE = 100;
 
+  public static String cacheKey(PackageRef ref) {
+    return ref.purl().getCoordinates();
+  }
+
   public boolean isEmpty(List<PackageRef> purls) {
     return purls == null || purls.isEmpty();
   }
@@ -49,7 +53,7 @@ public class DepsDevRequestBuilder {
     var depsDevReq = MAPPER.createObjectNode();
     var requests = MAPPER.createArrayNode();
     for (var p : purls) {
-      requests.add(MAPPER.createObjectNode().put("purl", p.purl().getCoordinates()));
+      requests.add(MAPPER.createObjectNode().put("purl", cacheKey(p)));
     }
     depsDevReq.set("requests", requests);
     return depsDevReq;

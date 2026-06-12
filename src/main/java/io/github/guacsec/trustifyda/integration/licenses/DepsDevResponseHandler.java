@@ -75,6 +75,8 @@ public class DepsDevResponseHandler {
         throw new RuntimeException("Invalid response format: missing or non-array 'responses'");
       }
       var responses = (ArrayNode) json.get("responses");
+      int withLicenses = 0;
+      int withoutLicenses = 0;
       int noResult = 0;
       for (var response : responses) {
         var infos = new ArrayList<LicenseInfo>();
@@ -84,17 +86,28 @@ public class DepsDevResponseHandler {
           var result = (ObjectNode) response.get("result");
           if (result.has("version")) {
             var version = result.get("version");
-            var licensesNode = (ArrayNode) version.get("licenseDetails");
-            licensesNode.forEach(
-                licenseNode -> {
-                  var spdx = licenseNode.get("spdx").asText();
-                  var licenseField = licenseNode.get("license");
-                  var license =
-                      licenseField != null && !licenseField.isNull() ? licenseField.asText() : null;
-                  var info =
-                      spdxLicenseService.fromLicenseId(spdx, DEPS_DEV_SOURCE, depsDevHost, license);
-                  infos.add(info);
-                });
+            var licenseDetailsNode = version.get("licenseDetails");
+            if (licenseDetailsNode != null && licenseDetailsNode.isArray()) {
+              var licensesNode = (ArrayNode) licenseDetailsNode;
+              licensesNode.forEach(
+                  licenseNode -> {
+                    var spdx = licenseNode.get("spdx").asText();
+                    var licenseField = licenseNode.get("license");
+                    var license =
+                        licenseField != null && !licenseField.isNull()
+                            ? licenseField.asText()
+                            : null;
+                    var info =
+                        spdxLicenseService.fromLicenseId(
+                            spdx, DEPS_DEV_SOURCE, depsDevHost, license);
+                    infos.add(info);
+                  });
+            }
+          }
+          if (infos.isEmpty()) {
+            withoutLicenses++;
+          } else {
+            withLicenses++;
           }
         } else {
           noResult++;
@@ -106,8 +119,8 @@ public class DepsDevResponseHandler {
         results.put(purl, packageResult);
       }
       LOGGER.debugf(
-          "Deps.dev batch: %d responses, %d with license data, %d without",
-          responses.size(), responses.size() - noResult, noResult);
+          "Deps.dev batch: %d responses, %d with licenses, %d without licenses, %d no result",
+          responses.size(), withLicenses, withoutLicenses, noResult);
       exchange
           .getMessage()
           .setBody(

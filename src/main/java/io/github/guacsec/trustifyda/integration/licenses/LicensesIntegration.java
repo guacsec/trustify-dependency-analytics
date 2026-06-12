@@ -211,11 +211,11 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     // Compare using coordinates since cache uses coordinates as keys
     Set<String> cachedCoordinates =
         cachedLicenses.keySet().stream()
-            .map(p -> p.purl().getCoordinates())
+            .map(p -> DepsDevRequestBuilder.cacheKey(p))
             .collect(Collectors.toSet());
     Set<PackageRef> misses =
         allPurls.stream()
-            .filter(p -> !cachedCoordinates.contains(p.purl().getCoordinates()))
+            .filter(p -> !cachedCoordinates.contains(DepsDevRequestBuilder.cacheKey(p)))
             .collect(Collectors.toSet());
 
     exchange.setProperty(Constants.CACHE_LICENSES_PROPERTY, misses);
@@ -233,7 +233,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       cacheHits = Collections.emptyMap();
     }
     Map<String, PackageLicenseResult> packages = new HashMap<>();
-    cacheHits.forEach((ref, result) -> packages.put(ref.purl().getCoordinates(), result));
+    cacheHits.forEach((ref, result) -> packages.put(DepsDevRequestBuilder.cacheKey(ref), result));
     var status = new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE);
     exchange.getIn().setBody(new LicenseSplitResult(status, packages));
   }
@@ -248,7 +248,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     LicenseSplitResult result = exchange.getIn().getBody(LicenseSplitResult.class);
     if (result == null) {
       Map<String, PackageLicenseResult> packages = new HashMap<>();
-      cacheHits.forEach((ref, r) -> packages.put(ref.purl().getCoordinates(), r));
+      cacheHits.forEach((ref, r) -> packages.put(DepsDevRequestBuilder.cacheKey(ref), r));
       exchange
           .getIn()
           .setBody(
@@ -257,7 +257,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       return;
     }
     Map<String, PackageLicenseResult> merged = new HashMap<>(result.packages());
-    cacheHits.forEach((ref, r) -> merged.put(ref.purl().getCoordinates(), r));
+    cacheHits.forEach((ref, r) -> merged.put(DepsDevRequestBuilder.cacheKey(ref), r));
     LOGGER.infof(
         "License merge: %d from deps.dev + %d from cache = %d total packages",
         result.packages().size(), cacheHits.size(), merged.size());
