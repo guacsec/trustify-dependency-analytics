@@ -60,6 +60,10 @@ public class DepsDevResponseHandler {
 
   public void handleResponse(Exchange exchange) {
     try {
+      var statusCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+      if (statusCode != null && statusCode >= 300) {
+        LOGGER.infof("Deps.dev licenses API returned HTTP %d", statusCode);
+      }
       var body = exchange.getIn().getBody(String.class);
       if (body == null || body.isBlank()) {
         throw new RuntimeException("Empty response from Deps.dev licenses API");
@@ -71,37 +75,39 @@ public class DepsDevResponseHandler {
         throw new RuntimeException("Invalid response format: missing or non-array 'responses'");
       }
       var responses = (ArrayNode) json.get("responses");
-      responses.forEach(
-          response -> {
-            var infos = new ArrayList<LicenseInfo>();
-            var request = (ObjectNode) response.get("request");
-            var purl = request.get("purl").asText();
-            if (response.has("result")) {
-              var result = (ObjectNode) response.get("result");
-              if (result.has("version")) {
-                var version = result.get("version");
-                var licensesNode = (ArrayNode) version.get("licenseDetails");
-                licensesNode.forEach(
-                    licenseNode -> {
-                      var spdx = licenseNode.get("spdx").asText();
-                      var licenseField = licenseNode.get("license");
-                      var license =
-                          licenseField != null && !licenseField.isNull()
-                              ? licenseField.asText()
-                              : null;
-                      var info =
-                          spdxLicenseService.fromLicenseId(
-                              spdx, DEPS_DEV_SOURCE, depsDevHost, license);
-                      infos.add(info);
-                    });
-              }
-            }
-            var packageResult =
-                new PackageLicenseResult()
-                    .concluded(spdxLicenseService.getConcluded(infos))
-                    .evidence(infos);
-            results.put(purl, packageResult);
-          });
+      int noResult = 0;
+      for (var response : responses) {
+        var infos = new ArrayList<LicenseInfo>();
+        var request = (ObjectNode) response.get("request");
+        var purl = request.get("purl").asText();
+        if (response.has("result")) {
+          var result = (ObjectNode) response.get("result");
+          if (result.has("version")) {
+            var version = result.get("version");
+            var licensesNode = (ArrayNode) version.get("licenseDetails");
+            licensesNode.forEach(
+                licenseNode -> {
+                  var spdx = licenseNode.get("spdx").asText();
+                  var licenseField = licenseNode.get("license");
+                  var license =
+                      licenseField != null && !licenseField.isNull() ? licenseField.asText() : null;
+                  var info =
+                      spdxLicenseService.fromLicenseId(spdx, DEPS_DEV_SOURCE, depsDevHost, license);
+                  infos.add(info);
+                });
+          }
+        } else {
+          noResult++;
+        }
+        var packageResult =
+            new PackageLicenseResult()
+                .concluded(spdxLicenseService.getConcluded(infos))
+                .evidence(infos);
+        results.put(purl, packageResult);
+      }
+      LOGGER.debugf(
+          "Deps.dev batch: %d responses, %d with license data, %d without",
+          responses.size(), responses.size() - noResult, noResult);
       exchange
           .getMessage()
           .setBody(

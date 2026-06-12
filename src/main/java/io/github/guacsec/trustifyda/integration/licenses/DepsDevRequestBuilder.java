@@ -36,7 +36,7 @@ public class DepsDevRequestBuilder {
 
   private static final ObjectMapper MAPPER = ObjectMapperProducer.newInstance();
 
-  private static final int BATCH_SIZE = 500;
+  private static final int BATCH_SIZE = 100;
 
   public boolean isEmpty(List<PackageRef> purls) {
     return purls == null || purls.isEmpty();

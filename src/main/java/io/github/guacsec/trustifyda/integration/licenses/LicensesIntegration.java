@@ -233,7 +233,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       cacheHits = Collections.emptyMap();
     }
     Map<String, PackageLicenseResult> packages = new HashMap<>();
-    cacheHits.forEach((ref, result) -> packages.put(ref.ref(), result));
+    cacheHits.forEach((ref, result) -> packages.put(ref.purl().getCoordinates(), result));
     var status = new ProviderStatus().ok(true).name(DEPS_DEV_SOURCE);
     exchange.getIn().setBody(new LicenseSplitResult(status, packages));
   }
@@ -248,7 +248,7 @@ public class LicensesIntegration extends EndpointRouteBuilder {
     LicenseSplitResult result = exchange.getIn().getBody(LicenseSplitResult.class);
     if (result == null) {
       Map<String, PackageLicenseResult> packages = new HashMap<>();
-      cacheHits.forEach((ref, r) -> packages.put(ref.ref(), r));
+      cacheHits.forEach((ref, r) -> packages.put(ref.purl().getCoordinates(), r));
       exchange
           .getIn()
           .setBody(
@@ -257,7 +257,10 @@ public class LicensesIntegration extends EndpointRouteBuilder {
       return;
     }
     Map<String, PackageLicenseResult> merged = new HashMap<>(result.packages());
-    cacheHits.forEach((ref, r) -> merged.put(ref.ref(), r));
+    cacheHits.forEach((ref, r) -> merged.put(ref.purl().getCoordinates(), r));
+    LOGGER.infof(
+        "License merge: %d from deps.dev + %d from cache = %d total packages",
+        result.packages().size(), cacheHits.size(), merged.size());
     exchange.getIn().setBody(new LicenseSplitResult(result.status(), merged));
   }
 
