@@ -28,6 +28,7 @@ export const reportBasic: AppData = {
               "high" : 4,
               "medium" : 2,
               "low" : 0,
+              "unknown" : 0,
               "remediations" : 0,
               "recommendations" : 3,
               "unscanned" : 0
@@ -163,6 +164,7 @@ export const reportBasic: AppData = {
               "high" : 1,
               "medium" : 0,
               "low" : 0,
+              "unknown" : 0,
               "remediations" : 0,
               "recommendations" : 3,
               "unscanned" : 0

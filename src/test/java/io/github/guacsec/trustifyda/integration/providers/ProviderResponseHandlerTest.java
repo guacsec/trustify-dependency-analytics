@@ -85,6 +85,7 @@ public class ProviderResponseHandlerTest {
     assertEquals(expected.getHigh(), summary.getHigh());
     assertEquals(expected.getMedium(), summary.getMedium());
     assertEquals(expected.getLow(), summary.getLow());
+    assertEquals(expected.getUnknown(), summary.getUnknown());
     assertEquals(expected.getRecommendations(), summary.getRecommendations());
     assertEquals(expected.getRemediations(), summary.getRemediations());
     assertEquals(expected.getDependencies(), summary.getDependencies());
@@ -221,6 +222,24 @@ public class ProviderResponseHandlerTest {
                         Collections.emptyList())),
             tree().direct("aa").withTransitive("aaa").direct("ab").withTransitive("aab").build(),
             new SourceSummary().direct(0).transitive(2).total(2).high(1).medium(1).dependencies(2),
+            TEST_SOURCE),
+        // Case 6: issues with null CVSS score produce UNKNOWN severity
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                    new PackageItem(
+                        "pkg:npm/aa@1",
+                        null,
+                        List.of(buildIssue(1, null), buildIssue(2, 8f)),
+                        Collections.emptyList()),
+                "pkg:npm/aaa@1",
+                    new PackageItem(
+                        "pkg:npm/aaa@1",
+                        null,
+                        List.of(buildIssue(3, null)),
+                        Collections.emptyList())),
+            tree().direct("aa").withTransitive("aaa").build(),
+            new SourceSummary().direct(2).transitive(1).total(3).high(1).unknown(2).dependencies(2),
             TEST_SOURCE));
   }
 
