@@ -1289,6 +1289,9 @@ public class TrustifyResponseHandlerTest {
     assertNull(
         issues.get(0).getCvssScore(), "Issue with no valid scores should have null cvssScore");
     assertNull(issues.get(0).getSeverity(), "Issue with no valid scores should have null severity");
+    assertEquals("CVE-2024-1597", issues.get(0).getId());
+    assertEquals("redhat-csaf", issues.get(0).getSource());
+    assertNull(issues.get(0).getRemediation(), "Issue with no ranges should have null remediation");
 
     // Package with mixed valid/invalid scores should use the valid score
     PackageItem packageItem2 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
