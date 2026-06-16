@@ -217,6 +217,10 @@
       <artifactId>quarkus-redis-client</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-scheduler</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-junit5</artifactId>
       <scope>test</scope>
