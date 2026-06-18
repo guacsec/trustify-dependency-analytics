@@ -514,7 +514,9 @@ public abstract class ProviderResponseHandler {
             i -> {
               var vulnerabilities = countVulnerabilities(i);
               var severity = i.getSeverity();
-              if (severity != null) {
+              if (severity == null) {
+                counter.unknown.addAndGet(vulnerabilities);
+              } else {
                 switch (severity) {
                   case CRITICAL -> counter.critical.addAndGet(vulnerabilities);
                   case HIGH -> counter.high.addAndGet(vulnerabilities);
