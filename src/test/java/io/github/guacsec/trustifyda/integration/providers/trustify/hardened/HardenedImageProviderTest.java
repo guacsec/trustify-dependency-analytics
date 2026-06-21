@@ -24,8 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -36,19 +37,15 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.integration.lock.LockService;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.ValueCommands;
 
 public class HardenedImageProviderTest {
 
@@ -69,24 +66,20 @@ public class HardenedImageProviderTest {
 
   private HardenedImageProvider provider;
   private HardenedImageRecommendation config;
-  private ValueCommands<String, String> lockCommands;
-  private KeyCommands<String> keyCommands;
+  private HardenedImageResponseHandler responseHandler;
+  private LockService lock;
+  private HummingbirdClient hummingbirdClient;
 
-  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
-    RedisDataSource ds = mock(RedisDataSource.class);
-    lockCommands = mock(ValueCommands.class);
-    keyCommands = mock(KeyCommands.class);
-    when(ds.value(String.class)).thenReturn(lockCommands);
-    when(ds.key()).thenReturn(keyCommands);
-
+    lock = mock(LockService.class);
+    hummingbirdClient = mock(HummingbirdClient.class);
+    responseHandler = new HardenedImageResponseHandler(new ObjectMapper());
     config = mock(HardenedImageRecommendation.class);
     when(config.lockTtl()).thenReturn(Duration.ofMinutes(5));
     when(config.refreshInterval()).thenReturn("1h");
 
-    provider = new HardenedImageProvider(ds, new ObjectMapper());
-    provider.config = config;
+    provider = new HardenedImageProvider(config, lock, responseHandler, hummingbirdClient);
   }
 
   /// Verifies that the periodic refresh acquires the lock, fetches data, and populates the index.
@@ -94,20 +87,11 @@ public class HardenedImageProviderTest {
   void testRefreshAcquiresLockAndPopulatesIndex() throws Exception {
     // Given a configured URL and a lock that this instance acquires
     when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
-    AtomicReference<String> lockHolder = new AtomicReference<>();
-    when(lockCommands.get(LOCK_KEY)).thenAnswer((Answer<String>) inv -> lockHolder.get());
-    doAnswer(
-            (Answer<Void>)
-                inv -> {
-                  lockHolder.set(inv.getArgument(1));
-                  return null;
-                })
-        .when(lockCommands)
-        .set(eq(LOCK_KEY), anyString(), any());
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
 
     // Spy on the provider to stub fetchAndParseData (avoids real HTTP)
     HardenedImageProvider spyProvider = spy(provider);
-    spyProvider.config = config;
+
     IndexedRecommendation nginxRec =
         IndexedRecommendation.builder()
             .packageName(new PackageRef(HARDENED_NGINX_PURL))
@@ -125,7 +109,7 @@ public class HardenedImageProviderTest {
     spyProvider.refresh();
 
     // Then the lock was acquired and the index is populated
-    verify(lockCommands).set(eq(LOCK_KEY), anyString(), any());
+    verify(lock).tryAcquire(eq(LOCK_KEY), any());
     assertEquals(2, spyProvider.getIndex().size());
     assertNotNull(spyProvider.lookup("docker.io/library/nginx:1.25"));
     assertNotNull(spyProvider.lookup("docker.io/library/nginx:1.25-alpine"));
@@ -140,13 +124,12 @@ public class HardenedImageProviderTest {
   void testLockContentionSkipsRefresh() {
     // Given a configured URL but the lock is held by another instance
     when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
-    when(lockCommands.get("hardened-image-refresh-lock")).thenReturn("other-instance-id");
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(false);
 
     // When the refresh runs
     provider.refresh();
 
-    // Then the lock is not released (we never held it) and the index remains empty
-    verify(keyCommands, never()).del(anyString());
+    // Then the index remains empty
     assertEquals(0, provider.getIndex().size());
   }
 
@@ -166,7 +149,7 @@ public class HardenedImageProviderTest {
             + "\"compare_to\": [\"docker.io/library/node:20\"]}]";
 
     // When parsing and inverting the mapping
-    Map<String, IndexedRecommendation> result = provider.parseAndInvertMapping(json);
+    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
 
     // Then each base image maps to its hardened recommendation
     assertEquals(3, result.size());
@@ -192,8 +175,7 @@ public class HardenedImageProviderTest {
     provider.refresh();
 
     // Then no lock is acquired and lookup returns null
-    verify(lockCommands, never()).set(anyString(), anyString(), any());
-    verify(lockCommands, never()).get(anyString());
+    verify(lock, never()).tryAcquire(anyString(), any());
     assertNull(provider.lookup("docker.io/library/nginx:1.25"));
   }
 
@@ -202,20 +184,11 @@ public class HardenedImageProviderTest {
   void testLockReleasedAfterSuccessfulLoad() throws Exception {
     // Given a configured URL and a lock that this instance acquires
     when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
-    AtomicReference<String> lockHolder = new AtomicReference<>();
-    when(lockCommands.get(LOCK_KEY)).thenAnswer((Answer<String>) inv -> lockHolder.get());
-    doAnswer(
-            (Answer<Void>)
-                inv -> {
-                  lockHolder.set(inv.getArgument(1));
-                  return null;
-                })
-        .when(lockCommands)
-        .set(eq(LOCK_KEY), anyString(), any());
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
 
     // Spy on the provider to stub fetchAndParseData (avoids real HTTP)
     HardenedImageProvider spyProvider = spy(provider);
-    spyProvider.config = config;
+
     IndexedRecommendation rec =
         IndexedRecommendation.builder()
             .packageName(new PackageRef(HARDENED_NGINX_PURL))
@@ -228,7 +201,7 @@ public class HardenedImageProviderTest {
     spyProvider.refresh();
 
     // Then the lock is released and the index is populated
-    verify(keyCommands).del(LOCK_KEY);
+    verify(lock).release(LOCK_KEY);
     assertEquals(1, spyProvider.getIndex().size());
     assertNotNull(spyProvider.lookup("base:1.0"));
   }
@@ -244,7 +217,7 @@ public class HardenedImageProviderTest {
             + "\"compare_to\": [\"docker.io/library/alpine:3.19\"]}]}";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = provider.parseAndInvertMapping(json);
+    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
 
     // Then the mapping is correctly inverted
     assertEquals(1, result.size());
@@ -260,7 +233,7 @@ public class HardenedImageProviderTest {
     String json = "{\"images\": []}";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = provider.parseAndInvertMapping(json);
+    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
 
     // Then the result is empty
     assertTrue(result.isEmpty());
@@ -281,7 +254,7 @@ public class HardenedImageProviderTest {
             + "\"}]";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = provider.parseAndInvertMapping(json);
+    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
 
     // Then only the valid entry with compare_to is indexed
     assertEquals(1, result.size());
@@ -295,19 +268,9 @@ public class HardenedImageProviderTest {
   void testEmptyResponsePreservesExistingIndex() throws Exception {
     // Given a configured URL and a lock that this instance acquires
     when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
-    AtomicReference<String> lockHolder = new AtomicReference<>();
-    when(lockCommands.get(LOCK_KEY)).thenAnswer((Answer<String>) inv -> lockHolder.get());
-    doAnswer(
-            (Answer<Void>)
-                inv -> {
-                  lockHolder.set(inv.getArgument(1));
-                  return null;
-                })
-        .when(lockCommands)
-        .set(eq(LOCK_KEY), anyString(), any());
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
 
     HardenedImageProvider spyProvider = spy(provider);
-    spyProvider.config = config;
 
     // First refresh: populate the index with data
     IndexedRecommendation rec =
@@ -327,6 +290,66 @@ public class HardenedImageProviderTest {
     spyProvider.refresh();
 
     // Then the existing index is preserved
+    assertEquals(1, spyProvider.getIndex().size());
+    assertNotNull(spyProvider.lookup("base:1.0"));
+  }
+
+  /// Verifies that a populated index is preserved when fetchAndParseData throws an exception.
+  @Test
+  void testFetchFailurePreservesExistingIndex() throws Exception {
+    // Given a configured URL and a lock that this instance acquires
+    when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
+
+    HardenedImageProvider spyProvider = spy(provider);
+
+    // First refresh: populate the index with data
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+    spyProvider.refresh();
+    assertEquals(1, spyProvider.getIndex().size());
+
+    // Second refresh: fetchAndParseData throws (simulating HTTP failure)
+    doThrow(new RuntimeException("Connection refused"))
+        .when(spyProvider)
+        .fetchAndParseData(anyString());
+    spyProvider.refresh();
+
+    // Then the existing index is preserved and the lock is released
+    assertEquals(1, spyProvider.getIndex().size());
+    assertNotNull(spyProvider.lookup("base:1.0"));
+    verify(lock, atLeastOnce()).release(LOCK_KEY);
+  }
+
+  /// Verifies that lock release failure does not propagate and the index remains intact.
+  @Test
+  void testLockReleaseFailureDoesNotPropagate() throws Exception {
+    // Given a configured URL and a lock that this instance acquires
+    when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
+
+    HardenedImageProvider spyProvider = spy(provider);
+
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+
+    // Lock release throws (simulating Redis connection failure)
+    doThrow(new RuntimeException("Redis connection lost")).when(lock).release(LOCK_KEY);
+
+    // When refresh runs — should not throw despite lock release failure
+    spyProvider.refresh();
+
+    // Then the index is still populated (refresh completed before the finally block)
     assertEquals(1, spyProvider.getIndex().size());
     assertNotNull(spyProvider.lookup("base:1.0"));
   }

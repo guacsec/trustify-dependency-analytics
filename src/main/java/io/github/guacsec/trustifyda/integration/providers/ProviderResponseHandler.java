@@ -124,7 +124,10 @@ public abstract class ProviderResponseHandler {
         .ref(ref)
         .issues(
             issues.stream()
-                .sorted(Comparator.comparing(Issue::getCvssScore).reversed())
+                .sorted(
+                    Comparator.comparing(
+                            Issue::getCvssScore, Comparator.nullsFirst(Comparator.naturalOrder()))
+                        .reversed())
                 .collect(Collectors.toList()));
   }
 

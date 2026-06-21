@@ -18,36 +18,23 @@
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.integration.lock.LockService;
 import io.github.guacsec.trustifyda.model.trustify.HardenedImageIndex;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.SetArgs;
-import io.quarkus.redis.datasource.value.ValueCommands;
+import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
 import io.quarkus.scheduler.Scheduled;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * Provider that periodically fetches hardened image compatibility data from the Hummingbird service
- * and maintains a thread-safe in-memory index for lookups. Uses a Redis distributed lock to prevent
- * concurrent refresh across multiple production instances.
+ * and maintains a thread-safe in-memory index for lookups. Delegates response parsing to {@link
+ * HardenedImageResponseHandler} and distributed locking to {@link LockService}.
  */
 @ApplicationScoped
 public class HardenedImageProvider {
@@ -55,20 +42,37 @@ public class HardenedImageProvider {
   private static final Logger LOG = Logger.getLogger(HardenedImageProvider.class);
   private static final String LOCK_KEY = "hardened-image-refresh-lock";
 
-  @Inject HardenedImageRecommendation config;
-
   private final HardenedImageIndex index = new HardenedImageIndex();
-  private final ValueCommands<String, String> lockCommands;
-  private final KeyCommands<String> keyCommands;
-  private final HttpClient httpClient;
-  private final ObjectMapper objectMapper;
-  private final String instanceId = UUID.randomUUID().toString();
+  private final HardenedImageRecommendation config;
+  private final LockService lock;
+  private final HardenedImageResponseHandler responseHandler;
+  private final HummingbirdClient hummingbirdClient;
 
-  public HardenedImageProvider(RedisDataSource ds, ObjectMapper objectMapper) {
-    this.lockCommands = ds.value(String.class);
-    this.keyCommands = ds.key();
-    this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-    this.objectMapper = objectMapper;
+  public HardenedImageProvider(
+      HardenedImageRecommendation config,
+      LockService lock,
+      HardenedImageResponseHandler responseHandler) {
+    this.config = config;
+    this.lock = lock;
+    this.responseHandler = responseHandler;
+    this.hummingbirdClient =
+        QuarkusRestClientBuilder.newBuilder()
+            .baseUri(URI.create("http://localhost"))
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build(HummingbirdClient.class);
+  }
+
+  /** Constructor for testing with a mock client. */
+  HardenedImageProvider(
+      HardenedImageRecommendation config,
+      LockService lock,
+      HardenedImageResponseHandler responseHandler,
+      HummingbirdClient hummingbirdClient) {
+    this.config = config;
+    this.lock = lock;
+    this.responseHandler = responseHandler;
+    this.hummingbirdClient = hummingbirdClient;
   }
 
   /**
@@ -83,12 +87,9 @@ public class HardenedImageProvider {
     }
 
     String url = config.url().get();
-    Duration lockTtl = config.lockTtl();
 
     try {
-      lockCommands.set(LOCK_KEY, instanceId, new SetArgs().nx().ex(lockTtl));
-      String holder = lockCommands.get(LOCK_KEY);
-      if (!instanceId.equals(holder)) {
+      if (!lock.tryAcquire(LOCK_KEY, config.lockTtl())) {
         LOG.info("Lock held by another instance, skipping hardened image refresh");
         return;
       }
@@ -108,12 +109,9 @@ public class HardenedImageProvider {
       LOG.errorf(e, "Failed to refresh hardened image data from %s", url);
     } finally {
       try {
-        String currentHolder = lockCommands.get(LOCK_KEY);
-        if (instanceId.equals(currentHolder)) {
-          keyCommands.del(LOCK_KEY);
-        }
+        lock.release(LOCK_KEY);
       } catch (Exception e) {
-        LOG.warnf(e, "Failed to release refresh lock");
+        LOG.warnf(e, "Failed to release refresh lock: %s", LOCK_KEY);
       }
     }
   }
@@ -138,66 +136,7 @@ public class HardenedImageProvider {
    * references to hardened image recommendations.
    */
   Map<String, IndexedRecommendation> fetchAndParseData(String url) throws Exception {
-    HttpRequest request =
-        HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(30)).GET().build();
-    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-    if (response.statusCode() != 200) {
-      throw new RuntimeException(
-          "Hummingbird returned HTTP " + response.statusCode() + " for " + url);
-    }
-
-    return parseAndInvertMapping(response.body());
-  }
-
-  /**
-   * Parses the Hummingbird JSON response and inverts the mapping. The response contains hardened
-   * images with {@code compare_to} arrays listing base images. This method inverts the
-   * relationship: each base image reference maps to its hardened image recommendation.
-   */
-  Map<String, IndexedRecommendation> parseAndInvertMapping(String json) throws Exception {
-    JsonNode root = objectMapper.readTree(json);
-    Map<String, IndexedRecommendation> invertedIndex = new HashMap<>();
-
-    JsonNode images = root.isArray() ? root : root.path("images");
-    if (images.isMissingNode() || !images.isArray()) {
-      LOG.warn("Hummingbird response has no images array, returning empty index");
-      return Collections.emptyMap();
-    }
-
-    for (JsonNode imageNode : images) {
-      String hardenedRef = imageNode.path("image_ref").asText(null);
-      if (hardenedRef == null || hardenedRef.isBlank()) {
-        continue;
-      }
-
-      JsonNode compareTo = imageNode.path("compare_to");
-      if (!compareTo.isArray()) {
-        continue;
-      }
-
-      PackageRef hardenedPackage;
-      try {
-        hardenedPackage = new PackageRef(hardenedRef);
-      } catch (IllegalArgumentException e) {
-        LOG.warnf("Skipping invalid PURL in Hummingbird response: %s", hardenedRef);
-        continue;
-      }
-      IndexedRecommendation recommendation =
-          IndexedRecommendation.builder()
-              .packageName(hardenedPackage)
-              .vulnerabilities(Collections.emptyMap())
-              .sourceName("hardened")
-              .build();
-
-      for (JsonNode baseRef : compareTo) {
-        String baseImageRef = baseRef.asText(null);
-        if (baseImageRef != null && !baseImageRef.isBlank()) {
-          invertedIndex.put(baseImageRef, recommendation);
-        }
-      }
-    }
-
-    return invertedIndex;
+    String body = hummingbirdClient.fetchReport(URI.create(url));
+    return responseHandler.parseAndInvertMapping(body);
   }
 }

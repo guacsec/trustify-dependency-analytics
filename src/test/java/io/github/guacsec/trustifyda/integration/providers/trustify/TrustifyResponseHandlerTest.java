@@ -21,6 +21,7 @@ import static io.github.guacsec.trustifyda.integration.providers.ProviderRespons
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.mock;
@@ -690,7 +691,10 @@ public class TrustifyResponseHandlerTest {
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
     List<Issue> issues = packageItem.issues();
-    assertTrue(issues.isEmpty());
+    assertFalse(issues.isEmpty(), "CVE without scores should still produce an issue");
+    assertEquals(1, issues.size());
+    assertEquals("CVE-2024-1597", issues.get(0).getId());
+    assertNull(issues.get(0).getSeverity(), "Issue without scores should have null severity");
   }
 
   @Test
@@ -1277,7 +1281,9 @@ public class TrustifyResponseHandlerTest {
     PackageItem packageItem1 = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem1, "Package with no valid scores should be present");
     List<Issue> issues = packageItem1.issues();
-    assertTrue(issues.isEmpty(), "Package with no valid scores should have no issues");
+    assertFalse(issues.isEmpty(), "CVE with invalid scores should still produce an issue");
+    assertEquals(1, issues.size());
+    assertNull(issues.get(0).getSeverity(), "Issue with no valid scores should have null severity");
 
     // Package with mixed valid/invalid scores should use the valid score
     PackageItem packageItem2 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
@@ -1334,6 +1340,9 @@ public class TrustifyResponseHandlerTest {
     PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
     assertNotNull(packageItem);
     List<Issue> issues = packageItem.issues();
-    assertTrue(issues.isEmpty());
+    assertFalse(issues.isEmpty(), "CVE with empty scores should still produce an issue");
+    assertEquals(1, issues.size());
+    assertEquals("CVE-2025-24898", issues.get(0).getId());
+    assertNull(issues.get(0).getSeverity(), "Issue with empty scores should have null severity");
   }
 }
