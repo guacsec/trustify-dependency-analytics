@@ -35,6 +35,8 @@
   - Services: `*Service` (`ModelCardService`, `CacheService`, `SpdxLicenseService`)
   - Repositories: `*Repository` (`ModelCardRepository`, `GuardrailRepository`)
   - Route Builders: `*Integration` (`ExhortIntegration`, `LicensesIntegration`, `Pep691Integration`)
+  - Response Handlers: `*ResponseHandler` (`TrustifyResponseHandler`, `HardenedImageResponseHandler`, `DepsDevResponseHandler`)
+  - Providers: `*Provider` (`VulnerabilityProvider`, `HardenedImageProvider`)
   - Enrichment Services: `*EnrichmentService` — stateless helpers instantiated directly, not CDI-managed (e.g., `RegistryEnrichmentService`)
   - Exceptions: `*Exception` (`DetailedException`, `SbomValidationException`)
   - Utility: Private constructor, `final` class (e.g., `ExceptionUtils`)
@@ -55,8 +57,11 @@ src/main/java/io/github/guacsec/trustifyda/
 │   ├── backend/                    # REST routing (Camel)
 │   ├── cache/                      # Redis, cache services
 │   ├── licenses/                   # License integration (deps.dev)
+│   ├── lock/                       # Distributed locking (LockService)
 │   ├── providers/                  # Vulnerability providers
 │   │   └── trustify/
+│   │       ├── hardened/           # Hardened image recommendation provider
+│   │       └── ubi/                # UBI image recommendation (config-based)
 │   ├── report/                     # Report generation
 │   ├── registry/                   # Ecosystem registry integrations (PEP 691, etc.)
 │   ├── sbom/                       # SBOM parsing
@@ -137,6 +142,44 @@ Instantiate in the field initializer of the owning bean: `private final Registry
 
 Use this pattern when the helper has no injected dependencies and serves as a pure function container. If the helper needs CDI injection, make it `@ApplicationScoped` instead.
 
+## Redis Service Abstractions
+
+Redis access is centralized behind service interfaces. No class should inject `RedisDataSource` directly — always go through the appropriate service interface.
+
+### CacheService / RedisCacheService
+
+For caching provider responses and license data. Interface defines `cacheItems()`, `getCachedItems()`, `cacheLicenses()`, `getCachedLicenses()`. The `RedisCacheService` implementation uses typed `ValueCommands` with TTL-based expiry (`psetex`).
+
+### LockService / RedisLockService
+
+For distributed locking across replicas (e.g., preventing concurrent refresh jobs). Interface defines `tryAcquire(key, ttl)` and `release(key)`. The `RedisLockService` implementation uses atomic `SET NX EX GET` via `setGet()` for race-free acquisition and ownership-checked release.
+
+```java
+public interface LockService {
+    boolean tryAcquire(String key, Duration ttl);
+    void release(String key);
+}
+```
+
+## Background Scheduled Providers
+
+For integrations that periodically fetch and cache external data (as opposed to request-driven Camel routes), use the background provider pattern:
+
+1. **`@ApplicationScoped` provider class** with `@Scheduled` refresh method
+2. **Quarkus REST client interface** (built via `QuarkusRestClientBuilder`) for HTTP calls — Camel routes are not appropriate for background jobs
+3. **Dedicated `*ResponseHandler`** class (`@ApplicationScoped`) for response parsing
+4. **`LockService`** for distributed locking across replicas
+5. **Thread-safe in-memory index** (volatile reference swap) for lookups
+6. **`@ConfigMapping` interface** for provider configuration (URL, refresh interval, lock TTL)
+7. **Constructor injection** for all dependencies, with a package-private constructor accepting a mock HTTP client for testing
+
+Example: `HardenedImageProvider` + `HardenedImageResponseHandler` + `HummingbirdClient` + `HardenedImageRecommendation`
+
+This pattern differs from Camel-based integrations because:
+- No user request triggers the fetch — it runs on a timer
+- No Exchange/Message plumbing is needed
+- Circuit breakers are replaced by try/catch + index preservation on failure
+
 ## Error Handling
 
 - **Exception hierarchy**:
@@ -189,7 +232,11 @@ This produces a `camel.route.provider.requests` timer with `provider` and `route
 
 ### Routes pending instrumentation
 
-- **Hardened images integration** (not yet implemented) — should include `ProviderRoutePolicy` from the start
+None — all external-facing Camel routes are instrumented.
+
+### Background providers
+
+Background scheduled providers (e.g., `HardenedImageProvider`) do not use Camel routes and therefore do not use `ProviderRoutePolicy`. If metrics are needed for background HTTP calls, use Micrometer `Timer` directly.
 
 ## Testing Conventions
 
