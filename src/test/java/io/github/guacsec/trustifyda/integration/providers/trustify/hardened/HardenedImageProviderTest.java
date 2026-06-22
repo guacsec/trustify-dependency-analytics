@@ -389,6 +389,12 @@ public class HardenedImageProviderTest {
     assertTrue(result.isEmpty());
   }
 
+  /// Verifies that lookupBySbomId returns empty for a malformed PURL instead of throwing.
+  @Test
+  void testLookupBySbomIdWithMalformedPurl() {
+    assertTrue(provider.lookupBySbomId("not-a-valid-purl").isEmpty());
+  }
+
   /// Verifies that lookupBySbomId returns empty for a null sbomId.
   @Test
   void testLookupBySbomIdNull() {

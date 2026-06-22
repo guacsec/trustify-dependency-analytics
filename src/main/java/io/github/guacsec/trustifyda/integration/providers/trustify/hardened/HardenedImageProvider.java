@@ -145,7 +145,13 @@ public class HardenedImageProvider {
       return Collections.emptyMap();
     }
 
-    var pkgRef = new PackageRef(sbomId);
+    PackageRef pkgRef;
+    try {
+      pkgRef = new PackageRef(sbomId);
+    } catch (IllegalArgumentException e) {
+      LOG.warnf("Skipping malformed PURL in lookupBySbomId: %s", sbomId);
+      return Collections.emptyMap();
+    }
     if (!OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
       return Collections.emptyMap();
     }
