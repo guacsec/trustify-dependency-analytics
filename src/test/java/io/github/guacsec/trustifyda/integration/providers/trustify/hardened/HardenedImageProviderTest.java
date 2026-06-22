@@ -353,4 +353,58 @@ public class HardenedImageProviderTest {
     assertEquals(1, spyProvider.getIndex().size());
     assertNotNull(spyProvider.lookup("base:1.0"));
   }
+
+  /// Verifies that lookupBySbomId returns the recommendation for a matching OCI PURL.
+  @Test
+  void testLookupBySbomIdMatchingOciPurl() {
+    // Given an index populated with a hardened nginx recommendation
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", rec));
+
+    // When looking up by OCI PURL with matching repository_url and tag
+    String ociPurl =
+        "pkg:oci/nginx@sha256:def456?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(ociPurl);
+
+    // Then the recommendation is returned
+    assertEquals(1, result.size());
+    var entry = result.entrySet().iterator().next();
+    assertEquals(normalized(HARDENED_NGINX_PURL), entry.getValue().packageName().ref());
+    assertEquals("hardened", entry.getValue().sourceName());
+  }
+
+  /// Verifies that lookupBySbomId returns empty for a non-OCI PURL.
+  @Test
+  void testLookupBySbomIdNonOciPurl() {
+    // Given any index state
+    // When looking up by a Maven PURL
+    var result = provider.lookupBySbomId("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
+
+    // Then the result is empty
+    assertTrue(result.isEmpty());
+  }
+
+  /// Verifies that lookupBySbomId returns empty for a null sbomId.
+  @Test
+  void testLookupBySbomIdNull() {
+    assertTrue(provider.lookupBySbomId(null).isEmpty());
+  }
+
+  /// Verifies that lookupBySbomId returns empty for an OCI PURL with no index match.
+  @Test
+  void testLookupBySbomIdNoMatch() {
+    // Given an empty index
+    // When looking up by an OCI PURL
+    String ociPurl =
+        "pkg:oci/alpine@sha256:abc?repository_url=docker.io%2Flibrary%2Falpine&tag=3.19";
+    var result = provider.lookupBySbomId(ociPurl);
+
+    // Then the result is empty
+    assertTrue(result.isEmpty());
+  }
 }

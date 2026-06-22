@@ -41,6 +41,7 @@ import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.cache.CacheService;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
+import io.github.guacsec.trustifyda.integration.providers.trustify.hardened.HardenedImageProvider;
 import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -84,6 +85,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Inject TrustifyRequestBuilder requestBuilder;
   @Inject ObjectMapper mapper;
   @Inject UBIRecommendation ubiRecommendation;
+  @Inject HardenedImageProvider hardenedImageProvider;
   @Inject MeterRegistry registry;
   @Inject CacheService cacheService;
 
@@ -152,7 +154,17 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         .setProperty(Constants.CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT, constant(true))
         .process(responseHandler::processResponseError)
       .endChoice()
-      
+
+      .end();
+
+    from(direct(Constants.TRUSTIFY_HARDENED_RECOMMEND_ROUTE))
+      .routeId("trustify-hardened-recommend")
+      .routePolicy(new ProviderRoutePolicy(registry))
+      .choice()
+        .when(exchangeProperty(Constants.RECOMMEND_PARAM).isEqualTo(Boolean.TRUE))
+          .process(this::processHardenedRecommendations)
+        .otherwise()
+          .setBody(constant(Collections.emptyMap()))
       .end();
 
     from(direct("vulnerabilities"))
@@ -180,6 +192,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         .parallelProcessing()
           .to(direct("vulnerabilities"))
           .to(direct("recommendations"))
+          .to(direct(Constants.TRUSTIFY_HARDENED_RECOMMEND_ROUTE))
       .end();
 
     from(direct("trustifyHealthCheck"))
@@ -416,6 +429,11 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       return Collections.singletonMap(pkgRef, recommendation);
     }
     return Collections.emptyMap();
+  }
+
+  private void processHardenedRecommendations(Exchange exchange) {
+    String sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
+    exchange.getMessage().setBody(hardenedImageProvider.lookupBySbomId(sbomId));
   }
 
   private Vulnerability filterFixed(Vulnerability a, Vulnerability b) {

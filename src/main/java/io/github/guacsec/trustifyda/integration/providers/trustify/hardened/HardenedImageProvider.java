@@ -18,11 +18,13 @@
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 
+import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.integration.lock.LockService;
 import io.github.guacsec.trustifyda.model.trustify.HardenedImageIndex;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
@@ -30,6 +32,7 @@ import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
 import io.quarkus.scheduler.Scheduled;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * Provider that periodically fetches hardened image compatibility data from the Hummingbird service
@@ -48,6 +51,7 @@ public class HardenedImageProvider {
   private final HardenedImageResponseHandler responseHandler;
   private final HummingbirdClient hummingbirdClient;
 
+  @Inject
   public HardenedImageProvider(
       HardenedImageRecommendation config,
       LockService lock,
@@ -116,6 +120,8 @@ public class HardenedImageProvider {
     }
   }
 
+  private static final String OCI_PURL_TYPE = "oci";
+
   /**
    * Looks up a hardened image recommendation for the given base image reference.
    *
@@ -124,6 +130,58 @@ public class HardenedImageProvider {
    */
   public IndexedRecommendation lookup(String baseImageRef) {
     return index.get(baseImageRef);
+  }
+
+  /**
+   * Resolves hardened image recommendations for an SBOM identified by its PURL. Parses the PURL to
+   * extract the Docker-style base image reference and looks it up in the index. Returns an empty
+   * map if the PURL is not an OCI type, has no repository_url qualifier, or no match is found.
+   *
+   * @param sbomId the SBOM identifier (an OCI PURL string)
+   * @return a map of package ref to recommendation, or empty if no match
+   */
+  public Map<PackageRef, IndexedRecommendation> lookupBySbomId(String sbomId) {
+    if (sbomId == null) {
+      return Collections.emptyMap();
+    }
+
+    var pkgRef = new PackageRef(sbomId);
+    if (!OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
+      return Collections.emptyMap();
+    }
+
+    String baseImageRef = buildDockerRef(pkgRef);
+    if (baseImageRef == null) {
+      return Collections.emptyMap();
+    }
+
+    var recommendation = lookup(baseImageRef);
+    if (recommendation == null) {
+      return Collections.emptyMap();
+    }
+
+    return Map.of(pkgRef, recommendation);
+  }
+
+  /**
+   * Constructs a Docker-style image reference from an OCI PURL's repository_url and tag qualifiers.
+   * For example, {@code pkg:oci/nginx@sha256:abc?repository_url=docker.io/library/nginx&tag=1.25}
+   * produces {@code docker.io/library/nginx:1.25}.
+   */
+  private String buildDockerRef(PackageRef pkgRef) {
+    var qualifiers = pkgRef.purl().getQualifiers();
+    if (qualifiers == null) {
+      return null;
+    }
+    String repoUrl = qualifiers.get("repository_url");
+    if (repoUrl == null || repoUrl.isBlank()) {
+      return null;
+    }
+    String tag = qualifiers.get("tag");
+    if (tag != null && !tag.isBlank()) {
+      return repoUrl + ":" + tag;
+    }
+    return repoUrl;
   }
 
   /** Returns the current index for inspection. */
