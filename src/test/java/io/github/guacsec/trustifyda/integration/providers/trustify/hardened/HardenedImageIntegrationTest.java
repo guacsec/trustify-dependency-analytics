@@ -61,7 +61,7 @@ import jakarta.ws.rs.core.MediaType;
 @QuarkusTestResource(OidcWiremockExtension.class)
 public class HardenedImageIntegrationTest {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  @Inject ObjectMapper mapper;
   private static final String OK_TOKEN = "test-token";
   private static final String TRUSTIFY_PROVIDER = "trustify";
 
@@ -214,7 +214,7 @@ public class HardenedImageIntegrationTest {
             .asString();
 
     Map<String, AnalysisReport> response =
-        MAPPER.readValue(body, new TypeReference<Map<String, AnalysisReport>>() {});
+        mapper.readValue(body, new TypeReference<Map<String, AnalysisReport>>() {});
 
     // Then no hardened recommendations appear in the response
     assertNotNull(response);
@@ -295,7 +295,7 @@ public class HardenedImageIntegrationTest {
             .extract()
             .body()
             .asString();
-    return MAPPER.readValue(body, new TypeReference<Map<String, AnalysisReport>>() {});
+    return mapper.readValue(body, new TypeReference<Map<String, AnalysisReport>>() {});
   }
 
   /**
@@ -340,6 +340,6 @@ public class HardenedImageIntegrationTest {
             List.of(component),
             "dependencies",
             List.of(rootDep, leafDep));
-    return MAPPER.writeValueAsString(Map.of(ociPurl, sbom));
+    return mapper.writeValueAsString(Map.of(ociPurl, sbom));
   }
 }
