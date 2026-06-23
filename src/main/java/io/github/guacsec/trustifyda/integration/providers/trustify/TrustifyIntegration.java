@@ -157,7 +157,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
 
       .end();
 
-    from(direct(Constants.TRUSTIFY_HARDENED_RECOMMEND_ROUTE))
+    from(direct("hardenedRecommendations"))
       .routeId("trustify-hardened-recommend")
       .routePolicy(new ProviderRoutePolicy(registry))
       .choice()
@@ -192,7 +192,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
         .parallelProcessing()
           .to(direct("vulnerabilities"))
           .to(direct("recommendations"))
-          .to(direct(Constants.TRUSTIFY_HARDENED_RECOMMEND_ROUTE))
+          .to(direct("hardenedRecommendations"))
       .end();
 
     from(direct("trustifyHealthCheck"))

@@ -1,15 +1,16 @@
-[
-  {
-    "image_ref": "pkg:oci/hardened-nginx@sha256:abc123?repository_url=registry.example.com%2Fhardened-nginx&tag=1.25",
-    "compare_to": [
-      "docker.io/library/nginx:1.25",
-      "docker.io/library/nginx:1.25-alpine"
-    ]
-  },
-  {
-    "image_ref": "pkg:oci/hardened-python@sha256:def456?repository_url=registry.example.com%2Fhardened-python&tag=3.12",
-    "compare_to": [
-      "docker.io/library/python:3.12"
-    ]
+{
+  "global": {},
+  "images": {
+    "registry.example.com/hardened-nginx:1.25": {
+      "compare_to": [
+        "docker.io/library/nginx:1.25",
+        "docker.io/library/nginx:1.25-alpine"
+      ]
+    },
+    "registry.example.com/hardened-python:3.12": {
+      "compare_to": [
+        "docker.io/library/python:3.12"
+      ]
+    }
   }
-]
+}

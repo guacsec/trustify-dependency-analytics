@@ -44,6 +44,7 @@ public class HardenedImageProvider {
 
   private static final Logger LOG = Logger.getLogger(HardenedImageProvider.class);
   private static final String LOCK_KEY = "hardened-image-refresh-lock";
+  private static final String OCI_PURL_TYPE = "oci";
 
   private final HardenedImageIndex index = new HardenedImageIndex();
   private final HardenedImageRecommendation config;
@@ -119,8 +120,6 @@ public class HardenedImageProvider {
       }
     }
   }
-
-  private static final String OCI_PURL_TYPE = "oci";
 
   /**
    * Looks up a hardened image recommendation for the given base image reference.

@@ -17,14 +17,18 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.packageurl.PackageURL;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
@@ -55,14 +59,18 @@ public class HardenedImageResponseHandler {
     JsonNode root = objectMapper.readTree(json);
     Map<String, IndexedRecommendation> invertedIndex = new HashMap<>();
 
-    JsonNode images = root.isArray() ? root : root.path("images");
-    if (images.isMissingNode() || !images.isArray()) {
-      LOG.warn("Hummingbird response has no images array, returning empty index");
+    JsonNode images = root.path("images");
+    if (images.isMissingNode() || !images.isObject()) {
+      LOG.warn("Hummingbird response has no images object, returning empty index");
       return Collections.emptyMap();
     }
 
-    for (JsonNode imageNode : images) {
-      String hardenedRef = imageNode.path("image_ref").asText(null);
+    var fields = images.fields();
+    while (fields.hasNext()) {
+      var entry = fields.next();
+      String hardenedRef = entry.getKey();
+      JsonNode imageNode = entry.getValue();
+
       if (hardenedRef == null || hardenedRef.isBlank()) {
         continue;
       }
@@ -74,9 +82,9 @@ public class HardenedImageResponseHandler {
 
       PackageRef hardenedPackage;
       try {
-        hardenedPackage = new PackageRef(hardenedRef);
-      } catch (IllegalArgumentException e) {
-        LOG.warnf("Skipping invalid PURL in Hummingbird response: %s", hardenedRef);
+        hardenedPackage = containerRefToPackageRef(hardenedRef);
+      } catch (Exception e) {
+        LOG.warnf("Skipping unparseable image ref in Hummingbird response: %s", hardenedRef);
         continue;
       }
       IndexedRecommendation recommendation =
@@ -95,5 +103,39 @@ public class HardenedImageResponseHandler {
     }
 
     return invertedIndex;
+  }
+
+  /**
+   * Converts a container image reference (e.g., {@code quay.io/hummingbird/aspnet-runtime:10}) to
+   * an OCI Package URL. The full image path becomes the {@code repository_url} qualifier and the
+   * tag (if present) becomes the {@code tag} qualifier.
+   */
+  static PackageRef containerRefToPackageRef(String imageRef) throws Exception {
+    String path;
+    String tag = null;
+
+    int atIndex = imageRef.indexOf('@');
+    if (atIndex >= 0) {
+      path = imageRef.substring(0, atIndex);
+    } else {
+      int colonIndex = imageRef.lastIndexOf(':');
+      if (colonIndex > imageRef.lastIndexOf('/')) {
+        path = imageRef.substring(0, colonIndex);
+        tag = imageRef.substring(colonIndex + 1);
+      } else {
+        path = imageRef;
+      }
+    }
+
+    String name = path.substring(path.lastIndexOf('/') + 1);
+    String repoUrl = URLEncoder.encode(path, StandardCharsets.UTF_8);
+
+    TreeMap<String, String> qualifiers = new TreeMap<>();
+    qualifiers.put("repository_url", repoUrl);
+    if (tag != null) {
+      qualifiers.put("tag", tag);
+    }
+
+    return new PackageRef(new PackageURL("oci", null, name, null, qualifiers, null));
   }
 }
