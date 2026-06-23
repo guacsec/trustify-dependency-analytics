@@ -1,0 +1,16 @@
+{
+  "global": {},
+  "images": {
+    "registry.example.com/hardened-nginx:1.25": {
+      "compare_to": [
+        "docker.io/library/nginx:1.25",
+        "docker.io/library/nginx:1.25-alpine"
+      ]
+    },
+    "registry.example.com/hardened-python:3.12": {
+      "compare_to": [
+        "docker.io/library/python:3.12"
+      ]
+    }
+  }
+}
