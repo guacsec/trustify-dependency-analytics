@@ -17,8 +17,6 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,7 +126,7 @@ public class HardenedImageResponseHandler {
     }
 
     String name = path.substring(path.lastIndexOf('/') + 1);
-    String repoUrl = URLEncoder.encode(path, StandardCharsets.UTF_8);
+    String repoUrl = path;
 
     TreeMap<String, String> qualifiers = new TreeMap<>();
     qualifiers.put("repository_url", repoUrl);
