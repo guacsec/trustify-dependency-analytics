@@ -15,33 +15,27 @@
         "cwes": [
           "CWE-295"
         ],
-        "status": {
-          "affected": [
-            {
+        "base_score": {
+          "type": "3.1",
+          "severity": "medium",
+          "score": 5.6
+        },
+        "purl_statuses": [
+          {
+            "advisory": {
               "uuid": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
               "identifier": "GHSA-9wx4-h78v-vm56",
               "document_id": "GHSA-9wx4-h78v-vm56",
-              "issuer": null,
-              "published": "2024-05-20T20:15:00Z",
-              "modified": "2024-06-10T18:39:00Z",
-              "withdrawn": null,
               "title": "Requests Session object does not verify requests after making first request with verify=False",
-              "labels": {
-                "importer": "osv-github",
-                "source": "https://github.com/github/advisory-database",
-                "file": "github-reviewed/2024/05/GHSA-9wx4-h78v-vm56/GHSA-9wx4-h78v-vm56.json",
-                "type": "osv"
-              },
-              "scores": [
-                {
-                  "type": "3.1",
-                  "value": 5.6,
-                  "severity": "medium"
-                }
-              ]
-            }
-          ]
-        }
+              "issuer": {
+                "name": "osv-github"
+              }
+            },
+            "status": "affected",
+            "version_range": null,
+            "remediations": []
+          }
+        ]
       }
     ],
     "warnings": []
