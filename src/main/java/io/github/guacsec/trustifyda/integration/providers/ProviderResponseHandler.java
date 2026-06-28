@@ -54,6 +54,7 @@ import io.github.guacsec.trustifyda.model.CvssScoreComparable.TransitiveScoreCom
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
+import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 import io.github.guacsec.trustifyda.monitoring.MonitoringProcessor;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -300,6 +301,7 @@ public abstract class ProviderResponseHandler {
                       return new PackageItem(
                           entry.getKey(),
                           item.recommendation(),
+                          item.allRecommendations(),
                           filteredIssues,
                           item.warnings() == null ? Collections.emptyList() : item.warnings(),
                           item.recommendationSource());
@@ -466,6 +468,7 @@ public abstract class ProviderResponseHandler {
   /**
    * Builds the provider-level recommendations map from all PackageItems that have recommendations.
    * Groups recommendations by their source name (e.g. "trusted-content", "hardened-images").
+   * Supports multiple recommendations per dependency via the allRecommendations field.
    */
   private Map<String, RecommendationSource> buildRecommendationsMap(
       Map<String, PackageItem> pkgItems) {
@@ -475,18 +478,20 @@ public abstract class ProviderResponseHandler {
     Map<String, List<RecommendationReport>> bySource = new HashMap<>();
     pkgItems.forEach(
         (packageRef, item) -> {
-          if (item.recommendation() == null || item.recommendation().packageName() == null) {
-            return;
-          }
           String sourceName = item.recommendationSource();
           if (sourceName == null) {
             return;
           }
-          var recReport =
-              new RecommendationReport()
-                  .ref(new PackageRef(packageRef))
-                  .recommendation(item.recommendation().packageName());
-          bySource.computeIfAbsent(sourceName, k -> new ArrayList<>()).add(recReport);
+          for (Recommendation rec : item.allRecommendations()) {
+            if (rec == null || rec.packageName() == null) {
+              continue;
+            }
+            var recReport =
+                new RecommendationReport()
+                    .ref(new PackageRef(packageRef))
+                    .recommendation(rec.packageName());
+            bySource.computeIfAbsent(sourceName, k -> new ArrayList<>()).add(recReport);
+          }
         });
 
     Map<String, RecommendationSource> result = new HashMap<>();

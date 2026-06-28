@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -100,7 +101,7 @@ public class HardenedImageProvider {
       }
 
       LOG.info("Acquired refresh lock, fetching hardened image data from Hummingbird");
-      Map<String, IndexedRecommendation> newData = fetchAndParseData(url);
+      Map<String, List<IndexedRecommendation>> newData = fetchAndParseData(url);
       if (newData.isEmpty() && index.size() > 0) {
         LOG.warn(
             "Hummingbird returned empty data, keeping existing index with "
@@ -122,12 +123,12 @@ public class HardenedImageProvider {
   }
 
   /**
-   * Looks up a hardened image recommendation for the given base image reference.
+   * Looks up hardened image recommendations for the given base image reference.
    *
    * @param baseImageRef the base image reference to look up
-   * @return the recommendation, or {@code null} if none is available
+   * @return the list of recommendations, empty if none available
    */
-  public IndexedRecommendation lookup(String baseImageRef) {
+  public List<IndexedRecommendation> lookup(String baseImageRef) {
     return index.get(baseImageRef);
   }
 
@@ -137,9 +138,9 @@ public class HardenedImageProvider {
    * map if the PURL is not an OCI type, has no repository_url qualifier, or no match is found.
    *
    * @param sbomId the SBOM identifier (an OCI PURL string)
-   * @return a map of package ref to recommendation, or empty if no match
+   * @return a map of package ref to recommendations, or empty if no match
    */
-  public Map<PackageRef, IndexedRecommendation> lookupBySbomId(String sbomId) {
+  public Map<PackageRef, List<IndexedRecommendation>> lookupBySbomId(String sbomId) {
     if (sbomId == null) {
       return Collections.emptyMap();
     }
@@ -160,12 +161,12 @@ public class HardenedImageProvider {
       return Collections.emptyMap();
     }
 
-    var recommendation = lookup(baseImageRef);
-    if (recommendation == null) {
+    var recommendations = lookup(baseImageRef);
+    if (recommendations.isEmpty()) {
       return Collections.emptyMap();
     }
 
-    return Map.of(pkgRef, recommendation);
+    return Map.of(pkgRef, recommendations);
   }
 
   /**
@@ -198,7 +199,7 @@ public class HardenedImageProvider {
    * Fetches the Hummingbird report and parses it into an inverted index mapping base image
    * references to hardened image recommendations.
    */
-  Map<String, IndexedRecommendation> fetchAndParseData(String url) throws Exception {
+  Map<String, List<IndexedRecommendation>> fetchAndParseData(String url) throws Exception {
     String body = hummingbirdClient.fetchReport(URI.create(url));
     return responseHandler.parseAndInvertMapping(body);
   }

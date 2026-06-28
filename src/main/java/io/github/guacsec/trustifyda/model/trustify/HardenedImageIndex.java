@@ -18,6 +18,7 @@
 package io.github.guacsec.trustifyda.model.trustify;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,27 +28,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HardenedImageIndex {
 
-  private volatile Map<String, IndexedRecommendation> index = new ConcurrentHashMap<>();
+  private volatile Map<String, List<IndexedRecommendation>> index = new ConcurrentHashMap<>();
 
   /**
    * Atomically replaces the entire index with the given data. Concurrent readers will see either
    * the old or new map — never a partially updated state.
    */
-  public void replaceAll(Map<String, IndexedRecommendation> newData) {
+  public void replaceAll(Map<String, List<IndexedRecommendation>> newData) {
     this.index = new ConcurrentHashMap<>(newData);
   }
 
-  /** Looks up a hardened image recommendation for the given base image reference. */
-  public IndexedRecommendation get(String baseImageRef) {
-    return index.get(baseImageRef);
+  /** Looks up all hardened image recommendations for the given base image reference. */
+  public List<IndexedRecommendation> get(String baseImageRef) {
+    return index.getOrDefault(baseImageRef, Collections.emptyList());
   }
 
   /** Returns an unmodifiable view of the current index. */
-  public Map<String, IndexedRecommendation> getAll() {
+  public Map<String, List<IndexedRecommendation>> getAll() {
     return Collections.unmodifiableMap(index);
   }
 
-  /** Returns the number of entries in the index. */
+  /** Returns the number of base image entries in the index. */
   public int size() {
     return index.size();
   }

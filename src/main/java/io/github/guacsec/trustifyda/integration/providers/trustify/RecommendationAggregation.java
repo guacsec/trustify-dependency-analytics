@@ -20,7 +20,9 @@ package io.github.guacsec.trustifyda.integration.providers.trustify;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
@@ -52,7 +54,7 @@ public class RecommendationAggregation implements AggregationStrategy {
     if (providerResponse == null) {
       providerResponse = new ProviderResponse(new HashMap<>(), worstStatus);
     }
-    Map<PackageRef, IndexedRecommendation> recommendations = null;
+    Map<PackageRef, List<IndexedRecommendation>> recommendations = null;
     try {
       recommendations = getRecommendations(oldExchange, newExchange);
     } catch (Exception e) {
@@ -106,25 +108,53 @@ public class RecommendationAggregation implements AggregationStrategy {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<PackageRef, IndexedRecommendation> getRecommendations(
+  private Map<PackageRef, List<IndexedRecommendation>> getRecommendations(
       Exchange oldExchange, Exchange newExchange) {
     var body = oldExchange.getIn().getBody();
     if (body != null && body instanceof Map) {
-      return (Map<PackageRef, IndexedRecommendation>) body;
+      return normalizeRecommendations((Map<PackageRef, ?>) body);
     }
     body = newExchange.getIn().getBody();
     if (body != null && body instanceof Map) {
-      return (Map<PackageRef, IndexedRecommendation>) body;
+      return normalizeRecommendations((Map<PackageRef, ?>) body);
     }
     return null;
   }
 
-  private void setTrustedContent(
-      Map<PackageRef, IndexedRecommendation> recommendations, ProviderResponse providerResponse) {
-    recommendations.forEach(
+  /**
+   * Normalizes recommendation maps to a consistent List-valued format. Handles both the legacy
+   * single-value format (Map&lt;PackageRef, IndexedRecommendation&gt;) from trusted-content/UBI
+   * providers and the new list format (Map&lt;PackageRef, List&lt;IndexedRecommendation&gt;&gt;)
+   * from the hardened image provider.
+   */
+  @SuppressWarnings("unchecked")
+  private Map<PackageRef, List<IndexedRecommendation>> normalizeRecommendations(
+      Map<PackageRef, ?> raw) {
+    Map<PackageRef, List<IndexedRecommendation>> normalized = new HashMap<>();
+    raw.forEach(
         (key, value) -> {
+          if (value instanceof List) {
+            normalized.put(key, (List<IndexedRecommendation>) value);
+          } else if (value instanceof IndexedRecommendation) {
+            normalized.put(key, List.of((IndexedRecommendation) value));
+          }
+        });
+    return normalized;
+  }
+
+  private void setTrustedContent(
+      Map<PackageRef, List<IndexedRecommendation>> recommendations,
+      ProviderResponse providerResponse) {
+    recommendations.forEach(
+        (key, values) -> {
+          if (values == null || values.isEmpty()) {
+            return;
+          }
+          IndexedRecommendation primary = values.get(0);
           var pkgItem = providerResponse.pkgItems().get(key.ref());
-          var recommendation = toRecommendation(value);
+          var recommendation = toRecommendation(primary);
+          var allRecommendations =
+              values.stream().map(this::toRecommendation).collect(Collectors.toList());
           var issues = new ArrayList<Issue>();
           if (pkgItem != null && pkgItem.issues() != null) {
             issues.addAll(pkgItem.issues());
@@ -132,17 +162,18 @@ public class RecommendationAggregation implements AggregationStrategy {
                 .issues()
                 .forEach(
                     issue -> {
-                      if (value.vulnerabilities() == null || value.vulnerabilities().isEmpty()) {
+                      if (primary.vulnerabilities() == null
+                          || primary.vulnerabilities().isEmpty()) {
                         return;
                       }
-                      var vuln = value.vulnerabilities().get(issue.getId());
+                      var vuln = primary.vulnerabilities().get(issue.getId());
                       if (vuln == null) {
                         return;
                       }
 
                       var remediation =
                           new RemediationTrustedContent()
-                              .ref(value.packageName())
+                              .ref(primary.packageName())
                               .status(Vulnerability.Status.toString(vuln.getStatus()))
                               .justification(
                                   Vulnerability.Justification.toString(vuln.getJustification()));
@@ -156,9 +187,10 @@ public class RecommendationAggregation implements AggregationStrategy {
                   new PackageItem(
                       key.ref(),
                       recommendation,
+                      allRecommendations,
                       issues,
                       pkgItem != null ? pkgItem.warnings() : Collections.emptyList(),
-                      value.sourceName()));
+                      primary.sourceName()));
         });
   }
 

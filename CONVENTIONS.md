@@ -249,6 +249,7 @@ Background scheduled providers (e.g., `HardenedImageProvider`) do not use Camel 
 - **REST Assured pattern**: `given().header(...).body(...).when().post(...).then().assertThat().statusCode(...)`
 - **Cache testing**: Two-request pattern to verify cache hits; `server.resetRequests()` between tests
 - **Test data**: JSON fixtures in `src/test/resources/{format}/` (e.g., `pypi-registry/`, `depsdev/`, `trustify/`, `reports/`)
+- **Test comments**: Use `//` (regular line comments) for test method descriptions, not `///` (Java 23 markdown doc comments) or `/** */` Javadoc. The project targets Java 21.
 - **Assertions**: JUnit static imports + Hamcrest matchers
 - **Unit testing CDI beans**: For non-Quarkus unit tests, instantiate beans directly and set `@Inject`/`@ConfigProperty` fields manually (package-private visibility). Mock CDI `Instance<T>` with Mockito.
 - **Unit testing Camel routes**: For route builder tests that don't need full Camel context, test the `process()` methods directly by constructing mock `Exchange` and `Message` objects.
