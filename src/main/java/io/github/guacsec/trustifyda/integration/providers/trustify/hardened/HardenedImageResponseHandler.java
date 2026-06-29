@@ -17,8 +17,10 @@
 
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -51,11 +53,12 @@ public class HardenedImageResponseHandler {
   /**
    * Parses the Hummingbird JSON response and inverts the mapping. The response contains hardened
    * images with {@code compare_to} arrays listing base images. This method inverts the
-   * relationship: each base image reference maps to its hardened image recommendation.
+   * relationship: each base image reference maps to all its hardened image recommendations.
    */
-  public Map<String, IndexedRecommendation> parseAndInvertMapping(String json) throws Exception {
+  public Map<String, List<IndexedRecommendation>> parseAndInvertMapping(String json)
+      throws Exception {
     JsonNode root = objectMapper.readTree(json);
-    Map<String, IndexedRecommendation> invertedIndex = new HashMap<>();
+    Map<String, List<IndexedRecommendation>> invertedIndex = new HashMap<>();
 
     JsonNode images = root.path("images");
     if (images.isMissingNode() || !images.isObject()) {
@@ -95,7 +98,7 @@ public class HardenedImageResponseHandler {
       for (JsonNode baseRef : compareTo) {
         String baseImageRef = baseRef.asText(null);
         if (baseImageRef != null && !baseImageRef.isBlank()) {
-          invertedIndex.put(baseImageRef, recommendation);
+          invertedIndex.computeIfAbsent(baseImageRef, k -> new ArrayList<>()).add(recommendation);
         }
       }
     }

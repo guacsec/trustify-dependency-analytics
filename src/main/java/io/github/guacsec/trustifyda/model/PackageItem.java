@@ -17,21 +17,44 @@
 
 package io.github.guacsec.trustifyda.model;
 
+import java.util.Collections;
 import java.util.List;
 
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.model.trustify.Recommendation;
 
-/** Aggregated data for a single package: its recommendation, vulnerability issues, and warnings. */
+/**
+ * Aggregated data for a single package: its recommendations, vulnerability issues, and warnings.
+ */
 public record PackageItem(
     String packageRef,
     Recommendation recommendation,
+    List<Recommendation> allRecommendations,
     List<Issue> issues,
     List<String> warnings,
     String recommendationSource) {
 
+  /** Compact constructor that defaults null allRecommendations to a singleton list. */
+  public PackageItem {
+    if (allRecommendations == null || allRecommendations.isEmpty()) {
+      allRecommendations =
+          recommendation != null ? List.of(recommendation) : Collections.emptyList();
+    }
+  }
+
+  /** Backward-compatible constructor without allRecommendations and recommendationSource. */
   public PackageItem(
       String packageRef, Recommendation recommendation, List<Issue> issues, List<String> warnings) {
-    this(packageRef, recommendation, issues, warnings, null);
+    this(packageRef, recommendation, null, issues, warnings, null);
+  }
+
+  /** Backward-compatible constructor without allRecommendations. */
+  public PackageItem(
+      String packageRef,
+      Recommendation recommendation,
+      List<Issue> issues,
+      List<String> warnings,
+      String recommendationSource) {
+    this(packageRef, recommendation, null, issues, warnings, recommendationSource);
   }
 }

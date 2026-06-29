@@ -18,8 +18,8 @@
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -94,8 +95,8 @@ public class HardenedImageProviderTest {
             .build();
     doReturn(
             Map.of(
-                "docker.io/library/nginx:1.25", nginxRec,
-                "docker.io/library/nginx:1.25-alpine", nginxRec))
+                "docker.io/library/nginx:1.25", List.of(nginxRec),
+                "docker.io/library/nginx:1.25-alpine", List.of(nginxRec)))
         .when(spyProvider)
         .fetchAndParseData(anyString());
 
@@ -105,12 +106,13 @@ public class HardenedImageProviderTest {
     // Then the lock was acquired and the index is populated
     verify(lock).tryAcquire(eq(LOCK_KEY), any());
     assertEquals(2, spyProvider.getIndex().size());
-    assertNotNull(spyProvider.lookup("docker.io/library/nginx:1.25"));
-    assertNotNull(spyProvider.lookup("docker.io/library/nginx:1.25-alpine"));
+    assertFalse(spyProvider.lookup("docker.io/library/nginx:1.25").isEmpty());
+    assertFalse(spyProvider.lookup("docker.io/library/nginx:1.25-alpine").isEmpty());
     assertEquals(
         normalized(HARDENED_NGINX_PURL),
-        spyProvider.lookup("docker.io/library/nginx:1.25").packageName().ref());
-    assertEquals("hardened", spyProvider.lookup("docker.io/library/nginx:1.25").sourceName());
+        spyProvider.lookup("docker.io/library/nginx:1.25").get(0).packageName().ref());
+    assertEquals(
+        "hardened", spyProvider.lookup("docker.io/library/nginx:1.25").get(0).sourceName());
   }
 
   // Verifies that a second instance skips refresh when the lock is already held.
@@ -140,23 +142,25 @@ public class HardenedImageProviderTest {
             + " {\"compare_to\": [\"docker.io/library/node:20\"]}}}";
 
     // When parsing and inverting the mapping
-    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
+    Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
     // Then each base image maps to its hardened recommendation with an OCI PURL
     assertEquals(3, result.size());
-    var pythonRec = result.get("docker.io/library/python:3.12");
-    assertNotNull(pythonRec);
-    assertEquals("oci", pythonRec.packageName().purl().getType());
-    assertEquals("hardened-python", pythonRec.packageName().purl().getName());
+    var pythonRecs = result.get("docker.io/library/python:3.12");
+    assertNotNull(pythonRecs);
+    assertEquals(1, pythonRecs.size());
+    assertEquals("oci", pythonRecs.get(0).packageName().purl().getType());
+    assertEquals("hardened-python", pythonRecs.get(0).packageName().purl().getName());
     assertEquals(
-        pythonRec.packageName().ref(),
-        result.get("docker.io/library/python:3.12-slim").packageName().ref());
+        pythonRecs.get(0).packageName().ref(),
+        result.get("docker.io/library/python:3.12-slim").get(0).packageName().ref());
 
-    var nodeRec = result.get("docker.io/library/node:20");
-    assertNotNull(nodeRec);
-    assertEquals("oci", nodeRec.packageName().purl().getType());
-    assertEquals("hardened-node", nodeRec.packageName().purl().getName());
-    assertEquals("hardened", nodeRec.sourceName());
+    var nodeRecs = result.get("docker.io/library/node:20");
+    assertNotNull(nodeRecs);
+    assertEquals(1, nodeRecs.size());
+    assertEquals("oci", nodeRecs.get(0).packageName().purl().getType());
+    assertEquals("hardened-node", nodeRecs.get(0).packageName().purl().getName());
+    assertEquals("hardened", nodeRecs.get(0).sourceName());
   }
 
   // Verifies that the provider returns empty results when the Hummingbird URL is not configured.
@@ -168,9 +172,9 @@ public class HardenedImageProviderTest {
     // When the refresh runs
     provider.refresh();
 
-    // Then no lock is acquired and lookup returns null
+    // Then no lock is acquired and lookup returns empty
     verify(lock, never()).tryAcquire(anyString(), any());
-    assertNull(provider.lookup("docker.io/library/nginx:1.25"));
+    assertTrue(provider.lookup("docker.io/library/nginx:1.25").isEmpty());
   }
 
   // Verifies that the lock is released after a successful data load.
@@ -189,7 +193,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+    doReturn(Map.of("base:1.0", List.of(rec))).when(spyProvider).fetchAndParseData(anyString());
 
     // When refresh completes successfully
     spyProvider.refresh();
@@ -197,7 +201,7 @@ public class HardenedImageProviderTest {
     // Then the lock is released and the index is populated
     verify(lock).release(LOCK_KEY);
     assertEquals(1, spyProvider.getIndex().size());
-    assertNotNull(spyProvider.lookup("base:1.0"));
+    assertFalse(spyProvider.lookup("base:1.0").isEmpty());
   }
 
   // Verifies that parsing handles the standard Hummingbird object format with container ref keys.
@@ -210,14 +214,15 @@ public class HardenedImageProviderTest {
             + " {\"compare_to\": [\"docker.io/library/alpine:3.19\"]}}}";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
+    Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
     // Then the mapping is correctly inverted with an OCI PURL
     assertEquals(1, result.size());
-    var rec = result.get("docker.io/library/alpine:3.19");
-    assertNotNull(rec);
-    assertEquals("oci", rec.packageName().purl().getType());
-    assertEquals("hardened-alpine", rec.packageName().purl().getName());
+    var recs = result.get("docker.io/library/alpine:3.19");
+    assertNotNull(recs);
+    assertEquals(1, recs.size());
+    assertEquals("oci", recs.get(0).packageName().purl().getType());
+    assertEquals("hardened-alpine", recs.get(0).packageName().purl().getName());
   }
 
   // Verifies that parsing returns empty index for responses with no images.
@@ -227,7 +232,7 @@ public class HardenedImageProviderTest {
     String json = "{\"images\": {}}";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
+    Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
     // Then the result is empty
     assertTrue(result.isEmpty());
@@ -245,12 +250,12 @@ public class HardenedImageProviderTest {
             + "\"registry.example.com/hardened-python:3.12\": {}}}";
 
     // When parsing
-    Map<String, IndexedRecommendation> result = responseHandler.parseAndInvertMapping(json);
+    Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
     // Then only the valid entry with compare_to is indexed
     assertEquals(1, result.size());
     assertNotNull(result.get("base:3.0"));
-    assertNull(result.get("base:1.0"));
+    assertTrue(result.getOrDefault("base:1.0", Collections.emptyList()).isEmpty());
   }
 
   // Verifies that a populated index is preserved when Hummingbird returns empty data.
@@ -269,19 +274,19 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+    doReturn(Map.of("base:1.0", List.of(rec))).when(spyProvider).fetchAndParseData(anyString());
     spyProvider.refresh();
     assertEquals(1, spyProvider.getIndex().size());
 
     // Second refresh: Hummingbird returns empty data
-    doReturn(Collections.<String, IndexedRecommendation>emptyMap())
+    doReturn(Collections.<String, List<IndexedRecommendation>>emptyMap())
         .when(spyProvider)
         .fetchAndParseData(anyString());
     spyProvider.refresh();
 
     // Then the existing index is preserved
     assertEquals(1, spyProvider.getIndex().size());
-    assertNotNull(spyProvider.lookup("base:1.0"));
+    assertFalse(spyProvider.lookup("base:1.0").isEmpty());
   }
 
   // Verifies that a populated index is preserved when fetchAndParseData throws an exception.
@@ -300,7 +305,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+    doReturn(Map.of("base:1.0", List.of(rec))).when(spyProvider).fetchAndParseData(anyString());
     spyProvider.refresh();
     assertEquals(1, spyProvider.getIndex().size());
 
@@ -312,7 +317,7 @@ public class HardenedImageProviderTest {
 
     // Then the existing index is preserved and the lock is released
     assertEquals(1, spyProvider.getIndex().size());
-    assertNotNull(spyProvider.lookup("base:1.0"));
+    assertFalse(spyProvider.lookup("base:1.0").isEmpty());
     verify(lock, atLeastOnce()).release(LOCK_KEY);
   }
 
@@ -331,7 +336,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    doReturn(Map.of("base:1.0", rec)).when(spyProvider).fetchAndParseData(anyString());
+    doReturn(Map.of("base:1.0", List.of(rec))).when(spyProvider).fetchAndParseData(anyString());
 
     // Lock release throws (simulating Redis connection failure)
     doThrow(new RuntimeException("Redis connection lost")).when(lock).release(LOCK_KEY);
@@ -341,7 +346,7 @@ public class HardenedImageProviderTest {
 
     // Then the index is still populated (refresh completed before the finally block)
     assertEquals(1, spyProvider.getIndex().size());
-    assertNotNull(spyProvider.lookup("base:1.0"));
+    assertFalse(spyProvider.lookup("base:1.0").isEmpty());
   }
 
   // Verifies that lookupBySbomId returns the recommendation for a matching OCI PURL.
@@ -354,7 +359,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", rec));
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
 
     // When looking up by OCI PURL with matching repository_url and tag
     String ociPurl =
@@ -364,8 +369,9 @@ public class HardenedImageProviderTest {
     // Then the recommendation is returned
     assertEquals(1, result.size());
     var entry = result.entrySet().iterator().next();
-    assertEquals(normalized(HARDENED_NGINX_PURL), entry.getValue().packageName().ref());
-    assertEquals("hardened", entry.getValue().sourceName());
+    assertEquals(1, entry.getValue().size());
+    assertEquals(normalized(HARDENED_NGINX_PURL), entry.getValue().get(0).packageName().ref());
+    assertEquals("hardened", entry.getValue().get(0).sourceName());
   }
 
   // Verifies that lookupBySbomId returns empty for a non-OCI PURL.
@@ -402,5 +408,66 @@ public class HardenedImageProviderTest {
 
     // Then the result is empty
     assertTrue(result.isEmpty());
+  }
+
+  // Verifies that multiple hardened images sharing the same compare_to base are all preserved.
+  @Test
+  void testParseAndInvertMappingPreservesMultipleRecommendationsPerBase() throws Exception {
+    // Given a Hummingbird response where two hardened images both replace the same base image
+    String json =
+        "{\"images\": {"
+            + "\"registry.example.com/hardened-nginx-v1:1.25\":"
+            + " {\"compare_to\": [\"docker.io/library/nginx:1.25\"]},"
+            + "\"registry.example.com/hardened-nginx-v2:1.25\":"
+            + " {\"compare_to\": [\"docker.io/library/nginx:1.25\","
+            + " \"docker.io/library/nginx:1.25-alpine\"]}}}";
+
+    // When parsing and inverting the mapping
+    Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
+
+    // Then the shared base image has both hardened recommendations
+    var nginxRecs = result.get("docker.io/library/nginx:1.25");
+    assertNotNull(nginxRecs);
+    assertEquals(
+        2, nginxRecs.size(), "Both hardened images should be preserved for the shared base image");
+    var recNames = nginxRecs.stream().map(r -> r.packageName().purl().getName()).sorted().toList();
+    assertEquals(List.of("hardened-nginx-v1", "hardened-nginx-v2"), recNames);
+
+    // And the non-shared base image has only one recommendation
+    var alpineRecs = result.get("docker.io/library/nginx:1.25-alpine");
+    assertNotNull(alpineRecs);
+    assertEquals(1, alpineRecs.size());
+    assertEquals("hardened-nginx-v2", alpineRecs.get(0).packageName().purl().getName());
+  }
+
+  // Verifies that lookupBySbomId returns all recommendations when multiple hardened images match.
+  @Test
+  void testLookupBySbomIdReturnsMultipleRecommendations() {
+    // Given an index with two hardened images for the same base
+    IndexedRecommendation recV1 =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    String hardenedV2Purl =
+        "pkg:oci/hardened-nginx-v2@sha256:def789?repository_url=registry.example.com/hardened-nginx-v2&tag=1.25";
+    IndexedRecommendation recV2 =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedV2Purl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(recV1, recV2)));
+
+    // When looking up by OCI PURL
+    String ociPurl =
+        "pkg:oci/nginx@sha256:def456?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(ociPurl);
+
+    // Then both recommendations are returned
+    assertEquals(1, result.size());
+    var recommendations = result.entrySet().iterator().next().getValue();
+    assertEquals(2, recommendations.size(), "Both hardened alternatives should be returned");
   }
 }

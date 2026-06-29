@@ -121,7 +121,7 @@ public class HardenedImageIntegrationTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName(HARDENED_SOURCE)
             .build();
-    hardenedImageProvider.getIndex().replaceAll(Map.of(NGINX_BASE_REF, recommendation));
+    hardenedImageProvider.getIndex().replaceAll(Map.of(NGINX_BASE_REF, List.of(recommendation)));
   }
 
   /** Stubs the Trustify vulnerability and recommendation endpoints in WireMock. */
