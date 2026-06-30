@@ -158,26 +158,42 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
   }
 
   private void setCvssData(Issue issue, JsonNode vuln, JsonNode purlStatus) {
+    Float score = null;
+    String severity = null;
+
     var baseScore = vuln.get("base_score");
     if (baseScore != null && !baseScore.isNull()) {
-      var score = baseScore.has("score") ? (float) baseScore.get("score").asDouble() : null;
-      var severity = JsonUtils.getTextValue(baseScore, "severity");
-      if (score != null) {
-        issue.cvssScore(score);
-      }
-      if (severity != null) {
-        try {
-          issue.setSeverity(SeverityUtils.fromValue(severity.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-          LOGGER.infof(
-              "Unknown severity value: %s, falling back to score-based severity", severity);
-          if (score != null) {
-            issue.setSeverity(SeverityUtils.fromScore(score));
+      score = baseScore.has("score") ? (float) baseScore.get("score").asDouble() : null;
+      severity = JsonUtils.getTextValue(baseScore, "severity");
+    }
+
+    if (score == null) {
+      var scores = purlStatus.get("scores");
+      if (scores != null && scores.isArray() && !scores.isEmpty()) {
+        for (var entry : scores) {
+          var entryValue = entry.has("value") ? (float) entry.get("value").asDouble() : null;
+          if (entryValue != null && (score == null || entryValue > score)) {
+            score = entryValue;
+            severity = JsonUtils.getTextValue(entry, "severity");
           }
         }
-      } else if (score != null) {
-        issue.setSeverity(SeverityUtils.fromScore(score));
       }
+    }
+
+    if (score != null) {
+      issue.cvssScore(score);
+    }
+    if (severity != null) {
+      try {
+        issue.setSeverity(SeverityUtils.fromValue(severity.toUpperCase()));
+      } catch (IllegalArgumentException e) {
+        LOGGER.infof("Unknown severity value: %s, falling back to score-based severity", severity);
+        if (score != null) {
+          issue.setSeverity(SeverityUtils.fromScore(score));
+        }
+      }
+    } else if (score != null) {
+      issue.setSeverity(SeverityUtils.fromScore(score));
     }
 
     var r = new Remediation();
