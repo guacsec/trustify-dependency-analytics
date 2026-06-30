@@ -111,7 +111,14 @@ class RegistryEnrichmentService {
             depReport
                 .getIssues()
                 .forEach(
-                    issue -> issue.remediation(new Remediation().trustedContent(trustedContent)));
+                    issue -> {
+                      var existing = issue.getRemediation();
+                      if (existing == null) {
+                        existing = new Remediation();
+                      }
+                      existing.trustedContent(trustedContent);
+                      issue.remediation(existing);
+                    });
           }
 
           // Backward compat: set deprecated per-dependency recommendation
