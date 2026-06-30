@@ -1246,4 +1246,505 @@ public class TrustifyResponseHandlerTest {
     assertEquals("CVE-2025-24898", issues.get(0).getId());
     assertNull(issues.get(0).getSeverity(), "Issue with empty scores should have null severity");
   }
+
+  @Test
+  void testResponseToIssuesWithFallbackToPurlStatusScores() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-9999",
+            "title": "CVE with scores only in purlStatus",
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "scores": [
+                  { "value": 6.5, "severity": "medium" },
+                  { "value": 8.1, "severity": "high" }
+                ],
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(8.1f, issues.get(0).getCvssScore(), "Should pick highest score from purlStatus");
+    assertEquals(Severity.HIGH, issues.get(0).getSeverity());
+  }
+
+  @Test
+  void testResponseToIssuesWithVersionRangeAllFields() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-8888",
+            "title": "CVE with full version range",
+            "base_score": {
+              "type": "3.1",
+              "score": 7.0,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "42.0.0",
+                  "low_inclusive": true,
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var vr = issue.getRemediation().getVersionRanges().get(0);
+    assertEquals("semver", vr.getVersionSchemeId());
+    assertEquals("42.0.0", vr.getLowVersion());
+    assertEquals(true, vr.getLowInclusive());
+    assertEquals("42.5.5", vr.getHighVersion());
+    assertEquals(false, vr.getHighInclusive());
+    assertEquals(List.of("42.5.5"), issue.getRemediation().getFixedIn());
+  }
+
+  @Test
+  void testResponseToIssuesWithRemediationUrl() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-7777",
+            "title": "CVE with remediation URL",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [
+                  {
+                    "category": "vendor_fix",
+                    "details": "Update to latest version",
+                    "url": "https://example.com/fix"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var rem = issue.getRemediation().getRemediations().get(0);
+    assertEquals(RemediationCategory.VENDOR_FIX, rem.getCategory());
+    assertEquals("Update to latest version", rem.getDetails());
+    assertEquals("https://example.com/fix", rem.getUrl());
+  }
+
+  @Test
+  void testResponseToIssuesWithUnknownRemediationCategory() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-6666",
+            "title": "CVE with unknown remediation category",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [
+                  {
+                    "category": "unknown_category",
+                    "details": "Some details"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var rem = issue.getRemediation().getRemediations().get(0);
+    assertNull(rem.getCategory(), "Unknown category should result in null");
+    assertEquals("Some details", rem.getDetails());
+  }
+
+  @Test
+  void testResponseToIssuesWithNoAdvisory() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-5555",
+            "title": "CVE with no advisory in purlStatus",
+            "base_score": {
+              "type": "3.1",
+              "score": 4.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals("unknown", issues.get(0).getSource());
+  }
+
+  @Test
+  void testResponseToIssuesWithBlankIssuerName() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-4444",
+            "title": "CVE with blank issuer name",
+            "base_score": {
+              "type": "3.1",
+              "score": 6.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "  "
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(
+        "unknown", issues.get(0).getSource(), "Blank issuer name should fall back to 'unknown'");
+  }
+
+  @Test
+  void testResponseToIssuesWithNoSeverityButScorePresent() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-3333",
+            "title": "CVE with score but no severity",
+            "base_score": {
+              "type": "3.1",
+              "score": 9.1
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertEquals(9.1f, issue.getCvssScore());
+    assertEquals(
+        Severity.CRITICAL, issue.getSeverity(), "Score-based severity should be CRITICAL for 9.1");
+  }
+
+  @Test
+  void testResponseToIssuesCveDeduplicationBySameSource() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-2222",
+            "title": "CVE appearing in multiple advisories from same source",
+            "base_score": {
+              "type": "3.1",
+              "score": 7.5,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:001",
+                  "document_id": "RHSA-2024:001",
+                  "title": "Advisory 1",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "RHSA-2024:002",
+                  "document_id": "RHSA-2024:002",
+                  "title": "Advisory 2",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size(), "Same CVE from same source should be deduplicated to one issue");
+    assertEquals("CVE-2024-2222", issues.get(0).getId());
+    assertEquals("Red Hat Product Security", issues.get(0).getSource());
+  }
+
+  @Test
+  void testResponseToIssuesSameCveDifferentSources() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1111",
+            "title": "CVE from different sources",
+            "base_score": {
+              "type": "3.1",
+              "score": 6.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:001",
+                  "document_id": "RHSA-2024:001",
+                  "title": "Advisory 1",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "GHSA-xxxx",
+                  "document_id": "GHSA-xxxx",
+                  "title": "GHSA Advisory",
+                  "issuer": {
+                    "id": "id-2",
+                    "name": "GitHub"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(2, issues.size(), "Same CVE from different sources should produce two issues");
+    assertTrue(issues.stream().anyMatch(i -> "Red Hat Product Security".equals(i.getSource())));
+    assertTrue(issues.stream().anyMatch(i -> "GitHub".equals(i.getSource())));
+  }
 }
