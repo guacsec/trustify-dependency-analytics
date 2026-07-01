@@ -774,6 +774,66 @@ public class TrustifyResponseHandlerTest {
   }
 
   @Test
+  void testResponseToIssuesWithHighInclusiveVersionRange() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "Test CVE",
+            "base_score": {
+              "type": "3.1",
+              "score": 9.8,
+              "severity": "critical"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:1662",
+                  "document_id": "RHSA-2024:1662",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "high_version": "42.5.5",
+                  "high_inclusive": true
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ]
+      },
+      "warnings": []
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertNotNull(issue.getRemediation());
+    assertNull(issue.getRemediation().getFixedIn());
+    assertNotNull(issue.getRemediation().getVersionRanges());
+    assertEquals(1, issue.getRemediation().getVersionRanges().size());
+    assertEquals("42.5.5", issue.getRemediation().getVersionRanges().get(0).getHighVersion());
+    assertEquals(true, issue.getRemediation().getVersionRanges().get(0).getHighInclusive());
+  }
+
+  @Test
   void testResponseToIssuesWithDependencyNotInTree() throws IOException {
     String jsonResponse =
         """
