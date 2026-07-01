@@ -218,6 +218,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .to(direct("preProcessAnalysisRequest"))
       .process(this::processAnalysisRequest)
       .process(monitoringProcessor::processOriginalRequest)
+      .bean(this, "addSbomIdToDependencyTree")
       .to(direct("analyzeSbom"))
       .to(direct("enrichTrustedLibraries"))
       .to(direct("report"))
@@ -317,6 +318,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     var parser = getSbomParser(exchange);
     var tree = parser.parse(exchange.getIn().getBody(InputStream.class));
     exchange.setProperty(Constants.DEPENDENCY_TREE_PROPERTY, tree);
+    if (tree.root() != null) {
+      exchange.setProperty(Constants.SBOM_ID_PROPERTY, tree.root().purl().canonicalize());
+    }
     exchange.getIn().setBody(tree);
   }
 
@@ -418,6 +422,9 @@ public class ExhortIntegration extends EndpointRouteBuilder {
 
   public DependencyTree addSbomIdToDependencyTree(
       @Body DependencyTree tree, @ExchangeProperty(Constants.SBOM_ID_PROPERTY) String sbomId) {
+    if (sbomId == null || sbomId.isBlank()) {
+      return tree;
+    }
     Map<PackageRef, DirectDependency> dependencies = new HashMap<>();
     if (tree.dependencies() != null) {
       dependencies.putAll(tree.dependencies());
@@ -426,7 +433,8 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     if (!dependencies.containsKey(sbomRef)) {
       dependencies.put(sbomRef, new DirectDependency(sbomRef, Collections.emptySet()));
     }
-    return DependencyTree.builder().dependencies(dependencies).build();
+    return new DependencyTree(
+        dependencies, tree.licenseExpressions(), tree.root(), tree.componentHashes());
   }
 
   public Map.Entry<String, AnalysisReport> transformBatchAnalysisReport(

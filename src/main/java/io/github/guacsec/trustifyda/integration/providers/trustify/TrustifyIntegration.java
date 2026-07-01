@@ -462,10 +462,13 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
             .collect(Collectors.toSet());
     var sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
     if (sbomId != null && !sbomId.isBlank()) {
-      // Batch analysis injects the SBOM root component as a dependency entry to drive other
-      // processing; it is not necessarily returned by Trustify and would otherwise stay a cache
-      // miss on every request.
-      packages.remove(new PackageRef(sbomId));
+      // The SBOM root component is injected as a dependency entry to drive recommendation
+      // processing; remove it from the vulnerability scan unless it is an OCI image PURL,
+      // which must stay so the hardened-image recommendation route can match it.
+      PackageRef sbomRef = new PackageRef(sbomId);
+      if (!OCI_PURL_TYPE.equals(sbomRef.purl().getType())) {
+        packages.remove(sbomRef);
+      }
     }
     exchange.getIn().setBody(packages);
   }
@@ -501,6 +504,13 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       return;
     }
 
+    // Cached PackageItems may contain recommendation data from a previous request
+    // with recommend=true. Strip it when the current request has recommend=false.
+    if (!isRecommendEnabled(exchange)) {
+      cacheHits.replaceAll(
+          (ref, item) -> new PackageItem(item.packageRef(), null, item.issues(), item.warnings()));
+    }
+
     ProviderResponse response = exchange.getIn().getBody(ProviderResponse.class);
     if (response == null) {
       String providerName = exchange.getProperty(Constants.PROVIDER_NAME_PROPERTY, String.class);
@@ -519,5 +529,12 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     cacheHits.forEach((ref, item) -> mergedItems.put(ref.ref(), item));
 
     exchange.getIn().setBody(new ProviderResponse(mergedItems, response.status()));
+  }
+
+  private boolean isRecommendEnabled(Exchange exchange) {
+    Object param = exchange.getProperty(Constants.RECOMMEND_PARAM);
+    if (param instanceof Boolean b) return b;
+    if (param instanceof String s) return Boolean.parseBoolean(s);
+    return true;
   }
 }
