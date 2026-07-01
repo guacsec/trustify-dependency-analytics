@@ -68,6 +68,9 @@ public class DepsDevRequestBuilder {
 
   public List<PackageRef> fromSbom(DependencyTree tree) {
     var purls = tree.getAll();
+    if (tree.root() != null) {
+      purls.remove(tree.root());
+    }
     return new ArrayList<PackageRef>(purls);
   }
 

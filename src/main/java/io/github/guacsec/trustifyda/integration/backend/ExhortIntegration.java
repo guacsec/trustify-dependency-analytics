@@ -433,8 +433,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
     if (!dependencies.containsKey(sbomRef)) {
       dependencies.put(sbomRef, new DirectDependency(sbomRef, Collections.emptySet()));
     }
-    return new DependencyTree(
-        dependencies, tree.licenseExpressions(), tree.root(), tree.componentHashes());
+    return new DependencyTree(dependencies, null, tree.root(), tree.componentHashes());
   }
 
   public Map.Entry<String, AnalysisReport> transformBatchAnalysisReport(
