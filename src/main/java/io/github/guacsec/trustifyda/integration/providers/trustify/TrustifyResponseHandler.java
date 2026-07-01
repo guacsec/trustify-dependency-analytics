@@ -215,11 +215,13 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
         vr.lowInclusive(lowInclusive);
       }
       var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
+      var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
       if (highVersion != null) {
         vr.highVersion(highVersion);
-        r.addFixedInItem(highVersion);
+        if (highInclusive == null || !highInclusive) {
+          r.addFixedInItem(highVersion);
+        }
       }
-      var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
       if (highInclusive != null) {
         vr.highInclusive(highInclusive);
       }
