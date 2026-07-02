@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
+import io.github.guacsec.trustifyda.api.v5.RemediationCategory;
 import io.github.guacsec.trustifyda.api.v5.Severity;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
@@ -99,7 +100,7 @@ public class TrustifyResponseHandlerTest {
 
   private static Stream<String> testResponseToIssuesWithValidData() {
     return Stream.of(
-        // old response without details field
+        // v3 response without details field (fallback path)
         """
           {
             "pkg:maven/org.postgresql/postgresql@42.5.0": [
@@ -112,29 +113,25 @@ public class TrustifyResponseHandlerTest {
                   "CWE-200",
                   "CWE-377"
                 ],
-                "status": {
-                  "affected": [
-                    {
+                "base_score": {
+                  "type": "3.1",
+                  "score": 5.8,
+                  "severity": "medium"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
                       "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
                       "identifier": "GHSA-562r-vg33-8x8h",
                       "document_id": "GHSA-562r-vg33-8x8h",
                       "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                      "labels": {
-                        "type": "osv",
-                        "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-                        "importer": "osv-github",
-                        "source": "https://github.com/github/advisory-database"
-                      },
-                      "scores": [
-                        {
-                          "type": "3.1",
-                          "value": 5.8,
-                          "severity": "medium"
-                        }
-                      ]
-                    }
-                  ]
-                }
+                      "issuer": null
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               },
               {
                 "normative": true,
@@ -144,61 +141,48 @@ public class TrustifyResponseHandlerTest {
                 "cwes": [
                   "CWE-89"
                 ],
-                "status": {
-                  "affected": [
-                    {
+                "base_score": {
+                  "type": "3.1",
+                  "score": 9.8,
+                  "severity": "critical"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
                       "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
                       "identifier": "https://www.redhat.com/#RHSA-2024_1797",
                       "document_id": "RHSA-2024:1797",
+                      "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
                       "issuer": {
                         "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                         "name": "Red Hat Product Security"
-                      },
-                      "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                      "labels": {
-                        "importer": "redhat-csaf",
-                        "file": "2024/rhsa-2024_1797.json",
-                        "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                        "type": "csaf"
-                      },
-                      "scores": [
-                        {
-                          "type": "3.1",
-                          "value": 9.8,
-                          "severity": "critical"
-                        }
-                      ]
+                      }
                     },
-                    {
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
                       "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
                       "identifier": "https://www.redhat.com/#RHSA-2024_1662",
                       "document_id": "RHSA-2024:1662",
+                      "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
                       "issuer": {
                         "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                         "name": "Red Hat Product Security"
-                      },
-                      "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                      "labels": {
-                        "file": "2024/rhsa-2024_1662.json",
-                        "importer": "redhat-csaf",
-                        "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                        "type": "csaf"
-                      },
-                      "scores": [
-                        {
-                          "type": "3.1",
-                          "value": 9.8,
-                          "severity": "critical"
-                        }
-                      ]
-                    }
-                  ]
-                }
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
             ]
           }
         """,
-        // new response with details field
+        // v3 response with details field
         """
           {
             "pkg:maven/org.postgresql/postgresql@42.5.0": {
@@ -212,29 +196,25 @@ public class TrustifyResponseHandlerTest {
                     "CWE-200",
                     "CWE-377"
                   ],
-                  "status": {
-                    "affected": [
-                      {
+                  "base_score": {
+                    "type": "3.1",
+                    "score": 5.8,
+                    "severity": "medium"
+                  },
+                  "purl_statuses": [
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
                         "identifier": "GHSA-562r-vg33-8x8h",
                         "document_id": "GHSA-562r-vg33-8x8h",
                         "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                        "labels": {
-                          "type": "osv",
-                          "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-                          "importer": "osv-github",
-                          "source": "https://github.com/github/advisory-database"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 5.8,
-                            "severity": "medium"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+                        "issuer": null
+                      },
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    }
+                  ]
                 },
                 {
                   "normative": true,
@@ -244,63 +224,50 @@ public class TrustifyResponseHandlerTest {
                   "cwes": [
                     "CWE-89"
                   ],
-                  "status": {
-                    "affected": [
-                      {
+                  "base_score": {
+                    "type": "3.1",
+                    "score": 9.8,
+                    "severity": "critical"
+                  },
+                  "purl_statuses": [
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
                         "identifier": "https://www.redhat.com/#RHSA-2024_1797",
                         "document_id": "RHSA-2024:1797",
+                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
                         "issuer": {
                           "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                           "name": "Red Hat Product Security"
-                        },
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                        "labels": {
-                          "importer": "redhat-csaf",
-                          "file": "2024/rhsa-2024_1797.json",
-                          "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                          "type": "csaf"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 9.8,
-                            "severity": "critical"
-                          }
-                        ]
+                        }
                       },
-                      {
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    },
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
                         "identifier": "https://www.redhat.com/#RHSA-2024_1662",
                         "document_id": "RHSA-2024:1662",
+                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
                         "issuer": {
                           "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                           "name": "Red Hat Product Security"
-                        },
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                        "labels": {
-                          "file": "2024/rhsa-2024_1662.json",
-                          "importer": "redhat-csaf",
-                          "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                          "type": "csaf"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 9.8,
-                            "severity": "critical"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+                        }
+                      },
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    }
+                  ]
                 }
               ]
             },
             "warnings": []
           },
      """,
-        // new response with withdrawn field
+        // v3 response with withdrawn field
         """
           {
             "pkg:maven/org.postgresql/postgresql@42.5.0": {
@@ -311,30 +278,20 @@ public class TrustifyResponseHandlerTest {
                   "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
                   "description": "This CVE is a placeholder for a vulnerability that has been withdrawn",
                   "withdrawn": "2024-01-01T00:00:00Z",
-                  "status": {
-                    "affected": [
-                      {
+                  "purl_statuses": [
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9900",
                         "identifier": "CVE-2022-41948",
                         "document_id": "CVE-2022-41948",
                         "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                        "withdrawn": "2024-01-01T00:00:00Z",
-                        "labels": {
-                          "type": "osv",
-                          "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-                          "importer": "osv-github",
-                          "source": "https://github.com/github/advisory-database"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 5.8,
-                            "severity": "medium"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+                        "issuer": null
+                      },
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    }
+                  ]
                 },
                 {
                   "normative": true,
@@ -345,49 +302,38 @@ public class TrustifyResponseHandlerTest {
                     "CWE-200",
                     "CWE-377"
                   ],
-                  "status": {
-                    "affected": [
-                      {
+                  "base_score": {
+                    "type": "3.1",
+                    "score": 5.8,
+                    "severity": "medium"
+                  },
+                  "purl_statuses": [
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
                         "identifier": "GHSA-562r-vg33-8x8h",
                         "document_id": "GHSA-562r-vg33-8x8h",
                         "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                        "labels": {
-                          "type": "osv",
-                          "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-                          "importer": "osv-github",
-                          "source": "https://github.com/github/advisory-database"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 5.8,
-                            "severity": "medium"
-                          }
-                        ]
+                        "issuer": null
                       },
-                      {
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    },
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9908",
                         "identifier": "CVE-2022-41946",
                         "document_id": "CVE-2022-41946",
                         "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                        "withdrawn": "2024-01-01T00:00:00Z",
-                        "labels": {
-                          "type": "osv",
-                          "file": "github-reviewed/2022/11/GHSA-562r-vg33-8x8h/GHSA-562r-vg33-8x8h.json",
-                          "importer": "osv-github",
-                          "source": "https://github.com/github/advisory-database"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 5.8,
-                            "severity": "medium"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+                        "issuer": null,
+                        "withdrawn": "2024-01-01T00:00:00Z"
+                      },
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    }
+                  ]
                 },
                 {
                   "normative": true,
@@ -397,56 +343,43 @@ public class TrustifyResponseHandlerTest {
                   "cwes": [
                     "CWE-89"
                   ],
-                  "status": {
-                    "affected": [
-                      {
+                  "base_score": {
+                    "type": "3.1",
+                    "score": 9.8,
+                    "severity": "critical"
+                  },
+                  "purl_statuses": [
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
                         "identifier": "https://www.redhat.com/#RHSA-2024_1797",
                         "document_id": "RHSA-2024:1797",
+                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
                         "issuer": {
                           "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                           "name": "Red Hat Product Security"
-                        },
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                        "labels": {
-                          "importer": "redhat-csaf",
-                          "file": "2024/rhsa-2024_1797.json",
-                          "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                          "type": "csaf"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 9.8,
-                            "severity": "critical"
-                          }
-                        ]
+                        }
                       },
-                      {
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    },
+                    {
+                      "advisory": {
                         "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
                         "identifier": "https://www.redhat.com/#RHSA-2024_1662",
                         "document_id": "RHSA-2024:1662",
+                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
                         "issuer": {
                           "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
                           "name": "Red Hat Product Security"
-                        },
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                        "labels": {
-                          "file": "2024/rhsa-2024_1662.json",
-                          "importer": "redhat-csaf",
-                          "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                          "type": "csaf"
-                        },
-                        "scores": [
-                          {
-                            "type": "3.1",
-                            "value": 9.8,
-                            "severity": "critical"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+                        }
+                      },
+                      "status": "affected",
+                      "version_range": null,
+                      "remediations": []
+                    }
+                  ]
                 }
               ]
             },
@@ -478,8 +411,6 @@ public class TrustifyResponseHandlerTest {
     assertEquals("pgjdbc SQL Injection via line comment generation", issue.getTitle());
     assertEquals(9.8f, issue.getCvssScore());
     assertEquals(Severity.CRITICAL, issue.getSeverity());
-    // assertNotNull(issue.getRemediation());
-    // assertEquals(List.of("42.5.5"), issue.getRemediation().getFixedIn());
 
     issue =
         issues.stream().filter(i -> i.getId().equals("CVE-2022-41946")).findFirst().orElseThrow();
@@ -501,46 +432,30 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "title": "Test CVE",
-          "status": {
-            "affected": [
-              {
-                "labels": {
-                  "file": "2024/rhsa-2024_1662.json",
-                  "importer": "redhat-csaf",
-                  "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                  "type": "csaf"
-                },
-                "scores": [
-                  {
-                    "type": "4",
-                    "value": 7.2,
-                    "severity": "high"
-                  },
-                  {
-                    "type": "3.1",
-                    "value": 9.8,
-                    "severity": "critical"
-                  },
-                  {
-                    "type": "2",
-                    "value": 8.5,
-                    "severity": "high"
-                  }
-                ],
-                "ranges": [
-                  {
-                    "events": [
-                      {
-                        "fixed": "42.5.5"
-                      }
-                    ]
-                  }
-                ]
-              }
-              ]
+          "base_score": {
+            "type": "4.0",
+            "score": 7.2,
+            "severity": "high"
+          },
+          "purl_statuses": [
+            {
+              "advisory": {
+                "uuid": "urn:uuid:a1",
+                "identifier": "RHSA-2024:1662",
+                "document_id": "RHSA-2024:1662",
+                "title": "Advisory",
+                "issuer": {
+                  "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                  "name": "Red Hat Product Security"
+                }
+              },
+              "status": "affected",
+              "version_range": null,
+              "remediations": []
             }
-          }
-        ]},
+          ]
+        }
+      ]},
       "warnings": []
     }
     """;
@@ -554,7 +469,7 @@ public class TrustifyResponseHandlerTest {
     List<Issue> issues = packageItem.issues();
     Issue issue = issues.get(0);
 
-    // Should prioritize V4 based on SCORE_TYPE_ORDER
+    // v3 provides pre-computed base_score
     assertEquals(7.2f, issue.getCvssScore());
     assertEquals(Severity.HIGH, issue.getSeverity());
   }
@@ -630,7 +545,7 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "title": "Test CVE",
-          "status": {}
+          "purl_statuses": []
         }
       ]},
       "warnings": []
@@ -658,25 +573,20 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "title": "Test CVE",
-          "status": {
-            "affected": [
-              {
-                "id": "advisory-1",
-                "labels": {
-                  "importer": "redhat-csaf"
-                },
-                "ranges": [
-                  {
-                    "events": [
-                      {
-                        "fixed": "42.5.5"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "purl_statuses": [
+            {
+              "advisory": {
+                "uuid": "urn:uuid:advisory-1",
+                "identifier": "advisory-1",
+                "document_id": "advisory-1",
+                "title": "Advisory 1",
+                "issuer": null
+              },
+              "status": "affected",
+              "version_range": null,
+              "remediations": []
+            }
+          ]
         }
       ]},
       "warnings": []
@@ -706,33 +616,25 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "description": "This is a description used as title",
-          "status": {
-            "affected": [
+          "base_score": {
+            "type": "3.1",
+            "score": 9.8,
+            "severity": "critical"
+          },
+          "purl_statuses": [
             {
-              "labels": {
-                "file": "2024/rhsa-2024_1662.json",
-                "importer": "redhat-csaf",
-                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                "type": "csaf"
+              "advisory": {
+                "uuid": "urn:uuid:a1",
+                "identifier": "RHSA-2024:1662",
+                "document_id": "RHSA-2024:1662",
+                "title": "Advisory",
+                "issuer": null
               },
-              "scores": [
-                {
-                  "type": "3.1",
-                  "value": 9.8,
-                  "severity": "critical"
-                }
-              ],
-              "ranges": [
-                {
-                  "events": [
-                    {
-                      "fixed": "42.5.5"
-                    }
-                  ]
-                }
-              ]
+              "status": "affected",
+              "version_range": null,
+              "remediations": []
             }
-          ]}
+          ]
         }
       ]
     }
@@ -760,32 +662,25 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "description": "This is a description used as title",
-          "status": {
-            "affected": [
+          "base_score": {
+            "type": "3.1",
+            "score": 9.8,
+            "severity": "critical"
+          },
+          "purl_statuses": [
             {
-              "labels": {
-                "file": "2024/rhsa-2024_1662.json",
-                "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                "type": "csaf"
+              "advisory": {
+                "uuid": "urn:uuid:a1",
+                "identifier": "RHSA-2024:1662",
+                "document_id": "RHSA-2024:1662",
+                "title": "Advisory",
+                "issuer": null
               },
-              "scores": [
-                {
-                  "type": "3.1",
-                  "value": 9.8,
-                  "severity": "critical"
-                }
-              ],
-              "ranges": [
-                {
-                  "events": [
-                    {
-                      "fixed": "42.5.5"
-                    }
-                  ]
-                }
-              ]
+              "status": "affected",
+              "version_range": null,
+              "remediations": []
             }
-          ]}
+          ]
         }
       ]
     }
@@ -801,7 +696,7 @@ public class TrustifyResponseHandlerTest {
     assertEquals(1, issues.size());
 
     Issue issue = issues.get(0);
-    assertEquals("manual", issue.getSource());
+    assertEquals("unknown", issue.getSource());
   }
 
   @Test
@@ -814,43 +709,36 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2024-1597",
             "title": "Test CVE",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "file": "2024/rhsa-2024_1662.json",
-                    "importer": "redhat-csaf",
-                    "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                    "type": "csaf"
-                  },
-                  "scores": [
-                    {
-                      "type": "3.1",
-                      "value": 9.8,
-                      "severity": "critical"
-                    }
-                  ],
-                  "ranges": [
-                    {
-                      "events": [
-                        {
-                          "fixed": "42.5.5"
-                        },
-                        {
-                          "fixed": "42.6.0"
-                        }
-                      ]
-                    },
-                    {
-                      "events": [
-                        {
-                          "fixed": "43.0.0"
-                        }
-                      ]
-                    }
-                  ]
-                }
-            ]}
+            "base_score": {
+              "type": "3.1",
+              "score": 9.8,
+              "severity": "critical"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:1662",
+                  "document_id": "RHSA-2024:1662",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": [
+                  {
+                    "category": "vendor_fix",
+                    "details": "Update to version 42.5.5"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -870,10 +758,79 @@ public class TrustifyResponseHandlerTest {
     Issue issue = issues.get(0);
     assertNotNull(issue.getRemediation());
     List<String> fixedVersions = issue.getRemediation().getFixedIn();
-    assertEquals(3, fixedVersions.size());
-    assertTrue(fixedVersions.contains("42.5.5"));
-    assertTrue(fixedVersions.contains("42.6.0"));
-    assertTrue(fixedVersions.contains("43.0.0"));
+    assertEquals(1, fixedVersions.size());
+    assertEquals("42.5.5", fixedVersions.get(0));
+    assertNotNull(issue.getRemediation().getVersionRanges());
+    assertEquals(1, issue.getRemediation().getVersionRanges().size());
+    assertEquals("42.5.5", issue.getRemediation().getVersionRanges().get(0).getHighVersion());
+    assertEquals(false, issue.getRemediation().getVersionRanges().get(0).getHighInclusive());
+    assertNotNull(issue.getRemediation().getRemediations());
+    assertEquals(1, issue.getRemediation().getRemediations().size());
+    assertEquals(
+        RemediationCategory.VENDOR_FIX,
+        issue.getRemediation().getRemediations().get(0).getCategory());
+    assertEquals(
+        "Update to version 42.5.5", issue.getRemediation().getRemediations().get(0).getDetails());
+  }
+
+  @Test
+  void testResponseToIssuesWithHighInclusiveVersionRange() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "Test CVE",
+            "base_score": {
+              "type": "3.1",
+              "score": 9.8,
+              "severity": "critical"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:1662",
+                  "document_id": "RHSA-2024:1662",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "high_version": "42.5.5",
+                  "high_inclusive": true
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ]
+      },
+      "warnings": []
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertNotNull(issue.getRemediation());
+    assertNull(issue.getRemediation().getFixedIn());
+    assertNotNull(issue.getRemediation().getVersionRanges());
+    assertEquals(1, issue.getRemediation().getVersionRanges().size());
+    assertEquals("42.5.5", issue.getRemediation().getVersionRanges().get(0).getHighVersion());
+    assertEquals(true, issue.getRemediation().getVersionRanges().get(0).getHighInclusive());
   }
 
   @Test
@@ -886,34 +843,25 @@ public class TrustifyResponseHandlerTest {
         {
           "identifier": "CVE-2024-1597",
           "title": "Test CVE",
-          "status": {
-            "affected": [
-              {
-                "labels": {
-                  "file": "2024/rhsa-2024_1662.json",
-                  "importer": "redhat-csaf",
-                  "source": "https://security.access.redhat.com/data/csaf/v2/advisories/",
-                  "type": "csaf"
-                },
-                "scores": [
-                  {
-                    "type": "3.1",
-                    "value": 9.8,
-                    "severity": "critical"
-                  }
-                ],
-                "ranges": [
-                  {
-                    "events": [
-                      {
-                        "fixed": "1.0.1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "base_score": {
+            "type": "3.1",
+            "score": 9.8,
+            "severity": "critical"
+          },
+          "purl_statuses": [
+            {
+              "advisory": {
+                "uuid": "urn:uuid:a1",
+                "identifier": "RHSA-2024:1662",
+                "document_id": "RHSA-2024:1662",
+                "title": "Advisory",
+                "issuer": null
+              },
+              "status": "affected",
+              "version_range": null,
+              "remediations": []
+            }
+          ]
         }
       ]},
       "warnings": []
@@ -1087,22 +1035,25 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2024-1597",
             "title": "Test CVE",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "type": "csaf"
-                  },
-                  "scores": [
-                    {
-                      "type": "3.1",
-                      "value": 9.8,
-                      "severity": "critical"
-                    }
-                  ]
-                }
-              ]
-            }
+            "base_score": {
+              "type": "3.1",
+              "score": 9.8,
+              "severity": "critical"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": null
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
           }
         ],
         "warnings": []
@@ -1116,22 +1067,25 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2024-1234",
             "title": "Test CVE",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "type": "csaf"
-                  },
-                  "scores": [
-                    {
-                      "type": "3.1",
-                      "value": 7.5,
-                      "severity": "high"
-                    }
-                  ]
-                }
-              ]
-            }
+            "base_score": {
+              "type": "3.1",
+              "score": 7.5,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "advisory-2",
+                  "document_id": "advisory-2",
+                  "title": "Advisory",
+                  "issuer": null
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
           }
         ]
       }
@@ -1203,23 +1157,28 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2024-1597",
             "title": "Test CVE",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "type": "csaf",
-                    "importer": "redhat-csaf"
-                  },
-                  "scores": [
-                    {
-                      "type": "3.1",
-                      "value": 0.0,
-                      "severity": "none"
-                    }
-                  ]
-                }
-              ]
-            }
+            "base_score": {
+              "type": "3.1",
+              "score": 0.0,
+              "severity": "none"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
           }
         ],
         "warnings": []
@@ -1229,28 +1188,28 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2024-1234",
             "title": "Test CVE",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "type": "csaf",
-                    "importer": "redhat-csaf"
-                  },
-                  "scores": [
-                    {
-                      "type": "3.1",
-                      "value": 7.5,
-                      "severity": "high"
-                    },
-                    {
-                      "type": "3.1",
-                      "value": 0.0,
-                      "severity": "none"
-                    }
-                  ]
-                }
-              ]
-            }
+            "base_score": {
+              "type": "3.1",
+              "score": 7.5,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "advisory-2",
+                  "document_id": "advisory-2",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
           }
         ]
       }
@@ -1283,7 +1242,14 @@ public class TrustifyResponseHandlerTest {
     List<Issue> issues = packageItem1.issues();
     assertFalse(issues.isEmpty(), "CVE with invalid scores should still produce an issue");
     assertEquals(1, issues.size());
-    assertNull(issues.get(0).getSeverity(), "Issue with no valid scores should have null severity");
+    assertEquals(
+        0.0f,
+        issues.get(0).getCvssScore(),
+        "Issue with 'none' severity should still have the score");
+    assertEquals(
+        Severity.LOW,
+        issues.get(0).getSeverity(),
+        "Issue with 'none' severity should fall back to score-based severity");
 
     // Package with mixed valid/invalid scores should use the valid score
     PackageItem packageItem2 = result.pkgItems().get("pkg:maven/com.other/package@2.0.0");
@@ -1306,25 +1272,20 @@ public class TrustifyResponseHandlerTest {
           {
             "identifier": "CVE-2025-24898",
             "title": "Test CVE with empty scores",
-            "status": {
-              "affected": [
-                {
-                  "labels": {
-                    "importer": "osv-rustsec"
-                  },
-                  "scores": [],
-                  "ranges": [
-                    {
-                      "events": [
-                        {
-                          "fixed": "0.10.70"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": null
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
           }
         ],
         "warnings": []
@@ -1344,5 +1305,506 @@ public class TrustifyResponseHandlerTest {
     assertEquals(1, issues.size());
     assertEquals("CVE-2025-24898", issues.get(0).getId());
     assertNull(issues.get(0).getSeverity(), "Issue with empty scores should have null severity");
+  }
+
+  @Test
+  void testResponseToIssuesWithFallbackToPurlStatusScores() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-9999",
+            "title": "CVE with scores only in purlStatus",
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "scores": [
+                  { "value": 6.5, "severity": "medium" },
+                  { "value": 8.1, "severity": "high" }
+                ],
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(8.1f, issues.get(0).getCvssScore(), "Should pick highest score from purlStatus");
+    assertEquals(Severity.HIGH, issues.get(0).getSeverity());
+  }
+
+  @Test
+  void testResponseToIssuesWithVersionRangeAllFields() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-8888",
+            "title": "CVE with full version range",
+            "base_score": {
+              "type": "3.1",
+              "score": 7.0,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "42.0.0",
+                  "low_inclusive": true,
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var vr = issue.getRemediation().getVersionRanges().get(0);
+    assertEquals("semver", vr.getVersionSchemeId());
+    assertEquals("42.0.0", vr.getLowVersion());
+    assertEquals(true, vr.getLowInclusive());
+    assertEquals("42.5.5", vr.getHighVersion());
+    assertEquals(false, vr.getHighInclusive());
+    assertEquals(List.of("42.5.5"), issue.getRemediation().getFixedIn());
+  }
+
+  @Test
+  void testResponseToIssuesWithRemediationUrl() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-7777",
+            "title": "CVE with remediation URL",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [
+                  {
+                    "category": "vendor_fix",
+                    "details": "Update to latest version",
+                    "url": "https://example.com/fix"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var rem = issue.getRemediation().getRemediations().get(0);
+    assertEquals(RemediationCategory.VENDOR_FIX, rem.getCategory());
+    assertEquals("Update to latest version", rem.getDetails());
+    assertEquals("https://example.com/fix", rem.getUrl());
+  }
+
+  @Test
+  void testResponseToIssuesWithUnknownRemediationCategory() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-6666",
+            "title": "CVE with unknown remediation category",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [
+                  {
+                    "category": "unknown_category",
+                    "details": "Some details"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    var rem = issue.getRemediation().getRemediations().get(0);
+    assertNull(rem.getCategory(), "Unknown category should result in null");
+    assertEquals("Some details", rem.getDetails());
+  }
+
+  @Test
+  void testResponseToIssuesWithNoAdvisory() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-5555",
+            "title": "CVE with no advisory in purlStatus",
+            "base_score": {
+              "type": "3.1",
+              "score": 4.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals("unknown", issues.get(0).getSource());
+  }
+
+  @Test
+  void testResponseToIssuesWithBlankIssuerName() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-4444",
+            "title": "CVE with blank issuer name",
+            "base_score": {
+              "type": "3.1",
+              "score": 6.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "  "
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(
+        "unknown", issues.get(0).getSource(), "Blank issuer name should fall back to 'unknown'");
+  }
+
+  @Test
+  void testResponseToIssuesWithNoSeverityButScorePresent() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-3333",
+            "title": "CVE with score but no severity",
+            "base_score": {
+              "type": "3.1",
+              "score": 9.1
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "advisory-1",
+                  "document_id": "advisory-1",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Test Issuer"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertEquals(9.1f, issue.getCvssScore());
+    assertEquals(
+        Severity.CRITICAL, issue.getSeverity(), "Score-based severity should be CRITICAL for 9.1");
+  }
+
+  @Test
+  void testResponseToIssuesCveDeduplicationBySameSource() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-2222",
+            "title": "CVE appearing in multiple advisories from same source",
+            "base_score": {
+              "type": "3.1",
+              "score": 7.5,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:001",
+                  "document_id": "RHSA-2024:001",
+                  "title": "Advisory 1",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "RHSA-2024:002",
+                  "document_id": "RHSA-2024:002",
+                  "title": "Advisory 2",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size(), "Same CVE from same source should be deduplicated to one issue");
+    assertEquals("CVE-2024-2222", issues.get(0).getId());
+    assertEquals("Red Hat Product Security", issues.get(0).getSource());
+  }
+
+  @Test
+  void testResponseToIssuesSameCveDifferentSources() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1111",
+            "title": "CVE from different sources",
+            "base_score": {
+              "type": "3.1",
+              "score": 6.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:001",
+                  "document_id": "RHSA-2024:001",
+                  "title": "Advisory 1",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a2",
+                  "identifier": "GHSA-xxxx",
+                  "document_id": "GHSA-xxxx",
+                  "title": "GHSA Advisory",
+                  "issuer": {
+                    "id": "id-2",
+                    "name": "GitHub"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(2, issues.size(), "Same CVE from different sources should produce two issues");
+    assertTrue(issues.stream().anyMatch(i -> "Red Hat Product Security".equals(i.getSource())));
+    assertTrue(issues.stream().anyMatch(i -> "GitHub".equals(i.getSource())));
   }
 }

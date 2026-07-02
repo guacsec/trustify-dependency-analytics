@@ -223,7 +223,19 @@ public class ProviderResponseHandlerTest {
             tree().direct("aa").withTransitive("aaa").direct("ab").withTransitive("aab").build(),
             new SourceSummary().direct(0).transitive(2).total(2).high(1).medium(1).dependencies(2),
             TEST_SOURCE),
-        // Case 6: issues with null CVSS score produce UNKNOWN severity
+        // Case 6: issue with upstream-only remediation (fixedIn, no trustedContent)
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1",
+                    null,
+                    List.of(buildIssueWithUpstreamRemediation(1, 7f, "2.0.0")),
+                    Collections.emptyList())),
+            tree().direct("aa").build(),
+            new SourceSummary().direct(1).total(1).high(1).dependencies(1).remediations(1),
+            TEST_SOURCE),
+        // Case 7: issues with null CVSS score produce UNKNOWN severity
         Arguments.of(
             Map.of(
                 "pkg:npm/aa@1",
@@ -668,6 +680,19 @@ public class ProviderResponseHandlerTest {
         .severity(SeverityUtils.fromScore(score))
         .cves(List.of(String.format("CVE-00%d", id)))
         .cvssScore(score);
+  }
+
+  private static Issue buildIssueWithUpstreamRemediation(int id, Float score, String fixedVersion) {
+    var r = new Remediation();
+    r.addFixedInItem(fixedVersion);
+    return new Issue()
+        .id(String.format("ISSUE-00%d", id))
+        .title(String.format("ISSUE Example 00%d", id))
+        .source(TEST_SOURCE)
+        .severity(SeverityUtils.fromScore(score))
+        .cves(List.of(String.format("CVE-00%d", id)))
+        .cvssScore(score)
+        .remediation(r);
   }
 
   private static Issue buildIssueWithTcRemediation(int id, Float score, String remediation) {
