@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.RemediationCategory;
+import io.github.guacsec.trustifyda.api.v5.RemediationInfo;
 import io.github.guacsec.trustifyda.api.v5.Severity;
 import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
@@ -1806,5 +1807,294 @@ public class TrustifyResponseHandlerTest {
     assertEquals(2, issues.size(), "Same CVE from different sources should produce two issues");
     assertTrue(issues.stream().anyMatch(i -> "Red Hat Product Security".equals(i.getSource())));
     assertTrue(issues.stream().anyMatch(i -> "GitHub".equals(i.getSource())));
+  }
+
+  @Test
+  void testResponseToIssuesMergesRemediationsAcrossAffected() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "SQL Injection in PostgreSQL JDBC",
+            "description": "SQL injection vulnerability",
+            "base_score": {
+              "score": 9.8,
+              "severity": "CRITICAL"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-1",
+                  "document_id": "RHSA-2024:1234",
+                  "title": "Red Hat Security Advisory",
+                  "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 9.8,
+                    "severity": "critical"
+                  }
+                ]
+              },
+              {
+                "advisory": {
+                  "id": "adv-2",
+                  "document_id": "RHSA-2024:5678",
+                  "title": "Red Hat Security Advisory 2",
+                  "identifier": "https://access.redhat.com/errata/RHSA-2024:5678",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.6.1",
+                  "high_inclusive": false
+                },
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 9.8,
+                    "severity": "critical"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size(), "Same CVE+source should merge into one issue");
+
+    Issue issue = issues.get(0);
+    assertEquals("CVE-2024-1597", issue.getId());
+    assertEquals(9.8f, issue.getCvssScore());
+    assertNotNull(issue.getRemediation());
+    assertEquals(
+        2, issue.getRemediation().getFixedIn().size(), "Should accumulate fixedIn from both");
+    assertTrue(issue.getRemediation().getFixedIn().contains("42.5.5"));
+    assertTrue(issue.getRemediation().getFixedIn().contains("42.6.1"));
+
+    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
+    assertNotNull(remInfos);
+    assertEquals(2, remInfos.size(), "Should have two advisory-linked remediations");
+  }
+
+  @Test
+  void testResponseToIssuesWithAdvisoryInfoAttribution() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "SQL Injection in PostgreSQL JDBC",
+            "description": "SQL injection vulnerability",
+            "base_score": {
+              "score": 9.8,
+              "severity": "CRITICAL"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-1",
+                  "document_id": "RHSA-2024:1234",
+                  "title": "Red Hat Security Advisory",
+                  "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 9.8,
+                    "severity": "critical"
+                  }
+                ]
+              },
+              {
+                "advisory": {
+                  "id": "adv-2",
+                  "document_id": "GHSA-2024-5678",
+                  "title": "GitHub Security Advisory",
+                  "identifier": "GHSA-xxxx-yyyy-zzzz",
+                  "issuer": {
+                    "id": "issuer-2",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 9.8,
+                    "severity": "critical"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertNotNull(issue.getRemediation());
+
+    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
+    assertNotNull(remInfos);
+    assertEquals(2, remInfos.size(), "Should have two advisory-linked remediations");
+
+    RemediationInfo first = remInfos.get(0);
+    assertNotNull(first.getAdvisory());
+    assertEquals("RHSA-2024:1234", first.getAdvisory().getId());
+    assertEquals("Red Hat Security Advisory", first.getAdvisory().getTitle());
+    assertNotNull(first.getAdvisory().getUrl());
+    assertEquals(
+        "https://access.redhat.com/errata/RHSA-2024:1234",
+        first.getAdvisory().getUrl().toString());
+    assertEquals(RemediationCategory.VENDOR_FIX, first.getCategory());
+
+    RemediationInfo second = remInfos.get(1);
+    assertNotNull(second.getAdvisory());
+    assertEquals("GHSA-2024-5678", second.getAdvisory().getId());
+    assertEquals("GitHub Security Advisory", second.getAdvisory().getTitle());
+    assertNull(second.getAdvisory().getUrl(), "Non-URL identifier should result in null url");
+  }
+
+  @Test
+  void testResponseToIssuesMergeKeepsHigherCvss() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-1597",
+            "title": "SQL Injection in PostgreSQL JDBC",
+            "description": "SQL injection vulnerability",
+            "base_score": null,
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-high",
+                  "document_id": "ADV-HIGH",
+                  "title": "High Score Advisory",
+                  "identifier": "https://example.com/adv-high",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 9.8,
+                    "severity": "critical"
+                  }
+                ]
+              },
+              {
+                "advisory": {
+                  "id": "adv-low",
+                  "document_id": "ADV-LOW",
+                  "title": "Low Score Advisory",
+                  "identifier": "https://example.com/adv-low",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 5.0,
+                    "severity": "medium"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertEquals(9.8f, issue.getCvssScore(), "Should keep the higher CVSS score");
+    assertEquals(Severity.CRITICAL, issue.getSeverity());
   }
 }
