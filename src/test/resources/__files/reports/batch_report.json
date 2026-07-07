@@ -53,13 +53,16 @@
                         "unique": false,
                         "remediation": {
                           "remediations": [
-                            {
-                              "advisory": {
-                                "id": "GHSA-24rp-q3w6-vc56",
-                                "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
-                              }
+                          {
+                            "category": "VENDOR_FIX",
+                            "details": "Upgrade to version 42.7.2 or later",
+                            "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
+                            "advisory": {
+                              "id": "GHSA-24rp-q3w6-vc56",
+                              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
                             }
-                          ]
+                          }
+                        ]
                         }
                       },
                       {
@@ -97,6 +100,9 @@
                       "remediation": {
                         "remediations": [
                           {
+                            "category": "VENDOR_FIX",
+                            "details": "Upgrade to version 42.7.2 or later",
+                            "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
                             "advisory": {
                               "id": "GHSA-24rp-q3w6-vc56",
                               "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
@@ -119,13 +125,16 @@
                   "unique": false,
                   "remediation": {
                     "remediations": [
-                      {
-                        "advisory": {
-                          "id": "GHSA-24rp-q3w6-vc56",
-                          "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
-                        }
-                      }
-                    ]
+                          {
+                            "category": "VENDOR_FIX",
+                            "details": "Upgrade to version 42.7.2 or later",
+                            "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
+                            "advisory": {
+                              "id": "GHSA-24rp-q3w6-vc56",
+                              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
+                            }
+                          }
+                        ]
                   }
                 }
               },
@@ -173,13 +182,16 @@
                         "unique": false,
                         "remediation": {
                           "remediations": [
-                            {
-                              "advisory": {
-                                "id": "GHSA-jjjh-jjxp-wpff",
-                                "title": "Uncontrolled Resource Consumption in Jackson-databind"
-                              }
+                          {
+                            "category": "WORKAROUND",
+                            "details": "Disable UNWRAP_SINGLE_VALUE_ARRAYS feature or upgrade to 2.13.4.1 or later",
+                            "url": "https://github.com/FasterXML/jackson-databind/issues/3590",
+                            "advisory": {
+                              "id": "GHSA-jjjh-jjxp-wpff",
+                              "title": "Uncontrolled Resource Consumption in Jackson-databind"
                             }
-                          ]
+                          }
+                        ]
                         }
                       },
                       {
