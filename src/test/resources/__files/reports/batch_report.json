@@ -30,7 +30,7 @@
               "medium": 2,
               "low": 0,
               "unknown": 0,
-              "remediations": 2,
+              "remediations": 7,
               "recommendations": 0,
               "unscanned": 0
             },
@@ -50,7 +50,17 @@
                         "cves": [
                           "CVE-2024-1597"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-24rp-q3w6-vc56",
+                                "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
+                              }
+                            }
+                          ]
+                        }
                       },
                       {
                         "id": "CVE-2022-41946",
@@ -61,7 +71,17 @@
                         "cves": [
                           "CVE-2022-41946"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-562r-vg33-8x8h",
+                                "title": "TemporaryFolder on unix-like systems does not limit access to created files"
+                              }
+                            }
+                          ]
+                        }
                       }
                     ],
                     "highestVulnerability": {
@@ -73,7 +93,17 @@
                       "cves": [
                         "CVE-2024-1597"
                       ],
-                      "unique": false
+                      "unique": false,
+                      "remediation": {
+                        "remediations": [
+                          {
+                            "advisory": {
+                              "id": "GHSA-24rp-q3w6-vc56",
+                              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
+                            }
+                          }
+                        ]
+                      }
                     }
                   }
                 ],
@@ -86,7 +116,17 @@
                   "cves": [
                     "CVE-2024-1597"
                   ],
-                  "unique": false
+                  "unique": false,
+                  "remediation": {
+                    "remediations": [
+                      {
+                        "advisory": {
+                          "id": "GHSA-24rp-q3w6-vc56",
+                          "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
+                        }
+                      }
+                    ]
+                  }
                 }
               },
               {
@@ -106,6 +146,14 @@
                         ],
                         "unique": false,
                         "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-57j2-w4cx-62h2",
+                                "title": "Deeply nested json in jackson-databind"
+                              }
+                            }
+                          ],
                           "trustedContent": {
                             "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                             "status": "NotAffected",
@@ -122,7 +170,17 @@
                         "cves": [
                           "CVE-2022-42003"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-jjjh-jjxp-wpff",
+                                "title": "Uncontrolled Resource Consumption in Jackson-databind"
+                              }
+                            }
+                          ]
+                        }
                       },
                       {
                         "id": "CVE-2022-42004",
@@ -133,7 +191,17 @@
                         "cves": [
                           "CVE-2022-42004"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-rgv9-q543-rqg4",
+                                "title": "Uncontrolled Resource Consumption in FasterXML jackson-databind"
+                              }
+                            }
+                          ]
+                        }
                       }
                     ],
                     "highestVulnerability": {
@@ -147,6 +215,14 @@
                       ],
                       "unique": false,
                       "remediation": {
+                        "remediations": [
+                          {
+                            "advisory": {
+                              "id": "GHSA-57j2-w4cx-62h2",
+                              "title": "Deeply nested json in jackson-databind"
+                            }
+                          }
+                        ],
                         "trustedContent": {
                           "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                           "status": "NotAffected",
@@ -167,7 +243,17 @@
                         "cves": [
                           "CVE-2024-2700"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-f8h5-v2vg-46rr",
+                                "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build"
+                              }
+                            }
+                          ]
+                        }
                       },
                       {
                         "id": "CVE-2023-2974",
@@ -180,6 +266,14 @@
                         ],
                         "unique": false,
                         "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "GHSA-3fhx-3vvg-2j84",
+                                "title": "quarkus-core vulnerable to client driven TLS cipher downgrading"
+                              }
+                            }
+                          ],
                           "trustedContent": {
                             "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                             "status": "NotAffected",
@@ -197,7 +291,17 @@
                       "cves": [
                         "CVE-2024-2700"
                       ],
-                      "unique": false
+                      "unique": false,
+                      "remediation": {
+                        "remediations": [
+                          {
+                            "advisory": {
+                              "id": "GHSA-f8h5-v2vg-46rr",
+                              "title": "quarkus-core leaks local environment variables from Quarkus namespace during application's build"
+                            }
+                          }
+                        ]
+                      }
                     }
                   }
                 ],
@@ -212,6 +316,14 @@
                   ],
                   "unique": false,
                   "remediation": {
+                    "remediations": [
+                      {
+                        "advisory": {
+                          "id": "GHSA-57j2-w4cx-62h2",
+                          "title": "Deeply nested json in jackson-databind"
+                        }
+                      }
+                    ],
                     "trustedContent": {
                       "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.1.2-redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar",
                       "status": "NotAffected",
@@ -233,7 +345,7 @@
               "medium": 0,
               "low": 0,
               "unknown": 0,
-              "remediations": 0,
+              "remediations": 2,
               "recommendations": 0,
               "unscanned": 0
             },
@@ -253,7 +365,67 @@
                         "cves": [
                           "CVE-2024-1597"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:1797",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                                "url": "https://www.redhat.com/#RHSA-2024_1797"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-1597",
+                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                                "url": "https://www.redhat.com/#CVE-2024-1597"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-1597",
+                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                                "url": "https://www.redhat.com/#CVE-2024-1597"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-1597",
+                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                                "url": "https://www.redhat.com/#CVE-2024-1597"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:1662",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                                "url": "https://www.redhat.com/#RHSA-2024_1662"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-1597",
+                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                                "url": "https://www.redhat.com/#CVE-2024-1597"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:1797",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                                "url": "https://www.redhat.com/#RHSA-2024_1797"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:1662",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                                "url": "https://www.redhat.com/#RHSA-2024_1662"
+                              }
+                            }
+                          ]
+                        }
                       }
                     ],
                     "highestVulnerability": {
@@ -265,7 +437,67 @@
                       "cves": [
                         "CVE-2024-1597"
                       ],
-                      "unique": false
+                      "unique": false,
+                      "remediation": {
+                        "remediations": [
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:1797",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                              "url": "https://www.redhat.com/#RHSA-2024_1797"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-1597",
+                              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                              "url": "https://www.redhat.com/#CVE-2024-1597"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-1597",
+                              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                              "url": "https://www.redhat.com/#CVE-2024-1597"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-1597",
+                              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                              "url": "https://www.redhat.com/#CVE-2024-1597"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:1662",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                              "url": "https://www.redhat.com/#RHSA-2024_1662"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-1597",
+                              "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                              "url": "https://www.redhat.com/#CVE-2024-1597"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:1797",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                              "url": "https://www.redhat.com/#RHSA-2024_1797"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:1662",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                              "url": "https://www.redhat.com/#RHSA-2024_1662"
+                            }
+                          }
+                        ]
+                      }
                     }
                   }
                 ],
@@ -278,7 +510,67 @@
                   "cves": [
                     "CVE-2024-1597"
                   ],
-                  "unique": false
+                  "unique": false,
+                  "remediation": {
+                    "remediations": [
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:1797",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                          "url": "https://www.redhat.com/#RHSA-2024_1797"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                          "url": "https://www.redhat.com/#CVE-2024-1597"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                          "url": "https://www.redhat.com/#CVE-2024-1597"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                          "url": "https://www.redhat.com/#CVE-2024-1597"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:1662",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                          "url": "https://www.redhat.com/#RHSA-2024_1662"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-1597",
+                          "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
+                          "url": "https://www.redhat.com/#CVE-2024-1597"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:1797",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                          "url": "https://www.redhat.com/#RHSA-2024_1797"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:1662",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                          "url": "https://www.redhat.com/#RHSA-2024_1662"
+                        }
+                      }
+                    ]
+                  }
                 }
               },
               {
@@ -296,7 +588,39 @@
                         "cves": [
                           "CVE-2024-2700"
                         ],
-                        "unique": false
+                        "unique": false,
+                        "remediation": {
+                          "remediations": [
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-2700",
+                                "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                                "url": "https://www.redhat.com/#CVE-2024-2700"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "CVE-2024-2700",
+                                "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                                "url": "https://www.redhat.com/#CVE-2024-2700"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:2705",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
+                                "url": "https://www.redhat.com/#RHSA-2024_2705"
+                              }
+                            },
+                            {
+                              "advisory": {
+                                "id": "RHSA-2024:2106",
+                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.8.4 release",
+                                "url": "https://www.redhat.com/#RHSA-2024_2106"
+                              }
+                            }
+                          ]
+                        }
                       }
                     ],
                     "highestVulnerability": {
@@ -308,7 +632,39 @@
                       "cves": [
                         "CVE-2024-2700"
                       ],
-                      "unique": false
+                      "unique": false,
+                      "remediation": {
+                        "remediations": [
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-2700",
+                              "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                              "url": "https://www.redhat.com/#CVE-2024-2700"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "CVE-2024-2700",
+                              "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                              "url": "https://www.redhat.com/#CVE-2024-2700"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:2705",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
+                              "url": "https://www.redhat.com/#RHSA-2024_2705"
+                            }
+                          },
+                          {
+                            "advisory": {
+                              "id": "RHSA-2024:2106",
+                              "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.8.4 release",
+                              "url": "https://www.redhat.com/#RHSA-2024_2106"
+                            }
+                          }
+                        ]
+                      }
                     }
                   }
                 ],
@@ -321,7 +677,39 @@
                   "cves": [
                     "CVE-2024-2700"
                   ],
-                  "unique": false
+                  "unique": false,
+                  "remediation": {
+                    "remediations": [
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-2700",
+                          "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                          "url": "https://www.redhat.com/#CVE-2024-2700"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "CVE-2024-2700",
+                          "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
+                          "url": "https://www.redhat.com/#CVE-2024-2700"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:2705",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
+                          "url": "https://www.redhat.com/#RHSA-2024_2705"
+                        }
+                      },
+                      {
+                        "advisory": {
+                          "id": "RHSA-2024:2106",
+                          "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.8.4 release",
+                          "url": "https://www.redhat.com/#RHSA-2024_2106"
+                        }
+                      }
+                    ]
+                  }
                 }
               }
             ]
