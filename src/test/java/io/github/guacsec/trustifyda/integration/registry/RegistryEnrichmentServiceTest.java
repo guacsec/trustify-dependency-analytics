@@ -38,8 +38,10 @@ import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderReport;
+import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
+import io.github.guacsec.trustifyda.api.v5.VersionRange;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 
@@ -165,6 +167,39 @@ public class RegistryEnrichmentServiceTest {
     assertNotNull(issue.getRemediation());
     assertNotNull(issue.getRemediation().getTrustedContent());
     assertEquals(dep.getRecommendation(), issue.getRemediation().getTrustedContent().getRef());
+  }
+
+  @Test
+  void preserveUpstreamRemediationWhenAddingTrustedContent() {
+    var report = buildReportWithPypiDep("pkg:pypi/requests@2.31.0");
+    var dep = getFirstDep(report);
+
+    var existingRemediation = new Remediation();
+    existingRemediation.addFixedInItem("2.32.0");
+    existingRemediation.addVersionRangesItem(
+        new VersionRange().lowVersion("2.31.0").highVersion("2.32.0"));
+
+    var issue = new Issue().id("CVE-2024-35195").remediation(existingRemediation);
+    dep.issues(new ArrayList<>(List.of(issue)));
+
+    var tree = buildTree("pkg:pypi/requests@2.31.0", Map.of("SHA-256", "abc123"));
+
+    service.enrichReport(report, tree, PKG_PYPI_PREFIX, alwaysRecommend);
+
+    var resultIssue = dep.getIssues().get(0);
+    var remediation = resultIssue.getRemediation();
+    assertNotNull(remediation);
+
+    assertNotNull(remediation.getFixedIn());
+    assertEquals(1, remediation.getFixedIn().size());
+    assertEquals("2.32.0", remediation.getFixedIn().get(0));
+
+    assertNotNull(remediation.getVersionRanges());
+    assertEquals(1, remediation.getVersionRanges().size());
+    assertEquals("2.31.0", remediation.getVersionRanges().get(0).getLowVersion());
+
+    assertNotNull(remediation.getTrustedContent());
+    assertEquals(dep.getRecommendation(), remediation.getTrustedContent().getRef());
   }
 
   @Test

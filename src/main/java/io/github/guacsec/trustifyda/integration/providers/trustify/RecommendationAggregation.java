@@ -177,7 +177,12 @@ public class RecommendationAggregation implements AggregationStrategy {
                               .status(Vulnerability.Status.toString(vuln.getStatus()))
                               .justification(
                                   Vulnerability.Justification.toString(vuln.getJustification()));
-                      issue.remediation(new Remediation().trustedContent(remediation));
+                      var existing = issue.getRemediation();
+                      if (existing == null) {
+                        existing = new Remediation();
+                      }
+                      existing.trustedContent(remediation);
+                      issue.remediation(existing);
                     });
           }
           providerResponse

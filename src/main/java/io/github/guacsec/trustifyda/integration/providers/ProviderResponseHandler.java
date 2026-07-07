@@ -44,6 +44,7 @@ import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.RecommendationReport;
 import io.github.guacsec.trustifyda.api.v5.RecommendationSource;
 import io.github.guacsec.trustifyda.api.v5.RecommendationSummary;
+import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.Source;
 import io.github.guacsec.trustifyda.api.v5.SourceSummary;
 import io.github.guacsec.trustifyda.api.v5.TransitiveDependencyReport;
@@ -535,15 +536,23 @@ public abstract class ProviderResponseHandler {
                 counter.direct.addAndGet(vulnerabilities);
               }
               if (i.getRemediation() != null
-                  && i.getRemediation().getTrustedContent() != null
-                  && i.getRemediation().getTrustedContent().getRef() != null) {
+                  && (hasUpstreamRemediation(i.getRemediation())
+                      || hasTrustedContentRemediation(i.getRemediation()))) {
                 counter.remediations.incrementAndGet();
               }
             });
   }
 
-  // The number of vulnerabilities is the total count of public CVEs
-  // or if it is private it will be 1
+  private boolean hasUpstreamRemediation(Remediation r) {
+    return (r.getFixedIn() != null && !r.getFixedIn().isEmpty())
+        || (r.getVersionRanges() != null && !r.getVersionRanges().isEmpty())
+        || (r.getRemediations() != null && !r.getRemediations().isEmpty());
+  }
+
+  private boolean hasTrustedContentRemediation(Remediation r) {
+    return r.getTrustedContent() != null && r.getTrustedContent().getRef() != null;
+  }
+
   private int countVulnerabilities(Issue i) {
     if (i.getCves() != null && !i.getCves().isEmpty()) {
       return i.getCves().size();

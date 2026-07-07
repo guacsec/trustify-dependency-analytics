@@ -46,8 +46,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
+import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationTrustedContent;
 import io.github.guacsec.trustifyda.api.v5.SeverityUtils;
+import io.github.guacsec.trustifyda.api.v5.VersionRange;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
 import io.github.guacsec.trustifyda.model.trustify.IndexedRecommendation;
@@ -555,6 +557,54 @@ public class RecommendationAggregationTest {
     assertEquals("trusted-content", item.recommendationSource());
     assertNotNull(item.recommendation());
     assertEquals(1, item.issues().size());
+  }
+
+  @Test
+  void testUpstreamRemediationPreservedWhenTrustedContentMerged() {
+    Exchange oldExchange = mock(Exchange.class);
+    Exchange newExchange = mock(Exchange.class);
+    Message oldMessage = createMessageWithBodyStorage();
+    Message newMessage = mock(Message.class);
+
+    var existingRemediation = new Remediation();
+    existingRemediation.addFixedInItem("2.0.0");
+    existingRemediation.addVersionRangesItem(
+        new VersionRange().lowVersion("1.0.0").highVersion("2.0.0"));
+
+    var issue = createIssue("CVE-001", "Issue 1", 7.0f);
+    issue.remediation(existingRemediation);
+
+    oldMessage.setBody(createProviderResponseWithIssues(List.of(issue)));
+    when(oldExchange.getIn()).thenReturn(oldMessage);
+    when(newExchange.getIn()).thenReturn(newMessage);
+    when(newMessage.getBody())
+        .thenReturn(
+            createRecommendations(
+                "pkg:npm/package1@1.0.0",
+                "pkg:npm/package1@2.0.0",
+                Map.of("CVE-001", new Vulnerability("CVE-001", Fixed, NotProvided))));
+
+    Exchange result = aggregation.aggregate(oldExchange, newExchange);
+    ProviderResponse response = result.getIn().getBody(ProviderResponse.class);
+
+    PackageItem resultItem = response.pkgItems().get("pkg:npm/package1@1.0.0");
+    assertNotNull(resultItem);
+    assertEquals(1, resultItem.issues().size());
+
+    var remediation = resultItem.issues().get(0).getRemediation();
+    assertNotNull(remediation);
+
+    assertNotNull(remediation.getFixedIn());
+    assertEquals(1, remediation.getFixedIn().size());
+    assertEquals("2.0.0", remediation.getFixedIn().get(0));
+
+    assertNotNull(remediation.getVersionRanges());
+    assertEquals(1, remediation.getVersionRanges().size());
+    assertEquals("1.0.0", remediation.getVersionRanges().get(0).getLowVersion());
+    assertEquals("2.0.0", remediation.getVersionRanges().get(0).getHighVersion());
+
+    assertNotNull(remediation.getTrustedContent());
+    assertEquals("pkg:npm/package1@2.0.0", remediation.getTrustedContent().getRef().ref());
   }
 
   /** Creates a mock Message that actually stores and retrieves the body. */

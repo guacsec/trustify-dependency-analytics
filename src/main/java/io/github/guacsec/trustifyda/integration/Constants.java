@@ -86,8 +86,8 @@ public final class Constants {
   public static final String CACHE_LICENSES_PROPERTY = "cacheLicenses";
   public static final String CACHE_LICENSES_HITS_PROPERTY = "cacheLicensesHits";
 
-  public static final String TRUSTIFY_RECOMMEND_PATH = "/api/v2/purl/recommend";
-  public static final String TRUSTIFY_ANALYZE_PATH = "/api/v2/vulnerability/analyze";
+  public static final String TRUSTIFY_RECOMMEND_PATH = "/api/v3/purl/recommend";
+  public static final String TRUSTIFY_ANALYZE_PATH = "/api/v3/vulnerability/analyze";
   public static final String TRUSTIFY_HEALTH_PATH = "/.well-known/trustify";
 
   public static final String DEPS_DEV_LICENSES_PATH = "/v3alpha/purlbatch";
