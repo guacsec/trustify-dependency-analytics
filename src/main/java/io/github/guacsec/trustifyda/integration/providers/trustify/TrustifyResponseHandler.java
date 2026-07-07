@@ -252,7 +252,11 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             }
             var url = JsonUtils.getTextValue(rem, "url");
             if (url != null) {
-              info.url(url);
+              try {
+                info.url(URI.create(url));
+              } catch (IllegalArgumentException e) {
+                LOGGER.infof("Invalid remediation URL: %s", url);
+              }
             }
             if (advisoryInfo != null) {
               info.advisory(advisoryInfo);
@@ -262,8 +266,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       hasRemediation = true;
     } else {
       var info =
-          buildRemediationInfo(
-              purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
+          buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
       if (info != null) {
         r.addRemediationsItem(info);
         hasRemediation = true;
@@ -298,8 +301,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       }
     }
 
-    if (score != null
-        && (existing.getCvssScore() == null || score > existing.getCvssScore())) {
+    if (score != null && (existing.getCvssScore() == null || score > existing.getCvssScore())) {
       existing.cvssScore(score);
       if (severity != null) {
         try {
@@ -366,7 +368,11 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             }
             var url = JsonUtils.getTextValue(rem, "url");
             if (url != null) {
-              info.url(url);
+              try {
+                info.url(URI.create(url));
+              } catch (IllegalArgumentException e) {
+                LOGGER.infof("Invalid remediation URL: %s", url);
+              }
             }
             if (advisoryInfo != null) {
               info.advisory(advisoryInfo);
@@ -375,8 +381,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
           });
     } else {
       var info =
-          buildRemediationInfo(
-              purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
+          buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
       if (info != null) {
         r.addRemediationsItem(info);
       }
@@ -407,7 +412,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       info.title(title);
     }
     var identifier = JsonUtils.getTextValue(advisory, "identifier");
-    if (identifier != null) {
+    if (identifier != null && identifier.startsWith("http")) {
       try {
         info.url(URI.create(identifier));
       } catch (IllegalArgumentException e) {

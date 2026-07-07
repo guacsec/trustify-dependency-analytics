@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1476,7 +1477,7 @@ public class TrustifyResponseHandlerTest {
     var rem = issue.getRemediation().getRemediations().get(0);
     assertEquals(RemediationCategory.VENDOR_FIX, rem.getCategory());
     assertEquals("Update to latest version", rem.getDetails());
-    assertEquals("https://example.com/fix", rem.getUrl());
+    assertEquals(URI.create("https://example.com/fix"), rem.getUrl());
   }
 
   @Test
@@ -2008,8 +2009,7 @@ public class TrustifyResponseHandlerTest {
     assertEquals("Red Hat Security Advisory", first.getAdvisory().getTitle());
     assertNotNull(first.getAdvisory().getUrl());
     assertEquals(
-        "https://access.redhat.com/errata/RHSA-2024:1234",
-        first.getAdvisory().getUrl().toString());
+        "https://access.redhat.com/errata/RHSA-2024:1234", first.getAdvisory().getUrl().toString());
     assertEquals(RemediationCategory.VENDOR_FIX, first.getCategory());
 
     RemediationInfo second = remInfos.get(1);
