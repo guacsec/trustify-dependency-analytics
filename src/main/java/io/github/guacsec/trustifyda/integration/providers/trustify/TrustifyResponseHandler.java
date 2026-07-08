@@ -161,117 +161,28 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
   }
 
   private void setCvssData(Issue issue, JsonNode vuln, JsonNode purlStatus) {
-    Float score = null;
-    String severity = null;
+    var sd = extractScoreData(vuln, purlStatus);
 
-    var baseScore = vuln.get("base_score");
-    if (baseScore != null && !baseScore.isNull()) {
-      score = baseScore.has("score") ? (float) baseScore.get("score").asDouble() : null;
-      severity = JsonUtils.getTextValue(baseScore, "severity");
+    if (sd.score != null) {
+      issue.cvssScore(sd.score);
     }
-
-    if (score == null) {
-      var scores = purlStatus.get("scores");
-      if (scores != null && scores.isArray() && !scores.isEmpty()) {
-        for (var entry : scores) {
-          var entryValue = entry.has("value") ? (float) entry.get("value").asDouble() : null;
-          if (entryValue != null && (score == null || entryValue > score)) {
-            score = entryValue;
-            severity = JsonUtils.getTextValue(entry, "severity");
-          }
-        }
-      }
-    }
-
-    if (score != null) {
-      issue.cvssScore(score);
-    }
-    if (severity != null) {
+    if (sd.severity != null) {
       try {
-        issue.setSeverity(SeverityUtils.fromValue(severity.toUpperCase()));
+        issue.setSeverity(SeverityUtils.fromValue(sd.severity.toUpperCase()));
       } catch (IllegalArgumentException e) {
-        LOGGER.infof("Unknown severity value: %s, falling back to score-based severity", severity);
-        if (score != null) {
-          issue.setSeverity(SeverityUtils.fromScore(score));
+        LOGGER.infof(
+            "Unknown severity value: %s, falling back to score-based severity", sd.severity);
+        if (sd.score != null) {
+          issue.setSeverity(SeverityUtils.fromScore(sd.score));
         }
       }
-    } else if (score != null) {
-      issue.setSeverity(SeverityUtils.fromScore(score));
+    } else if (sd.score != null) {
+      issue.setSeverity(SeverityUtils.fromScore(sd.score));
     }
 
     var r = new Remediation();
-    boolean hasRemediation = false;
-
-    var versionRange = purlStatus.get("version_range");
-    if (versionRange != null && !versionRange.isNull()) {
-      var vr = new VersionRange();
-      var schemeId = JsonUtils.getTextValue(versionRange, "version_scheme_id");
-      if (schemeId != null) {
-        vr.versionSchemeId(schemeId);
-      }
-      var lowVersion = JsonUtils.getTextValue(versionRange, "low_version");
-      if (lowVersion != null) {
-        vr.lowVersion(lowVersion);
-      }
-      var lowInclusive = JsonUtils.getBooleanValue(versionRange, "low_inclusive");
-      if (lowInclusive != null) {
-        vr.lowInclusive(lowInclusive);
-      }
-      var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
-      var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
-      if (highVersion != null) {
-        vr.highVersion(highVersion);
-        if (highInclusive == null || !highInclusive) {
-          r.addFixedInItem(highVersion);
-        }
-      }
-      if (highInclusive != null) {
-        vr.highInclusive(highInclusive);
-      }
-      r.addVersionRangesItem(vr);
-      hasRemediation = true;
-    }
-
-    var remediations = (ArrayNode) purlStatus.get("remediations");
-    var advisoryInfo = buildAdvisoryInfo(purlStatus);
-    if (remediations != null && !remediations.isEmpty()) {
-      remediations.forEach(
-          rem -> {
-            var info = new RemediationInfo();
-            var category = JsonUtils.getTextValue(rem, "category");
-            if (category != null) {
-              try {
-                info.category(RemediationCategory.fromValue(category.toUpperCase()));
-              } catch (IllegalArgumentException e) {
-                LOGGER.infof("Unknown remediation category: %s", category);
-              }
-            }
-            var details = JsonUtils.getTextValue(rem, "details");
-            if (details != null) {
-              info.details(details);
-            }
-            var url = JsonUtils.getTextValue(rem, "url");
-            if (url != null) {
-              try {
-                info.url(URI.create(url));
-              } catch (IllegalArgumentException e) {
-                LOGGER.infof("Invalid remediation URL: %s", url);
-              }
-            }
-            if (advisoryInfo != null) {
-              info.advisory(advisoryInfo);
-            }
-            r.addRemediationsItem(info);
-          });
-      hasRemediation = true;
-    } else {
-      var info =
-          buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
-      if (info != null) {
-        r.addRemediationsItem(info);
-        hasRemediation = true;
-      }
-    }
+    boolean hasRemediation = processVersionRange(purlStatus, r, false);
+    hasRemediation |= processRemediations(purlStatus, r);
 
     if (hasRemediation) {
       issue.setRemediation(r);
@@ -279,6 +190,30 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
   }
 
   private void mergeIssueData(Issue existing, JsonNode vuln, JsonNode purlStatus) {
+    var sd = extractScoreData(vuln, purlStatus);
+
+    if (sd.score != null
+        && (existing.getCvssScore() == null || sd.score > existing.getCvssScore())) {
+      existing.cvssScore(sd.score);
+      if (sd.severity != null) {
+        try {
+          existing.setSeverity(SeverityUtils.fromValue(sd.severity.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+          existing.setSeverity(SeverityUtils.fromScore(sd.score));
+        }
+      } else {
+        existing.setSeverity(SeverityUtils.fromScore(sd.score));
+      }
+    }
+
+    var r = ensureRemediation(existing);
+    processVersionRange(purlStatus, r, true);
+    processRemediations(purlStatus, r);
+  }
+
+  private record ScoreData(Float score, String severity) {}
+
+  private ScoreData extractScoreData(JsonNode vuln, JsonNode purlStatus) {
     Float score = null;
     String severity = null;
 
@@ -301,53 +236,50 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       }
     }
 
-    if (score != null && (existing.getCvssScore() == null || score > existing.getCvssScore())) {
-      existing.cvssScore(score);
-      if (severity != null) {
-        try {
-          existing.setSeverity(SeverityUtils.fromValue(severity.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-          existing.setSeverity(SeverityUtils.fromScore(score));
-        }
-      } else {
-        existing.setSeverity(SeverityUtils.fromScore(score));
-      }
-    }
+    return new ScoreData(score, severity);
+  }
 
-    var r = ensureRemediation(existing);
-
+  private boolean processVersionRange(JsonNode purlStatus, Remediation r, boolean dedup) {
     var versionRange = purlStatus.get("version_range");
-    if (versionRange != null && !versionRange.isNull()) {
-      var vr = new VersionRange();
-      var schemeId = JsonUtils.getTextValue(versionRange, "version_scheme_id");
-      if (schemeId != null) {
-        vr.versionSchemeId(schemeId);
-      }
-      var lowVersion = JsonUtils.getTextValue(versionRange, "low_version");
-      if (lowVersion != null) {
-        vr.lowVersion(lowVersion);
-      }
-      var lowInclusive = JsonUtils.getBooleanValue(versionRange, "low_inclusive");
-      if (lowInclusive != null) {
-        vr.lowInclusive(lowInclusive);
-      }
-      var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
-      var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
-      if (highVersion != null) {
-        vr.highVersion(highVersion);
-        if (highInclusive == null || !highInclusive) {
+    if (versionRange == null || versionRange.isNull()) {
+      return false;
+    }
+    var vr = new VersionRange();
+    var schemeId = JsonUtils.getTextValue(versionRange, "version_scheme_id");
+    if (schemeId != null) {
+      vr.versionSchemeId(schemeId);
+    }
+    var lowVersion = JsonUtils.getTextValue(versionRange, "low_version");
+    if (lowVersion != null) {
+      vr.lowVersion(lowVersion);
+    }
+    var lowInclusive = JsonUtils.getBooleanValue(versionRange, "low_inclusive");
+    if (lowInclusive != null) {
+      vr.lowInclusive(lowInclusive);
+    }
+    var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
+    var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
+    if (highVersion != null) {
+      vr.highVersion(highVersion);
+      if (highInclusive == null || !highInclusive) {
+        if (dedup) {
           var fixedIn = r.getFixedIn();
           if (fixedIn == null || !fixedIn.contains(highVersion)) {
             r.addFixedInItem(highVersion);
           }
+        } else {
+          r.addFixedInItem(highVersion);
         }
       }
-      if (highInclusive != null) {
-        vr.highInclusive(highInclusive);
-      }
-      r.addVersionRangesItem(vr);
     }
+    if (highInclusive != null) {
+      vr.highInclusive(highInclusive);
+    }
+    r.addVersionRangesItem(vr);
+    return true;
+  }
 
+  private boolean processRemediations(JsonNode purlStatus, Remediation r) {
     var remediations = (ArrayNode) purlStatus.get("remediations");
     var advisoryInfo = buildAdvisoryInfo(purlStatus);
     if (remediations != null && !remediations.isEmpty()) {
@@ -379,13 +311,16 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             }
             r.addRemediationsItem(info);
           });
+      return true;
     } else {
       var info =
           buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
       if (info != null) {
         r.addRemediationsItem(info);
+        return true;
       }
     }
+    return false;
   }
 
   private Remediation ensureRemediation(Issue issue) {

@@ -26,6 +26,7 @@
 - **Formatter toggle**: `// fmt:off` / `// fmt:on` to disable formatting (used in Camel DSL code)
 - **Encoding**: UTF-8
 - **Line endings**: LF, trim trailing whitespace, final newline
+- **Method length**: Methods should not exceed ~40 lines of logic. When a method grows beyond this, extract cohesive blocks into well-named private helpers. Duplicated blocks across methods must always be extracted.
 
 ## Naming Conventions
 
