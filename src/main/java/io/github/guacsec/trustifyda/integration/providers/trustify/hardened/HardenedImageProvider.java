@@ -18,6 +18,7 @@
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,7 @@ public class HardenedImageProvider {
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build(HummingbirdClient.class);
+    logRegistryMap();
   }
 
   /** Constructor for testing with a mock client. */
@@ -156,6 +158,14 @@ public class HardenedImageProvider {
       return Collections.emptyMap();
     }
 
+    String version = pkgRef.purl().getVersion();
+    var qualifiers = pkgRef.purl().getQualifiers();
+    String tag = qualifiers != null ? qualifiers.get("tag") : null;
+    if (version != null && version.startsWith("sha256:") && (tag == null || tag.isBlank())) {
+      LOG.debugf("Skipping digest-pinned image, no recommendation possible: %s", sbomId);
+      return Collections.emptyMap();
+    }
+
     String baseImageRef = buildDockerRef(pkgRef);
     if (baseImageRef == null) {
       return Collections.emptyMap();
@@ -164,6 +174,22 @@ public class HardenedImageProvider {
     var recommendations = lookup(baseImageRef);
     if (recommendations.isEmpty()) {
       return Collections.emptyMap();
+    }
+
+    Map<String, String> registryMap = config.registryMap();
+    if (!registryMap.isEmpty()) {
+      List<IndexedRecommendation> mapped = new ArrayList<>(recommendations.size());
+      for (IndexedRecommendation rec : recommendations) {
+        PackageRef mappedRef =
+            HardenedImageResponseHandler.applyRegistryMap(rec.packageName(), registryMap);
+        mapped.add(
+            IndexedRecommendation.builder()
+                .packageName(mappedRef)
+                .vulnerabilities(rec.vulnerabilities())
+                .sourceName(rec.sourceName())
+                .build());
+      }
+      recommendations = mapped;
     }
 
     return Map.of(pkgRef, recommendations);
@@ -188,6 +214,16 @@ public class HardenedImageProvider {
       return repoUrl + ":" + tag;
     }
     return repoUrl;
+  }
+
+  private void logRegistryMap() {
+    Map<String, String> registryMap = config.registryMap();
+    if (registryMap.isEmpty()) {
+      LOG.info("Hardened image registry map is empty — returning bare image names");
+    } else {
+      LOG.infof("Hardened image registry map configured with %d entries:", registryMap.size());
+      registryMap.forEach((source, target) -> LOG.infof("  registry-map: %s → %s", source, target));
+    }
   }
 
   /** Returns the current index for inspection. */

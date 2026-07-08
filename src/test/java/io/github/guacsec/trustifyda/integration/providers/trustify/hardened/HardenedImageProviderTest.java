@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,6 +74,7 @@ public class HardenedImageProviderTest {
     config = mock(HardenedImageRecommendation.class);
     when(config.lockTtl()).thenReturn(Duration.ofMinutes(5));
     when(config.refreshInterval()).thenReturn("1h");
+    when(config.registryMap()).thenReturn(Collections.emptyMap());
 
     provider = new HardenedImageProvider(config, lock, responseHandler, hummingbirdClient);
   }
@@ -469,5 +471,208 @@ public class HardenedImageProviderTest {
     assertEquals(1, result.size());
     var recommendations = result.entrySet().iterator().next().getValue();
     assertEquals(2, recommendations.size(), "Both hardened alternatives should be returned");
+  }
+
+  // Verifies that lookupBySbomId skips digest-pinned source images (no tag, version is sha256).
+  @Test
+  void testLookupBySbomIdSkipsDigestPinnedImage() {
+    // Given an index with a hardened recommendation for nginx
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+
+    // When looking up by a digest-pinned OCI PURL (no tag, version is sha256)
+    String digestPurl =
+        "pkg:oci/nginx@sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            + "?repository_url=docker.io%2Flibrary%2Fnginx";
+    var result = provider.lookupBySbomId(digestPurl);
+
+    // Then no recommendation is returned
+    assertTrue(result.isEmpty(), "Digest-pinned images should not get recommendations");
+  }
+
+  // Verifies that lookupBySbomId uses the tag when both sha256 version and tag are present.
+  @Test
+  void testLookupBySbomIdUsesTagWhenDigestAndTagPresent() {
+    // Given an index with a hardened recommendation for nginx
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+
+    // When looking up by a PURL with both sha256 version and tag qualifier
+    String digestWithTagPurl =
+        "pkg:oci/nginx@sha256:abc123?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(digestWithTagPurl);
+
+    // Then the recommendation is returned (tag qualifier enables lookup)
+    assertEquals(1, result.size(), "Tag-qualified images should get recommendations");
+  }
+
+  // Verifies that the registry map replaces the prefix in recommended image PURLs.
+  @Test
+  void testLookupBySbomIdAppliesRegistryMap() {
+    // Given an index with a hardened recommendation and a registry map configured
+    String hardenedPurl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedPurl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+    when(config.registryMap())
+        .thenReturn(Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi"));
+
+    // When looking up by OCI PURL
+    String ociPurl = "pkg:oci/nginx?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(ociPurl);
+
+    // Then the recommendation's repository_url has the replaced prefix
+    assertEquals(1, result.size());
+    var mapped = result.entrySet().iterator().next().getValue().get(0);
+    assertEquals(
+        "registry.access.redhat.com/hi/hardened-nginx",
+        mapped.packageName().purl().getQualifiers().get("repository_url"));
+    assertEquals("1.25", mapped.packageName().purl().getQualifiers().get("tag"));
+    assertEquals("hardened", mapped.sourceName());
+  }
+
+  // Verifies that lookupBySbomId returns bare image names when no registry map is configured.
+  @Test
+  void testLookupBySbomIdNoRegistryMapReturnsBareNames() {
+    // Given an index with a hardened recommendation and NO registry map
+    String hardenedPurl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedPurl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+    when(config.registryMap()).thenReturn(Collections.emptyMap());
+
+    // When looking up by OCI PURL
+    String ociPurl = "pkg:oci/nginx?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(ociPurl);
+
+    // Then the recommendation's repository_url is unchanged
+    assertEquals(1, result.size());
+    var recommendation = result.entrySet().iterator().next().getValue().get(0);
+    assertEquals(
+        "quay.io/hummingbird/hardened-nginx",
+        recommendation.packageName().purl().getQualifiers().get("repository_url"));
+  }
+
+  // Verifies that applyRegistryMap correctly replaces a matching prefix.
+  @Test
+  void testApplyRegistryMapMatchingPrefix() {
+    // Given a PackageRef with a repository_url matching a map entry
+    String purl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    PackageRef ref = new PackageRef(purl);
+    Map<String, String> registryMap =
+        Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi");
+
+    // When applying the registry map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+
+    // Then the repository_url prefix is replaced
+    assertNotEquals(ref.ref(), result.ref());
+    assertEquals(
+        "registry.access.redhat.com/hi/hardened-nginx",
+        result.purl().getQualifiers().get("repository_url"));
+    assertEquals("1.25", result.purl().getQualifiers().get("tag"));
+  }
+
+  // Verifies that applyRegistryMap returns the original ref when no prefix matches.
+  @Test
+  void testApplyRegistryMapNoMatch() {
+    // Given a PackageRef with a repository_url NOT matching any map entry
+    String purl = "pkg:oci/hardened-nginx?repository_url=other.io/path/hardened-nginx&tag=1.25";
+    PackageRef ref = new PackageRef(purl);
+    Map<String, String> registryMap =
+        Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi");
+
+    // When applying the registry map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+
+    // Then the original ref is returned unchanged
+    assertEquals(ref.ref(), result.ref());
+  }
+
+  // Verifies that applyRegistryMap handles an empty map gracefully.
+  @Test
+  void testApplyRegistryMapEmptyMap() {
+    // Given a PackageRef and an empty registry map
+    PackageRef ref = new PackageRef(HARDENED_NGINX_PURL);
+
+    // When applying the empty map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, Collections.emptyMap());
+
+    // Then the original ref is returned unchanged
+    assertEquals(ref.ref(), result.ref());
+  }
+
+  // Verifies that applyRegistryMap handles a null map gracefully.
+  @Test
+  void testApplyRegistryMapNullMap() {
+    PackageRef ref = new PackageRef(HARDENED_NGINX_PURL);
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, null);
+    assertEquals(ref.ref(), result.ref());
+  }
+
+  // Verifies that the registry map preserves image tags unchanged.
+  @Test
+  void testRegistryMapPreservesTag() {
+    // Given a PackageRef with a specific tag
+    String purl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25-alpine";
+    PackageRef ref = new PackageRef(purl);
+    Map<String, String> registryMap =
+        Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi");
+
+    // When applying the registry map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+
+    // Then the tag is preserved
+    assertEquals("1.25-alpine", result.purl().getQualifiers().get("tag"));
+  }
+
+  // Verifies that the index data is not mutated when registry map is applied.
+  @Test
+  void testRegistryMapDoesNotMutateCachedIndex() {
+    // Given an index with a hardened recommendation and a registry map
+    String hardenedPurl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedPurl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+    when(config.registryMap())
+        .thenReturn(Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi"));
+
+    // When performing the lookup
+    String ociPurl = "pkg:oci/nginx?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    provider.lookupBySbomId(ociPurl);
+
+    // Then the original index entry is not mutated
+    var indexedRec = provider.lookup("docker.io/library/nginx:1.25").get(0);
+    assertEquals(
+        "quay.io/hummingbird/hardened-nginx",
+        indexedRec.packageName().purl().getQualifiers().get("repository_url"),
+        "Index data must not be mutated by registry map application");
   }
 }

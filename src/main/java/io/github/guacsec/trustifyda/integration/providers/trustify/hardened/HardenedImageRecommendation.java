@@ -34,6 +34,9 @@ public interface HardenedImageRecommendation {
   /** Catalog URLs for hardened image recommendations. */
   Map<String, String> catalogurl();
 
+  /** Registry prefix replacement map: source prefix → target prefix. */
+  Map<String, String> registryMap();
+
   /** Hummingbird service URL. When empty, the provider is disabled. */
   Optional<String> url();
 

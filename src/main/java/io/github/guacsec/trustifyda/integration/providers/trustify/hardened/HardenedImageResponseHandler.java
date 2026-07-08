@@ -107,6 +107,50 @@ public class HardenedImageResponseHandler {
   }
 
   /**
+   * Applies registry prefix replacement to a {@link PackageRef}'s {@code repository_url} qualifier.
+   * Iterates through the map entries in order; the first matching source prefix is replaced with
+   * the target prefix. Returns the original ref unchanged if no entry matches or the map is empty.
+   */
+  static PackageRef applyRegistryMap(PackageRef ref, Map<String, String> registryMap) {
+    if (registryMap == null || registryMap.isEmpty()) {
+      return ref;
+    }
+
+    var qualifiers = ref.purl().getQualifiers();
+    if (qualifiers == null) {
+      return ref;
+    }
+    String repoUrl = qualifiers.get("repository_url");
+    if (repoUrl == null) {
+      return ref;
+    }
+
+    for (var entry : registryMap.entrySet()) {
+      String sourcePrefix = entry.getKey();
+      if (repoUrl.startsWith(sourcePrefix)) {
+        String newRepoUrl = entry.getValue() + repoUrl.substring(sourcePrefix.length());
+        TreeMap<String, String> newQualifiers = new TreeMap<>(qualifiers);
+        newQualifiers.put("repository_url", newRepoUrl);
+        try {
+          return new PackageRef(
+              new PackageURL(
+                  ref.purl().getType(),
+                  ref.purl().getNamespace(),
+                  ref.purl().getName(),
+                  ref.purl().getVersion(),
+                  newQualifiers,
+                  ref.purl().getSubpath()));
+        } catch (Exception e) {
+          LOG.warnf("Failed to apply registry map to %s: %s", ref.ref(), e.getMessage());
+          return ref;
+        }
+      }
+    }
+
+    return ref;
+  }
+
+  /**
    * Converts a container image reference (e.g., {@code quay.io/hummingbird/aspnet-runtime:10}) to
    * an OCI Package URL. The full image path becomes the {@code repository_url} qualifier and the
    * tag (if present) becomes the {@code tag} qualifier.
