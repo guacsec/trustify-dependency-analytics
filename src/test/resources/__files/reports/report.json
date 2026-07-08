@@ -98,16 +98,16 @@
                     "unique": false,
                     "remediation": {
                       "remediations": [
-                          {
-                            "category": "VENDOR_FIX",
-                            "details": "Upgrade to version 42.7.2 or later",
-                            "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
-                            "advisory": {
-                              "id": "GHSA-24rp-q3w6-vc56",
-                              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
-                            }
+                        {
+                          "category": "VENDOR_FIX",
+                          "details": "Upgrade to version 42.7.2 or later",
+                          "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
+                          "advisory": {
+                            "id": "GHSA-24rp-q3w6-vc56",
+                            "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
                           }
-                        ]
+                        }
+                      ]
                     }
                   }
                 }
@@ -124,16 +124,16 @@
                 "unique": false,
                 "remediation": {
                   "remediations": [
-                          {
-                            "category": "VENDOR_FIX",
-                            "details": "Upgrade to version 42.7.2 or later",
-                            "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
-                            "advisory": {
-                              "id": "GHSA-24rp-q3w6-vc56",
-                              "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
-                            }
-                          }
-                        ]
+                    {
+                      "category": "VENDOR_FIX",
+                      "details": "Upgrade to version 42.7.2 or later",
+                      "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56",
+                      "advisory": {
+                        "id": "GHSA-24rp-q3w6-vc56",
+                        "title": "org.postgresql:postgresql vulnerable to SQL Injection via line comment generation"
+                      }
+                    }
+                  ]
                 }
               }
             },
@@ -433,6 +433,8 @@
                           }
                         },
                         {
+                          "category": "NO_FIX_PLANNED",
+                          "details": "Out of support scope",
                           "advisory": {
                             "id": "CVE-2024-1597",
                             "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
@@ -444,34 +446,6 @@
                             "id": "CVE-2024-1597",
                             "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
                             "url": "https://www.redhat.com/#CVE-2024-1597"
-                          }
-                        },
-                        {
-                          "advisory": {
-                            "id": "CVE-2024-1597",
-                            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                            "url": "https://www.redhat.com/#CVE-2024-1597"
-                          }
-                        },
-                        {
-                          "advisory": {
-                            "id": "RHSA-2024:1662",
-                            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                            "url": "https://www.redhat.com/#RHSA-2024_1662"
-                          }
-                        },
-                        {
-                          "advisory": {
-                            "id": "CVE-2024-1597",
-                            "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                            "url": "https://www.redhat.com/#CVE-2024-1597"
-                          }
-                        },
-                        {
-                          "advisory": {
-                            "id": "RHSA-2024:1797",
-                            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                            "url": "https://www.redhat.com/#RHSA-2024_1797"
                           }
                         },
                         {
@@ -506,6 +480,8 @@
                       }
                     },
                     {
+                      "category": "NO_FIX_PLANNED",
+                      "details": "Out of support scope",
                       "advisory": {
                         "id": "CVE-2024-1597",
                         "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
@@ -517,34 +493,6 @@
                         "id": "CVE-2024-1597",
                         "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
                         "url": "https://www.redhat.com/#CVE-2024-1597"
-                      }
-                    },
-                    {
-                      "advisory": {
-                        "id": "CVE-2024-1597",
-                        "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                        "url": "https://www.redhat.com/#CVE-2024-1597"
-                      }
-                    },
-                    {
-                      "advisory": {
-                        "id": "RHSA-2024:1662",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                        "url": "https://www.redhat.com/#RHSA-2024_1662"
-                      }
-                    },
-                    {
-                      "advisory": {
-                        "id": "CVE-2024-1597",
-                        "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                        "url": "https://www.redhat.com/#CVE-2024-1597"
-                      }
-                    },
-                    {
-                      "advisory": {
-                        "id": "RHSA-2024:1797",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                        "url": "https://www.redhat.com/#RHSA-2024_1797"
                       }
                     },
                     {
@@ -585,13 +533,6 @@
                           },
                           {
                             "advisory": {
-                              "id": "CVE-2024-2700",
-                              "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
-                              "url": "https://www.redhat.com/#CVE-2024-2700"
-                            }
-                          },
-                          {
-                            "advisory": {
                               "id": "RHSA-2024:2705",
                               "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
                               "url": "https://www.redhat.com/#RHSA-2024_2705"
@@ -620,13 +561,6 @@
                     "unique": false,
                     "remediation": {
                       "remediations": [
-                        {
-                          "advisory": {
-                            "id": "CVE-2024-2700",
-                            "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
-                            "url": "https://www.redhat.com/#CVE-2024-2700"
-                          }
-                        },
                         {
                           "advisory": {
                             "id": "CVE-2024-2700",
@@ -674,13 +608,6 @@
                     },
                     {
                       "advisory": {
-                        "id": "CVE-2024-2700",
-                        "title": "quarkus-core: Leak of local configuration properties into Quarkus applications",
-                        "url": "https://www.redhat.com/#CVE-2024-2700"
-                      }
-                    },
-                    {
-                      "advisory": {
                         "id": "RHSA-2024:2705",
                         "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.12 release and security update",
                         "url": "https://www.redhat.com/#RHSA-2024_2705"
@@ -707,20 +634,24 @@
           },
           "dependencies": [
             {
-              "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
-              "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
-            },
-            {
-              "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
-              "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
-            },
-            {
               "ref": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3?type=jar",
               "recommendation": "pkg:maven/jakarta.el/jakarta.el-api@3.0.3.redhat-00002?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
             },
             {
               "ref": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2?type=jar",
               "recommendation": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2.redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+            },
+            {
+              "ref": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final?type=jar",
+              "recommendation": "pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+            },
+            {
+              "ref": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final?type=jar",
+              "recommendation": "pkg:maven/io.quarkus/quarkus-jdbc-postgresql@2.13.5.Final-redhat-00004?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
+            },
+            {
+              "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
+              "recommendation": "pkg:maven/org.postgresql/postgresql@42.5.0.redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
             },
             {
               "ref": "pkg:maven/io.quarkus/quarkus-narayana-jta@2.13.5.Final?type=jar",
@@ -733,10 +664,6 @@
             {
               "ref": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5?type=jar",
               "recommendation": "pkg:maven/jakarta.interceptor/jakarta.interceptor-api@1.2.5.redhat-00003?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
-            },
-            {
-              "ref": "pkg:maven/org.postgresql/postgresql@42.5.0?type=jar",
-              "recommendation": "pkg:maven/org.postgresql/postgresql@42.5.0.redhat-00001?repository_url=https%3A%2F%2Fmaven.repository.redhat.com%2Fga%2F&type=jar"
             },
             {
               "ref": "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar",
