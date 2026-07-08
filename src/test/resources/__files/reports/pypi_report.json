@@ -46,9 +46,6 @@
                   "remediation": {
                     "remediations": [
                       {
-                        "category": "VENDOR_FIX",
-                        "details": "Upgrade to 2.32.0 or later",
-                        "url": "https://github.com/psf/requests/security/advisories/GHSA-9wx4-h78v-vm56",
                         "advisory": {
                           "id": "GHSA-9wx4-h78v-vm56",
                           "title": "Requests Session object does not verify requests after making first request with verify=False"
@@ -75,16 +72,13 @@
                 "unique": false,
                 "remediation": {
                   "remediations": [
-                      {
-                        "category": "VENDOR_FIX",
-                        "details": "Upgrade to 2.32.0 or later",
-                        "url": "https://github.com/psf/requests/security/advisories/GHSA-9wx4-h78v-vm56",
-                        "advisory": {
-                          "id": "GHSA-9wx4-h78v-vm56",
-                          "title": "Requests Session object does not verify requests after making first request with verify=False"
-                        }
+                    {
+                      "advisory": {
+                        "id": "GHSA-9wx4-h78v-vm56",
+                        "title": "Requests Session object does not verify requests after making first request with verify=False"
                       }
-                    ],
+                    }
+                  ],
                   "trustedContent": {
                     "ref": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
                   }

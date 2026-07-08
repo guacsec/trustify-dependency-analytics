@@ -33,13 +33,7 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": [
-              {
-                "category": "vendor_fix",
-                "details": "Upgrade to 2.32.0 or later",
-                "url": "https://github.com/psf/requests/security/advisories/GHSA-9wx4-h78v-vm56"
-              }
-            ]
+            "remediations": []
           }
         ]
       }
