@@ -348,7 +348,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "no_fix_planned",
+                "details": "Out of support scope",
+                "url": null
+              }
+            ]
           },
           {
             "advisory": {
@@ -365,7 +371,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "no_fix_planned",
+                "details": "Out of support scope",
+                "url": null
+              }
+            ]
           },
           {
             "advisory": {

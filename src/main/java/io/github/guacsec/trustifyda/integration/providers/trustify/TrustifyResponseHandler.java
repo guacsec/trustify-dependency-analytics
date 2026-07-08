@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
@@ -309,18 +310,35 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             if (advisoryInfo != null) {
               info.advisory(advisoryInfo);
             }
-            r.addRemediationsItem(info);
+            if (!isDuplicateRemediation(r, info)) {
+              r.addRemediationsItem(info);
+            }
           });
       return true;
     } else {
       var info =
           buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
-      if (info != null) {
+      if (info != null && !isDuplicateRemediation(r, info)) {
         r.addRemediationsItem(info);
         return true;
       }
     }
     return false;
+  }
+
+  private boolean isDuplicateRemediation(Remediation r, RemediationInfo info) {
+    var existing = r.getRemediations();
+    if (existing == null) {
+      return false;
+    }
+    return existing.stream()
+        .anyMatch(
+            e ->
+                Objects.equals(e.getCategory(), info.getCategory())
+                    && Objects.equals(e.getDetails(), info.getDetails())
+                    && Objects.equals(
+                        e.getAdvisory() != null ? e.getAdvisory().getId() : null,
+                        info.getAdvisory() != null ? info.getAdvisory().getId() : null));
   }
 
   private Remediation ensureRemediation(Issue issue) {

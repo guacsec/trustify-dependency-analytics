@@ -388,6 +388,8 @@
                               }
                             },
                             {
+                              "category": "NO_FIX_PLANNED",
+                              "details": "Out of support scope",
                               "advisory": {
                                 "id": "CVE-2024-1597",
                                 "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
@@ -399,34 +401,6 @@
                                 "id": "CVE-2024-1597",
                                 "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
                                 "url": "https://www.redhat.com/#CVE-2024-1597"
-                              }
-                            },
-                            {
-                              "advisory": {
-                                "id": "CVE-2024-1597",
-                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                                "url": "https://www.redhat.com/#CVE-2024-1597"
-                              }
-                            },
-                            {
-                              "advisory": {
-                                "id": "RHSA-2024:1662",
-                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                                "url": "https://www.redhat.com/#RHSA-2024_1662"
-                              }
-                            },
-                            {
-                              "advisory": {
-                                "id": "CVE-2024-1597",
-                                "title": "pgjdbc: PostgreSQL JDBC Driver allows attacker to inject SQL if using PreferQueryMode=SIMPLE",
-                                "url": "https://www.redhat.com/#CVE-2024-1597"
-                              }
-                            },
-                            {
-                              "advisory": {
-                                "id": "RHSA-2024:1797",
-                                "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                                "url": "https://www.redhat.com/#RHSA-2024_1797"
                               }
                             },
                             {
