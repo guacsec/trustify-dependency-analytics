@@ -2097,4 +2097,140 @@ public class TrustifyResponseHandlerTest {
     assertEquals(9.8f, issue.getCvssScore(), "Should keep the higher CVSS score");
     assertEquals(Severity.CRITICAL, issue.getSeverity());
   }
+
+  @Test
+  void testResponseToIssuesDeduplicatesIdenticalRemediationsAcrossPurlStatuses()
+      throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2023-2454",
+            "title": "postgresql: schema_element defeats protective search_path changes",
+            "description": "A schema_element vulnerability",
+            "base_score": {
+              "score": 7.2,
+              "severity": "HIGH"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-a",
+                  "document_id": "CVE-2023-2454",
+                  "title": "postgresql: schema_element defeats protective search_path changes",
+                  "identifier": "https://www.redhat.com/#CVE-2023-2454",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.5.5",
+                  "high_inclusive": false
+                },
+                "remediations": [
+                  {
+                    "category": "WORKAROUND",
+                    "details": "Use a workaround"
+                  },
+                  {
+                    "category": "NO_FIX_PLANNED",
+                    "details": "No fix is planned"
+                  }
+                ],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 7.2,
+                    "severity": "high"
+                  }
+                ]
+              },
+              {
+                "advisory": {
+                  "id": "adv-b",
+                  "document_id": "CVE-2023-2454",
+                  "title": "postgresql: schema_element defeats protective search_path changes",
+                  "identifier": "https://www.redhat.com/#CVE-2023-2454",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.6.1",
+                  "high_inclusive": false
+                },
+                "remediations": [
+                  {
+                    "category": "WORKAROUND",
+                    "details": "Use a workaround"
+                  },
+                  {
+                    "category": "NO_FIX_PLANNED",
+                    "details": "No fix is planned"
+                  }
+                ],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 7.2,
+                    "severity": "high"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size(), "Same CVE+source should merge into one issue");
+
+    Issue issue = issues.get(0);
+    assertEquals("CVE-2023-2454", issue.getId());
+    assertNotNull(issue.getRemediation());
+
+    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
+    assertNotNull(remInfos);
+    assertEquals(
+        2,
+        remInfos.size(),
+        "Should have exactly 2 unique remediations (WORKAROUND + NO_FIX_PLANNED), not 4");
+
+    long workaroundCount =
+        remInfos.stream()
+            .filter(r -> RemediationCategory.WORKAROUND.equals(r.getCategory()))
+            .count();
+    long noFixCount =
+        remInfos.stream()
+            .filter(r -> RemediationCategory.NO_FIX_PLANNED.equals(r.getCategory()))
+            .count();
+    assertEquals(1, workaroundCount, "WORKAROUND should appear exactly once");
+    assertEquals(1, noFixCount, "NO_FIX_PLANNED should appear exactly once");
+
+    assertEquals(
+        2, issue.getRemediation().getFixedIn().size(), "Should accumulate fixedIn from both");
+    assertTrue(issue.getRemediation().getFixedIn().contains("42.5.5"));
+    assertTrue(issue.getRemediation().getFixedIn().contains("42.6.1"));
+  }
 }
