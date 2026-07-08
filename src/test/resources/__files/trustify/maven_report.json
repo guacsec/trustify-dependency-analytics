@@ -65,7 +65,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "workaround",
+                "details": "Disable UNWRAP_SINGLE_VALUE_ARRAYS feature or upgrade to 2.13.4.1 or later",
+                "url": "https://github.com/FasterXML/jackson-databind/issues/3590"
+              }
+            ]
           }
         ]
       },
@@ -342,7 +348,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "no_fix_planned",
+                "details": "Out of support scope",
+                "url": null
+              }
+            ]
           },
           {
             "advisory": {
@@ -359,7 +371,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "no_fix_planned",
+                "details": "Out of support scope",
+                "url": null
+              }
+            ]
           },
           {
             "advisory": {
@@ -441,7 +459,13 @@
             },
             "status": "affected",
             "version_range": null,
-            "remediations": []
+            "remediations": [
+              {
+                "category": "vendor_fix",
+                "details": "Upgrade to version 42.7.2 or later",
+                "url": "https://github.com/pgjdbc/pgjdbc/security/advisories/GHSA-24rp-q3w6-vc56"
+              }
+            ]
           },
           {
             "advisory": {
