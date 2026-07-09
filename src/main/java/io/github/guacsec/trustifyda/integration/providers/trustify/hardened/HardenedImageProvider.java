@@ -163,7 +163,7 @@ public class HardenedImageProvider {
     String version = pkgRef.purl().getVersion();
     var qualifiers = pkgRef.purl().getQualifiers();
     String tag = qualifiers != null ? qualifiers.get("tag") : null;
-    if (version != null && version.startsWith("sha256:") && (tag == null || tag.isBlank())) {
+    if (version != null && version.contains(":") && (tag == null || tag.isBlank())) {
       LOG.debugf("Skipping digest-pinned image, no recommendation possible: %s", sbomId);
       return Collections.emptyMap();
     }

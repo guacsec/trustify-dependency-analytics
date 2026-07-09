@@ -479,7 +479,7 @@ public class HardenedImageProviderTest {
     assertEquals(2, recommendations.size(), "Both hardened alternatives should be returned");
   }
 
-  // Verifies that lookupBySbomId skips digest-pinned source images (no tag, version is sha256).
+  // Verifies that lookupBySbomId skips digest-pinned source images (no tag, version is a digest).
   @Test
   void testLookupBySbomIdSkipsDigestPinnedImage() {
     // Given an index with a hardened recommendation for nginx
@@ -499,6 +499,23 @@ public class HardenedImageProviderTest {
 
     // Then no recommendation is returned
     assertTrue(result.isEmpty(), "Digest-pinned images should not get recommendations");
+  }
+
+  @Test
+  void testLookupBySbomIdSkipsSha512DigestPinnedImage() {
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(rec)));
+
+    String digestPurl =
+        "pkg:oci/nginx@sha512:abcdef0123456789?repository_url=docker.io%2Flibrary%2Fnginx";
+    var result = provider.lookupBySbomId(digestPurl);
+
+    assertTrue(result.isEmpty(), "sha512 digest-pinned images should not get recommendations");
   }
 
   // Verifies that lookupBySbomId uses the tag when both sha256 version and tag are present.
