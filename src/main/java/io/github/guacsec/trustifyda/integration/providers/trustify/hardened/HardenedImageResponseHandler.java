@@ -98,7 +98,9 @@ public class HardenedImageResponseHandler {
       for (JsonNode baseRef : compareTo) {
         String baseImageRef = baseRef.asText(null);
         if (baseImageRef != null && !baseImageRef.isBlank()) {
-          invertedIndex.computeIfAbsent(baseImageRef, k -> new ArrayList<>()).add(recommendation);
+          invertedIndex
+              .computeIfAbsent(normalizeDockerRef(baseImageRef), k -> new ArrayList<>())
+              .add(recommendation);
         }
       }
     }
@@ -182,5 +184,49 @@ public class HardenedImageResponseHandler {
     }
 
     return new PackageRef(new PackageURL("oci", null, name, null, qualifiers, null));
+  }
+
+  private static final String DOCKER_HUB_PREFIX = "docker.io/";
+  private static final String DOCKER_HUB_LIBRARY_PREFIX = "docker.io/library/";
+  private static final String LIBRARY_PREFIX = "library/";
+
+  /**
+   * Normalizes Docker Hub image references to the canonical {@code docker.io/<name>} form. Bare
+   * names (e.g., {@code mariadb:latest}) are prefixed with {@code docker.io/}. The {@code library/}
+   * segment is stripped from official images. Non-Docker Hub refs are returned unchanged.
+   */
+  static String normalizeDockerRef(String ref) {
+    if (ref == null || ref.isBlank()) {
+      return ref;
+    }
+
+    String path;
+    String suffix = "";
+
+    int atIndex = ref.indexOf('@');
+    if (atIndex >= 0) {
+      path = ref.substring(0, atIndex);
+      suffix = ref.substring(atIndex);
+    } else {
+      int colonIndex = ref.lastIndexOf(':');
+      if (colonIndex > ref.lastIndexOf('/')) {
+        path = ref.substring(0, colonIndex);
+        suffix = ref.substring(colonIndex);
+      } else {
+        path = ref;
+      }
+    }
+
+    if (!path.contains("/")) {
+      return DOCKER_HUB_PREFIX + path + suffix;
+    }
+    if (path.startsWith(DOCKER_HUB_LIBRARY_PREFIX)) {
+      return DOCKER_HUB_PREFIX + path.substring(DOCKER_HUB_LIBRARY_PREFIX.length()) + suffix;
+    }
+    if (path.startsWith(LIBRARY_PREFIX)) {
+      return DOCKER_HUB_PREFIX + path.substring(LIBRARY_PREFIX.length()) + suffix;
+    }
+
+    return ref;
   }
 }

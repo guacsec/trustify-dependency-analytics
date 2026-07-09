@@ -172,6 +172,7 @@ public class HardenedImageProvider {
     if (baseImageRef == null) {
       return Collections.emptyMap();
     }
+    baseImageRef = HardenedImageResponseHandler.normalizeDockerRef(baseImageRef);
 
     var recommendations = lookup(baseImageRef);
     if (recommendations.isEmpty()) {
