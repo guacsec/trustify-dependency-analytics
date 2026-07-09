@@ -608,6 +608,7 @@ public class HardenedImageProviderTest {
     assertEquals("1.25", result.purl().getQualifiers().get("tag"));
   }
 
+  // Verifies that applyRegistryMap returns the original ref when no prefix matches.
   @ParameterizedTest(name = "applyRegistryMap returns original ref: {0}")
   @MethodSource("applyRegistryMapNoChangeArgs")
   void testApplyRegistryMapReturnsOriginalRef(String scenario, Map<String, String> registryMap) {
