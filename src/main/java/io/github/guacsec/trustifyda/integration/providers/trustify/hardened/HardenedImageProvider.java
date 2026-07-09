@@ -18,7 +18,9 @@
 package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +69,7 @@ public class HardenedImageProvider {
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build(HummingbirdClient.class);
+    logRegistryMap();
   }
 
   /** Constructor for testing with a mock client. */
@@ -102,6 +105,7 @@ public class HardenedImageProvider {
 
       LOG.info("Acquired refresh lock, fetching hardened image data from Hummingbird");
       Map<String, List<IndexedRecommendation>> newData = fetchAndParseData(url);
+      newData = applyRegistryMapToData(newData);
       if (newData.isEmpty() && index.size() > 0) {
         LOG.warn(
             "Hummingbird returned empty data, keeping existing index with "
@@ -156,10 +160,19 @@ public class HardenedImageProvider {
       return Collections.emptyMap();
     }
 
+    String version = pkgRef.purl().getVersion();
+    var qualifiers = pkgRef.purl().getQualifiers();
+    String tag = qualifiers != null ? qualifiers.get("tag") : null;
+    if (version != null && version.contains(":") && (tag == null || tag.isBlank())) {
+      LOG.debugf("Skipping digest-pinned image, no recommendation possible: %s", sbomId);
+      return Collections.emptyMap();
+    }
+
     String baseImageRef = buildDockerRef(pkgRef);
     if (baseImageRef == null) {
       return Collections.emptyMap();
     }
+    baseImageRef = HardenedImageResponseHandler.normalizeDockerRef(baseImageRef);
 
     var recommendations = lookup(baseImageRef);
     if (recommendations.isEmpty()) {
@@ -188,6 +201,41 @@ public class HardenedImageProvider {
       return repoUrl + ":" + tag;
     }
     return repoUrl;
+  }
+
+  private void logRegistryMap() {
+    Map<String, String> registryMap = config.registryMap();
+    if (registryMap.isEmpty()) {
+      LOG.info("Hardened image registry map is empty — returning bare image names");
+    } else {
+      LOG.infof("Hardened image registry map configured with %d entries:", registryMap.size());
+      registryMap.forEach(
+          (source, target) -> LOG.debugf("  registry-map: %s → %s", source, target));
+    }
+  }
+
+  private Map<String, List<IndexedRecommendation>> applyRegistryMapToData(
+      Map<String, List<IndexedRecommendation>> data) {
+    Map<String, String> registryMap = config.registryMap();
+    if (registryMap.isEmpty()) {
+      return data;
+    }
+    Map<String, List<IndexedRecommendation>> mapped = new HashMap<>(data.size());
+    for (var entry : data.entrySet()) {
+      List<IndexedRecommendation> mappedRecs = new ArrayList<>(entry.getValue().size());
+      for (IndexedRecommendation rec : entry.getValue()) {
+        PackageRef mappedRef =
+            HardenedImageResponseHandler.applyRegistryMap(rec.packageName(), registryMap);
+        mappedRecs.add(
+            IndexedRecommendation.builder()
+                .packageName(mappedRef)
+                .vulnerabilities(rec.vulnerabilities())
+                .sourceName(rec.sourceName())
+                .build());
+      }
+      mapped.put(entry.getKey(), mappedRecs);
+    }
+    return mapped;
   }
 
   /** Returns the current index for inspection. */

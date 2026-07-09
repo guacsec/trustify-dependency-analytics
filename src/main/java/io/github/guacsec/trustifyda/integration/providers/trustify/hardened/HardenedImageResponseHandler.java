@@ -98,12 +98,58 @@ public class HardenedImageResponseHandler {
       for (JsonNode baseRef : compareTo) {
         String baseImageRef = baseRef.asText(null);
         if (baseImageRef != null && !baseImageRef.isBlank()) {
-          invertedIndex.computeIfAbsent(baseImageRef, k -> new ArrayList<>()).add(recommendation);
+          invertedIndex
+              .computeIfAbsent(normalizeDockerRef(baseImageRef), k -> new ArrayList<>())
+              .add(recommendation);
         }
       }
     }
 
     return invertedIndex;
+  }
+
+  /**
+   * Applies registry prefix replacement to a {@link PackageRef}'s {@code repository_url} qualifier.
+   * Iterates through the map entries in order; the first matching source prefix is replaced with
+   * the target prefix. Returns the original ref unchanged if no entry matches or the map is empty.
+   */
+  static PackageRef applyRegistryMap(PackageRef ref, Map<String, String> registryMap) {
+    if (registryMap == null || registryMap.isEmpty()) {
+      return ref;
+    }
+
+    var qualifiers = ref.purl().getQualifiers();
+    if (qualifiers == null) {
+      return ref;
+    }
+    String repoUrl = qualifiers.get("repository_url");
+    if (repoUrl == null) {
+      return ref;
+    }
+
+    for (var entry : registryMap.entrySet()) {
+      String sourcePrefix = entry.getKey();
+      if (repoUrl.startsWith(sourcePrefix)) {
+        String newRepoUrl = entry.getValue() + repoUrl.substring(sourcePrefix.length());
+        TreeMap<String, String> newQualifiers = new TreeMap<>(qualifiers);
+        newQualifiers.put("repository_url", newRepoUrl);
+        try {
+          return new PackageRef(
+              new PackageURL(
+                  ref.purl().getType(),
+                  ref.purl().getNamespace(),
+                  ref.purl().getName(),
+                  ref.purl().getVersion(),
+                  newQualifiers,
+                  ref.purl().getSubpath()));
+        } catch (Exception e) {
+          LOG.warnf("Failed to apply registry map to %s: %s", ref.ref(), e.getMessage());
+          return ref;
+        }
+      }
+    }
+
+    return ref;
   }
 
   /**
@@ -138,5 +184,49 @@ public class HardenedImageResponseHandler {
     }
 
     return new PackageRef(new PackageURL("oci", null, name, null, qualifiers, null));
+  }
+
+  private static final String DOCKER_HUB_PREFIX = "docker.io/";
+  private static final String DOCKER_HUB_LIBRARY_PREFIX = "docker.io/library/";
+  private static final String LIBRARY_PREFIX = "library/";
+
+  /**
+   * Normalizes Docker Hub image references to the canonical {@code docker.io/<name>} form. Bare
+   * names (e.g., {@code mariadb:latest}) are prefixed with {@code docker.io/}. The {@code library/}
+   * segment is stripped from official images. Non-Docker Hub refs are returned unchanged.
+   */
+  static String normalizeDockerRef(String ref) {
+    if (ref == null || ref.isBlank()) {
+      return ref;
+    }
+
+    String path;
+    String suffix = "";
+
+    int atIndex = ref.indexOf('@');
+    if (atIndex >= 0) {
+      path = ref.substring(0, atIndex);
+      suffix = ref.substring(atIndex);
+    } else {
+      int colonIndex = ref.lastIndexOf(':');
+      if (colonIndex > ref.lastIndexOf('/')) {
+        path = ref.substring(0, colonIndex);
+        suffix = ref.substring(colonIndex);
+      } else {
+        path = ref;
+      }
+    }
+
+    if (!path.contains("/")) {
+      return DOCKER_HUB_PREFIX + path + suffix;
+    }
+    if (path.startsWith(DOCKER_HUB_LIBRARY_PREFIX)) {
+      return DOCKER_HUB_PREFIX + path.substring(DOCKER_HUB_LIBRARY_PREFIX.length()) + suffix;
+    }
+    if (path.startsWith(LIBRARY_PREFIX)) {
+      return DOCKER_HUB_PREFIX + path.substring(LIBRARY_PREFIX.length()) + suffix;
+    }
+
+    return ref;
   }
 }

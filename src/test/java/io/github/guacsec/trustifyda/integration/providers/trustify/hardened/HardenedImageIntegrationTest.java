@@ -65,7 +65,7 @@ public class HardenedImageIntegrationTest {
   private static final String OK_TOKEN = "test-token";
   private static final String TRUSTIFY_PROVIDER = "trustify";
 
-  private static final String NGINX_BASE_REF = "docker.io/library/nginx:1.25";
+  private static final String NGINX_BASE_REF = "docker.io/nginx:1.25";
   private static final String HARDENED_NGINX_PURL =
       "pkg:oci/hardened-nginx@sha256:abc123?repository_url=registry.example.com%2Fhardened-nginx&tag=1.25";
 

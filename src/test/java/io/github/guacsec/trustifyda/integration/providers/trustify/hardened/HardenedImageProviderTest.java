@@ -19,6 +19,7 @@ package io.github.guacsec.trustifyda.integration.providers.trustify.hardened;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,9 +39,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -73,6 +80,7 @@ public class HardenedImageProviderTest {
     config = mock(HardenedImageRecommendation.class);
     when(config.lockTtl()).thenReturn(Duration.ofMinutes(5));
     when(config.refreshInterval()).thenReturn("1h");
+    when(config.registryMap()).thenReturn(Collections.emptyMap());
 
     provider = new HardenedImageProvider(config, lock, responseHandler, hummingbirdClient);
   }
@@ -95,8 +103,8 @@ public class HardenedImageProviderTest {
             .build();
     doReturn(
             Map.of(
-                "docker.io/library/nginx:1.25", List.of(nginxRec),
-                "docker.io/library/nginx:1.25-alpine", List.of(nginxRec)))
+                "docker.io/nginx:1.25", List.of(nginxRec),
+                "docker.io/nginx:1.25-alpine", List.of(nginxRec)))
         .when(spyProvider)
         .fetchAndParseData(anyString());
 
@@ -106,13 +114,12 @@ public class HardenedImageProviderTest {
     // Then the lock was acquired and the index is populated
     verify(lock).tryAcquire(eq(LOCK_KEY), any());
     assertEquals(2, spyProvider.getIndex().size());
-    assertFalse(spyProvider.lookup("docker.io/library/nginx:1.25").isEmpty());
-    assertFalse(spyProvider.lookup("docker.io/library/nginx:1.25-alpine").isEmpty());
+    assertFalse(spyProvider.lookup("docker.io/nginx:1.25").isEmpty());
+    assertFalse(spyProvider.lookup("docker.io/nginx:1.25-alpine").isEmpty());
     assertEquals(
         normalized(HARDENED_NGINX_PURL),
-        spyProvider.lookup("docker.io/library/nginx:1.25").get(0).packageName().ref());
-    assertEquals(
-        "hardened", spyProvider.lookup("docker.io/library/nginx:1.25").get(0).sourceName());
+        spyProvider.lookup("docker.io/nginx:1.25").get(0).packageName().ref());
+    assertEquals("hardened", spyProvider.lookup("docker.io/nginx:1.25").get(0).sourceName());
   }
 
   // Verifies that a second instance skips refresh when the lock is already held.
@@ -145,17 +152,18 @@ public class HardenedImageProviderTest {
     Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
     // Then each base image maps to its hardened recommendation with an OCI PURL
+    // Keys are normalized: docker.io/library/X → docker.io/X
     assertEquals(3, result.size());
-    var pythonRecs = result.get("docker.io/library/python:3.12");
+    var pythonRecs = result.get("docker.io/python:3.12");
     assertNotNull(pythonRecs);
     assertEquals(1, pythonRecs.size());
     assertEquals("oci", pythonRecs.get(0).packageName().purl().getType());
     assertEquals("hardened-python", pythonRecs.get(0).packageName().purl().getName());
     assertEquals(
         pythonRecs.get(0).packageName().ref(),
-        result.get("docker.io/library/python:3.12-slim").get(0).packageName().ref());
+        result.get("docker.io/python:3.12-slim").get(0).packageName().ref());
 
-    var nodeRecs = result.get("docker.io/library/node:20");
+    var nodeRecs = result.get("docker.io/node:20");
     assertNotNull(nodeRecs);
     assertEquals(1, nodeRecs.size());
     assertEquals("oci", nodeRecs.get(0).packageName().purl().getType());
@@ -216,9 +224,9 @@ public class HardenedImageProviderTest {
     // When parsing
     Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
-    // Then the mapping is correctly inverted with an OCI PURL
+    // Then the mapping is correctly inverted with an OCI PURL (normalized key)
     assertEquals(1, result.size());
-    var recs = result.get("docker.io/library/alpine:3.19");
+    var recs = result.get("docker.io/alpine:3.19");
     assertNotNull(recs);
     assertEquals(1, recs.size());
     assertEquals("oci", recs.get(0).packageName().purl().getType());
@@ -252,10 +260,10 @@ public class HardenedImageProviderTest {
     // When parsing
     Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
-    // Then only the valid entry with compare_to is indexed
+    // Then only the valid entry with compare_to is indexed (bare name normalized)
     assertEquals(1, result.size());
-    assertNotNull(result.get("base:3.0"));
-    assertTrue(result.getOrDefault("base:1.0", Collections.emptyList()).isEmpty());
+    assertNotNull(result.get("docker.io/base:3.0"));
+    assertTrue(result.getOrDefault("docker.io/base:1.0", Collections.emptyList()).isEmpty());
   }
 
   // Verifies that a populated index is preserved when Hummingbird returns empty data.
@@ -359,7 +367,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(rec)));
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(rec)));
 
     // When looking up by OCI PURL with matching repository_url and tag
     String ociPurl =
@@ -425,8 +433,8 @@ public class HardenedImageProviderTest {
     // When parsing and inverting the mapping
     Map<String, List<IndexedRecommendation>> result = responseHandler.parseAndInvertMapping(json);
 
-    // Then the shared base image has both hardened recommendations
-    var nginxRecs = result.get("docker.io/library/nginx:1.25");
+    // Then the shared base image has both hardened recommendations (normalized key)
+    var nginxRecs = result.get("docker.io/nginx:1.25");
     assertNotNull(nginxRecs);
     assertEquals(
         2, nginxRecs.size(), "Both hardened images should be preserved for the shared base image");
@@ -434,7 +442,7 @@ public class HardenedImageProviderTest {
     assertEquals(List.of("hardened-nginx-v1", "hardened-nginx-v2"), recNames);
 
     // And the non-shared base image has only one recommendation
-    var alpineRecs = result.get("docker.io/library/nginx:1.25-alpine");
+    var alpineRecs = result.get("docker.io/nginx:1.25-alpine");
     assertNotNull(alpineRecs);
     assertEquals(1, alpineRecs.size());
     assertEquals("hardened-nginx-v2", alpineRecs.get(0).packageName().purl().getName());
@@ -458,7 +466,7 @@ public class HardenedImageProviderTest {
             .vulnerabilities(Collections.emptyMap())
             .sourceName("hardened")
             .build();
-    provider.getIndex().replaceAll(Map.of("docker.io/library/nginx:1.25", List.of(recV1, recV2)));
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(recV1, recV2)));
 
     // When looking up by OCI PURL
     String ociPurl =
@@ -469,5 +477,257 @@ public class HardenedImageProviderTest {
     assertEquals(1, result.size());
     var recommendations = result.entrySet().iterator().next().getValue();
     assertEquals(2, recommendations.size(), "Both hardened alternatives should be returned");
+  }
+
+  // Verifies that lookupBySbomId skips digest-pinned source images (no tag, version is a digest).
+  @Test
+  void testLookupBySbomIdSkipsDigestPinnedImage() {
+    // Given an index with a hardened recommendation for nginx
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(rec)));
+
+    // When looking up by a digest-pinned OCI PURL (no tag, version is sha256)
+    String digestPurl =
+        "pkg:oci/nginx@sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            + "?repository_url=docker.io%2Flibrary%2Fnginx";
+    var result = provider.lookupBySbomId(digestPurl);
+
+    // Then no recommendation is returned
+    assertTrue(result.isEmpty(), "Digest-pinned images should not get recommendations");
+  }
+
+  @Test
+  void testLookupBySbomIdSkipsSha512DigestPinnedImage() {
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(rec)));
+
+    String digestPurl =
+        "pkg:oci/nginx@sha512:abcdef0123456789?repository_url=docker.io%2Flibrary%2Fnginx";
+    var result = provider.lookupBySbomId(digestPurl);
+
+    assertTrue(result.isEmpty(), "sha512 digest-pinned images should not get recommendations");
+  }
+
+  // Verifies that lookupBySbomId uses the tag when both sha256 version and tag are present.
+  @Test
+  void testLookupBySbomIdUsesTagWhenDigestAndTagPresent() {
+    // Given an index with a hardened recommendation for nginx
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/nginx:1.25", List.of(rec)));
+
+    // When looking up by a PURL with both sha256 version and tag qualifier
+    String digestWithTagPurl =
+        "pkg:oci/nginx@sha256:abc123?repository_url=docker.io%2Flibrary%2Fnginx&tag=1.25";
+    var result = provider.lookupBySbomId(digestWithTagPurl);
+
+    // Then the recommendation is returned (tag qualifier enables lookup)
+    assertEquals(1, result.size(), "Tag-qualified images should get recommendations");
+  }
+
+  // Verifies that the registry map is applied at index load time during refresh.
+  @Test
+  void testRefreshAppliesRegistryMap() throws Exception {
+    // Given a registry map and a configured Hummingbird URL
+    when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
+    when(config.registryMap())
+        .thenReturn(Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi"));
+
+    HardenedImageProvider spyProvider = spy(provider);
+    String hardenedPurl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedPurl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    doReturn(Map.of("docker.io/nginx:1.25", List.of(rec)))
+        .when(spyProvider)
+        .fetchAndParseData(anyString());
+
+    // When refresh runs
+    spyProvider.refresh();
+
+    // Then the index contains recommendations with the mapped registry prefix
+    var indexed = spyProvider.lookup("docker.io/nginx:1.25");
+    assertEquals(1, indexed.size());
+    assertEquals(
+        "registry.access.redhat.com/hi/hardened-nginx",
+        indexed.get(0).packageName().purl().getQualifiers().get("repository_url"));
+    assertEquals("1.25", indexed.get(0).packageName().purl().getQualifiers().get("tag"));
+    assertEquals("hardened", indexed.get(0).sourceName());
+  }
+
+  // Verifies that refresh preserves bare image names when no registry map is configured.
+  @Test
+  void testRefreshNoRegistryMapReturnsBareNames() throws Exception {
+    // Given no registry map and a configured Hummingbird URL
+    when(config.url()).thenReturn(Optional.of("http://hummingbird.example.com/report.json"));
+    when(lock.tryAcquire(eq(LOCK_KEY), any())).thenReturn(true);
+    when(config.registryMap()).thenReturn(Collections.emptyMap());
+
+    HardenedImageProvider spyProvider = spy(provider);
+    String hardenedPurl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(hardenedPurl))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    doReturn(Map.of("docker.io/nginx:1.25", List.of(rec)))
+        .when(spyProvider)
+        .fetchAndParseData(anyString());
+
+    // When refresh runs
+    spyProvider.refresh();
+
+    // Then the index contains recommendations with the original repository_url
+    var indexed = spyProvider.lookup("docker.io/nginx:1.25");
+    assertEquals(1, indexed.size());
+    assertEquals(
+        "quay.io/hummingbird/hardened-nginx",
+        indexed.get(0).packageName().purl().getQualifiers().get("repository_url"));
+  }
+
+  // Verifies that applyRegistryMap correctly replaces a matching prefix.
+  @Test
+  void testApplyRegistryMapMatchingPrefix() {
+    // Given a PackageRef with a repository_url matching a map entry
+    String purl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25";
+    PackageRef ref = new PackageRef(purl);
+    Map<String, String> registryMap =
+        Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi");
+
+    // When applying the registry map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+
+    // Then the repository_url prefix is replaced
+    assertNotEquals(ref.ref(), result.ref());
+    assertEquals(
+        "registry.access.redhat.com/hi/hardened-nginx",
+        result.purl().getQualifiers().get("repository_url"));
+    assertEquals("1.25", result.purl().getQualifiers().get("tag"));
+  }
+
+  // Verifies that applyRegistryMap returns the original ref when no prefix matches.
+  @ParameterizedTest(name = "applyRegistryMap returns original ref: {0}")
+  @MethodSource("applyRegistryMapNoChangeArgs")
+  void testApplyRegistryMapReturnsOriginalRef(String scenario, Map<String, String> registryMap) {
+    PackageRef ref = new PackageRef(HARDENED_NGINX_PURL);
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+    assertEquals(ref.ref(), result.ref());
+  }
+
+  static Stream<Arguments> applyRegistryMapNoChangeArgs() {
+    return Stream.of(
+        Arguments.of("no matching prefix", Map.of("quay.io/other", "registry.example.org/ns")),
+        Arguments.of("empty map", Collections.emptyMap()),
+        Arguments.of("null map", null));
+  }
+
+  // Verifies that the registry map preserves image tags unchanged.
+  @Test
+  void testRegistryMapPreservesTag() {
+    // Given a PackageRef with a specific tag
+    String purl =
+        "pkg:oci/hardened-nginx?repository_url=quay.io/hummingbird/hardened-nginx&tag=1.25-alpine";
+    PackageRef ref = new PackageRef(purl);
+    Map<String, String> registryMap =
+        Map.of("quay.io/hummingbird", "registry.access.redhat.com/hi");
+
+    // When applying the registry map
+    PackageRef result = HardenedImageResponseHandler.applyRegistryMap(ref, registryMap);
+
+    // Then the tag is preserved
+    assertEquals("1.25-alpine", result.purl().getQualifiers().get("tag"));
+  }
+
+  @ParameterizedTest(name = "normalizeDockerRef: {0} → {1}")
+  @CsvSource({
+    "mariadb:latest, docker.io/mariadb:latest",
+    "nginx, docker.io/nginx",
+    "library/mariadb:latest, docker.io/mariadb:latest",
+    "library/python:3.12-slim, docker.io/python:3.12-slim",
+    "docker.io/library/mariadb:latest, docker.io/mariadb:latest",
+    "docker.io/library/node:20, docker.io/node:20",
+    "docker.io/mariadb:latest, docker.io/mariadb:latest",
+    "docker.io/golang:1.25, docker.io/golang:1.25",
+    "quay.io/hummingbird/nginx:1.25, quay.io/hummingbird/nginx:1.25",
+    "registry.access.redhat.com/ubi9:latest, registry.access.redhat.com/ubi9:latest",
+    "mariadb@sha256:abc123, docker.io/mariadb@sha256:abc123",
+    "docker.io/library/mariadb@sha256:abc123, docker.io/mariadb@sha256:abc123",
+  })
+  void testNormalizeDockerRef(String input, String expected) {
+    assertEquals(expected, HardenedImageResponseHandler.normalizeDockerRef(input));
+  }
+
+  @ParameterizedTest(name = "normalizeDockerRef returns input unchanged: {0}")
+  @NullAndEmptySource
+  void testNormalizeDockerRefNullAndEmpty(String input) {
+    assertEquals(input, HardenedImageResponseHandler.normalizeDockerRef(input));
+  }
+
+  @Test
+  void testLookupBySbomIdNormalizesDockerHubVariants() {
+    // Given an index keyed by normalized form (as produced by parseAndInvertMapping)
+    IndexedRecommendation rec =
+        IndexedRecommendation.builder()
+            .packageName(new PackageRef(HARDENED_NGINX_PURL))
+            .vulnerabilities(Collections.emptyMap())
+            .sourceName("hardened")
+            .build();
+    provider.getIndex().replaceAll(Map.of("docker.io/mariadb:latest", List.of(rec)));
+
+    // When looking up with docker.io/library/ form in the PURL
+    String purlWithLibrary =
+        "pkg:oci/mariadb@latest?repository_url=docker.io%2Flibrary%2Fmariadb&tag=latest";
+    var result = provider.lookupBySbomId(purlWithLibrary);
+
+    // Then the recommendation is found (normalization strips library/)
+    assertEquals(1, result.size());
+    assertEquals(
+        normalized(HARDENED_NGINX_PURL),
+        result.values().iterator().next().get(0).packageName().ref());
+  }
+
+  @Test
+  void testParseAndLookupCrossFormatMatch() throws Exception {
+    // Given Hummingbird data with docker.io/library/ form in compare_to
+    String json =
+        "{\"images\": {"
+            + "\"registry.example.com/hardened-mariadb:latest\":"
+            + " {\"compare_to\": [\"docker.io/library/mariadb:latest\"]}}}";
+
+    // When we parse (normalizes index keys) and populate the provider
+    Map<String, List<IndexedRecommendation>> data = responseHandler.parseAndInvertMapping(json);
+    provider.getIndex().replaceAll(data);
+
+    // Then looking up with docker.io/mariadb form matches (normalized at lookup time)
+    String purl = "pkg:oci/mariadb@latest?repository_url=docker.io%2Fmariadb&tag=latest";
+    var result = provider.lookupBySbomId(purl);
+    assertFalse(result.isEmpty(), "docker.io/mariadb should match docker.io/library/mariadb");
+
+    // And looking up with just bare mariadb form also matches
+    String barePurl = "pkg:oci/mariadb@latest?repository_url=mariadb&tag=latest";
+    var bareResult = provider.lookupBySbomId(barePurl);
+    assertFalse(bareResult.isEmpty(), "bare mariadb should match docker.io/library/mariadb");
   }
 }

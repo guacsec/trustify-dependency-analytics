@@ -28,11 +28,8 @@ import io.smallrye.config.WithDefault;
 @ConfigMapping(prefix = "trustedcontent.recommendation.hardened")
 public interface HardenedImageRecommendation {
 
-  /** Static mapping of base image names to hardened image PURLs. */
-  Map<String, String> mapping();
-
-  /** Catalog URLs for hardened image recommendations. */
-  Map<String, String> catalogurl();
+  /** Registry prefix replacement map: source prefix → target prefix. */
+  Map<String, String> registryMap();
 
   /** Hummingbird service URL. When empty, the provider is disabled. */
   Optional<String> url();
