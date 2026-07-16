@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AdvisoryInfo;
+import io.github.guacsec.trustifyda.api.v5.AdvisoryRemediation;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
 import io.github.guacsec.trustifyda.api.v5.RemediationCategory;
@@ -141,6 +142,15 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
                 setCvssData(issue, vuln, purlStatus);
                 issuesByCveSource.put(key, issue);
               });
+          issuesByCveSource
+              .values()
+              .forEach(
+                  issue -> {
+                    var remediation = issue.getRemediation();
+                    if (remediation != null && remediation.getFixedIn() != null) {
+                      remediation.getFixedIn().sort(VersionComparator.INSTANCE);
+                    }
+                  });
           issues.addAll(issuesByCveSource.values());
         });
 
@@ -181,11 +191,13 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       issue.setSeverity(SeverityUtils.fromScore(sd.score));
     }
 
-    var r = new Remediation();
-    boolean hasRemediation = processVersionRange(purlStatus, r, false);
-    hasRemediation |= processRemediations(purlStatus, r);
-
-    if (hasRemediation) {
+    var advRem = createAdvisoryRemediation(purlStatus);
+    if (advRem != null) {
+      var r = new Remediation();
+      r.addAdvisoriesItem(advRem);
+      if (advRem.getFixedIn() != null) {
+        r.addFixedInItem(advRem.getFixedIn());
+      }
       issue.setRemediation(r);
     }
   }
@@ -207,9 +219,11 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       }
     }
 
-    var r = ensureRemediation(existing);
-    processVersionRange(purlStatus, r, true);
-    processRemediations(purlStatus, r);
+    var advRem = createAdvisoryRemediation(purlStatus);
+    if (advRem != null) {
+      var r = ensureRemediation(existing);
+      mergeAdvisoryRemediation(r, advRem);
+    }
   }
 
   private record ScoreData(Float score, String severity) {}
@@ -240,11 +254,99 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     return new ScoreData(score, severity);
   }
 
-  private boolean processVersionRange(JsonNode purlStatus, Remediation r, boolean dedup) {
-    var versionRange = purlStatus.get("version_range");
-    if (versionRange == null || versionRange.isNull()) {
-      return false;
+  private AdvisoryRemediation createAdvisoryRemediation(JsonNode purlStatus) {
+    var advisoryInfo = buildAdvisoryInfo(purlStatus);
+    var advRem = new AdvisoryRemediation();
+    advRem.setAdvisory(advisoryInfo);
+
+    var status = JsonUtils.getTextValue(purlStatus, "status");
+    if (status != null) {
+      advRem.setStatus(status);
     }
+
+    var versionRange = purlStatus.get("version_range");
+    if (versionRange != null && !versionRange.isNull()) {
+      advRem.addVersionRangesItem(buildVersionRange(versionRange));
+      var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
+      var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
+      if (highVersion != null && (highInclusive == null || !highInclusive)) {
+        advRem.setFixedIn(highVersion);
+      }
+    }
+
+    var remediations = (ArrayNode) purlStatus.get("remediations");
+    if (remediations != null && !remediations.isEmpty()) {
+      remediations.forEach(
+          rem -> {
+            var info = buildRemediationInfoFromNode(rem, advisoryInfo);
+            if (info != null) {
+              advRem.addRemediationsItem(info);
+            }
+          });
+    } else if (advisoryInfo != null) {
+      var info = new RemediationInfo();
+      if (advRem.getFixedIn() != null) {
+        info.category(RemediationCategory.VENDOR_FIX);
+      }
+      advRem.addRemediationsItem(info);
+    }
+
+    if (advRem.getVersionRanges() != null
+        || advRem.getRemediations() != null
+        || advRem.getAdvisory() != null) {
+      return advRem;
+    }
+    return null;
+  }
+
+  private void mergeAdvisoryRemediation(Remediation r, AdvisoryRemediation advRem) {
+    var existingAdvisories = r.getAdvisories();
+    if (existingAdvisories != null && advRem.getAdvisory() != null) {
+      var existingMatch =
+          existingAdvisories.stream()
+              .filter(
+                  a ->
+                      a.getAdvisory() != null
+                          && Objects.equals(a.getAdvisory().getId(), advRem.getAdvisory().getId()))
+              .findFirst();
+      if (existingMatch.isPresent()) {
+        var existing = existingMatch.get();
+        if (advRem.getVersionRanges() != null) {
+          for (var vr : advRem.getVersionRanges()) {
+            if (!isDuplicateVersionRange(existing, vr)) {
+              existing.addVersionRangesItem(vr);
+            }
+          }
+        }
+        if (advRem.getRemediations() != null) {
+          for (var rem : advRem.getRemediations()) {
+            if (!isDuplicateRemediationInfo(existing.getRemediations(), rem)) {
+              existing.addRemediationsItem(rem);
+            }
+          }
+        }
+        if (existing.getFixedIn() == null && advRem.getFixedIn() != null) {
+          existing.setFixedIn(advRem.getFixedIn());
+        }
+        if (advRem.getFixedIn() != null) {
+          var fixedIn = r.getFixedIn();
+          if (fixedIn == null || !fixedIn.contains(advRem.getFixedIn())) {
+            r.addFixedInItem(advRem.getFixedIn());
+          }
+        }
+        return;
+      }
+    }
+    r.addAdvisoriesItem(advRem);
+    if (advRem.getFixedIn() != null) {
+      var fixedIn = r.getFixedIn();
+      if (fixedIn == null || !fixedIn.contains(advRem.getFixedIn())) {
+        r.addFixedInItem(advRem.getFixedIn());
+      }
+    }
+  }
+
+  private VersionRange buildVersionRange(JsonNode versionRange) {
     var vr = new VersionRange();
     var schemeId = JsonUtils.getTextValue(versionRange, "version_scheme_id");
     if (schemeId != null) {
@@ -259,75 +361,57 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       vr.lowInclusive(lowInclusive);
     }
     var highVersion = JsonUtils.getTextValue(versionRange, "high_version");
-    var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
     if (highVersion != null) {
       vr.highVersion(highVersion);
-      if (highInclusive == null || !highInclusive) {
-        if (dedup) {
-          var fixedIn = r.getFixedIn();
-          if (fixedIn == null || !fixedIn.contains(highVersion)) {
-            r.addFixedInItem(highVersion);
-          }
-        } else {
-          r.addFixedInItem(highVersion);
-        }
-      }
     }
+    var highInclusive = JsonUtils.getBooleanValue(versionRange, "high_inclusive");
     if (highInclusive != null) {
       vr.highInclusive(highInclusive);
     }
-    r.addVersionRangesItem(vr);
-    return true;
+    return vr;
   }
 
-  private boolean processRemediations(JsonNode purlStatus, Remediation r) {
-    var remediations = (ArrayNode) purlStatus.get("remediations");
-    var advisoryInfo = buildAdvisoryInfo(purlStatus);
-    if (remediations != null && !remediations.isEmpty()) {
-      remediations.forEach(
-          rem -> {
-            var info = new RemediationInfo();
-            var category = JsonUtils.getTextValue(rem, "category");
-            if (category != null) {
-              try {
-                info.category(RemediationCategory.fromValue(category.toUpperCase()));
-              } catch (IllegalArgumentException e) {
-                LOGGER.infof("Unknown remediation category: %s", category);
-              }
-            }
-            var details = JsonUtils.getTextValue(rem, "details");
-            if (details != null) {
-              info.details(details);
-            }
-            var url = JsonUtils.getTextValue(rem, "url");
-            if (url != null) {
-              try {
-                info.url(URI.create(url));
-              } catch (IllegalArgumentException e) {
-                LOGGER.infof("Invalid remediation URL: %s", url);
-              }
-            }
-            if (advisoryInfo != null) {
-              info.advisory(advisoryInfo);
-            }
-            if (!isDuplicateRemediation(r, info)) {
-              r.addRemediationsItem(info);
-            }
-          });
-      return true;
-    } else {
-      var info =
-          buildRemediationInfo(purlStatus, r.getFixedIn() != null && !r.getFixedIn().isEmpty());
-      if (info != null && !isDuplicateRemediation(r, info)) {
-        r.addRemediationsItem(info);
-        return true;
+  private RemediationInfo buildRemediationInfoFromNode(JsonNode rem, AdvisoryInfo advisoryInfo) {
+    var info = new RemediationInfo();
+    var category = JsonUtils.getTextValue(rem, "category");
+    if (category != null) {
+      try {
+        info.category(RemediationCategory.fromValue(category.toUpperCase()));
+      } catch (IllegalArgumentException e) {
+        LOGGER.infof("Unknown remediation category: %s", category);
       }
     }
-    return false;
+    var details = JsonUtils.getTextValue(rem, "details");
+    if (details != null) {
+      info.details(details);
+    }
+    var url = JsonUtils.getTextValue(rem, "url");
+    if (url != null) {
+      try {
+        info.url(URI.create(url));
+      } catch (IllegalArgumentException e) {
+        LOGGER.infof("Invalid remediation URL: %s", url);
+      }
+    }
+    return info;
   }
 
-  private boolean isDuplicateRemediation(Remediation r, RemediationInfo info) {
-    var existing = r.getRemediations();
+  private boolean isDuplicateVersionRange(AdvisoryRemediation advRem, VersionRange vr) {
+    var existing = advRem.getVersionRanges();
+    if (existing == null) {
+      return false;
+    }
+    return existing.stream()
+        .anyMatch(
+            e ->
+                Objects.equals(e.getLowVersion(), vr.getLowVersion())
+                    && Objects.equals(e.getHighVersion(), vr.getHighVersion())
+                    && Objects.equals(e.getLowInclusive(), vr.getLowInclusive())
+                    && Objects.equals(e.getHighInclusive(), vr.getHighInclusive())
+                    && Objects.equals(e.getVersionSchemeId(), vr.getVersionSchemeId()));
+  }
+
+  private boolean isDuplicateRemediationInfo(List<RemediationInfo> existing, RemediationInfo info) {
     if (existing == null) {
       return false;
     }
@@ -336,9 +420,7 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
             e ->
                 Objects.equals(e.getCategory(), info.getCategory())
                     && Objects.equals(e.getDetails(), info.getDetails())
-                    && Objects.equals(
-                        e.getAdvisory() != null ? e.getAdvisory().getId() : null,
-                        info.getAdvisory() != null ? info.getAdvisory().getId() : null));
+                    && Objects.equals(e.getUrl(), info.getUrl()));
   }
 
   private Remediation ensureRemediation(Issue issue) {
@@ -371,18 +453,10 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
       } catch (IllegalArgumentException e) {
         LOGGER.infof("Invalid advisory URL: %s", identifier);
       }
-    }
-    return info;
-  }
-
-  private RemediationInfo buildRemediationInfo(JsonNode purlStatus, boolean hasFixedVersions) {
-    var advisoryInfo = buildAdvisoryInfo(purlStatus);
-    if (advisoryInfo == null) {
-      return null;
-    }
-    var info = new RemediationInfo().advisory(advisoryInfo);
-    if (hasFixedVersions) {
-      info.category(RemediationCategory.VENDOR_FIX);
+    } else if (identifier != null && identifier.startsWith("GHSA-")) {
+      info.url(URI.create("https://github.com/advisories/" + identifier));
+    } else if (documentId.startsWith("GHSA-")) {
+      info.url(URI.create("https://github.com/advisories/" + documentId));
     }
     return info;
   }

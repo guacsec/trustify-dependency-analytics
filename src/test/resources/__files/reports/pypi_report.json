@@ -1,137 +1,147 @@
 {
-  "scanned": {
-    "total": 2,
-    "direct": 2,
-    "transitive": 0
-  },
-  "providers": {
-    "trustify": {
-      "status": {
-        "ok": true,
-        "name": "trustify",
-        "code": 200,
-        "message": "OK",
-        "warnings": {}
-      },
-      "sources": {
-        "osv-github": {
-          "summary": {
-            "direct": 1,
-            "transitive": 0,
-            "total": 1,
-            "dependencies": 1,
-            "critical": 0,
-            "high": 0,
-            "medium": 1,
-            "low": 0,
-            "unknown": 0,
-            "remediations": 1,
-            "recommendations": 2,
-            "unscanned": 0
-          },
-          "dependencies": [
-            {
-              "ref": "pkg:pypi/requests@2.31.0",
-              "issues": [
-                {
-                  "id": "CVE-2024-35195",
-                  "title": "Requests Session object does not verify requests after making first request with verify=False",
-                  "source": "osv-github",
-                  "cvssScore": 5.6,
-                  "severity": "MEDIUM",
-                  "cves": [
-                    "CVE-2024-35195"
-                  ],
-                  "unique": false,
-                  "remediation": {
-                    "remediations": [
-                      {
-                        "advisory": {
-                          "id": "GHSA-9wx4-h78v-vm56",
-                          "title": "Requests Session object does not verify requests after making first request with verify=False"
+    "scanned": {
+        "total": 2,
+        "direct": 2,
+        "transitive": 0
+    },
+    "providers": {
+        "trustify": {
+            "status": {
+                "ok": true,
+                "name": "trustify",
+                "code": 200,
+                "message": "OK",
+                "warnings": {}
+            },
+            "sources": {
+                "osv-github": {
+                    "summary": {
+                        "direct": 1,
+                        "transitive": 0,
+                        "total": 1,
+                        "dependencies": 1,
+                        "critical": 0,
+                        "high": 0,
+                        "medium": 1,
+                        "low": 0,
+                        "unknown": 0,
+                        "remediations": 1,
+                        "recommendations": 2,
+                        "unscanned": 0
+                    },
+                    "dependencies": [
+                        {
+                            "ref": "pkg:pypi/requests@2.31.0",
+                            "issues": [
+                                {
+                                    "id": "CVE-2024-35195",
+                                    "title": "Requests Session object does not verify requests after making first request with verify=False",
+                                    "source": "osv-github",
+                                    "cvssScore": 5.6,
+                                    "severity": "MEDIUM",
+                                    "cves": [
+                                        "CVE-2024-35195"
+                                    ],
+                                    "unique": false,
+                                    "remediation": {
+                                        "advisories": [
+                                            {
+                                                "advisory": {
+                                                    "id": "GHSA-9wx4-h78v-vm56",
+                                                    "title": "Requests Session object does not verify requests after making first request with verify=False",
+                                                    "url": "https://github.com/advisories/GHSA-9wx4-h78v-vm56"
+                                                },
+                                                "status": "affected",
+                                                "remediations": [
+                                                    {}
+                                                ]
+                                            }
+                                        ],
+                                        "trustedContent": {
+                                            "ref": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                                        }
+                                    }
+                                }
+                            ],
+                            "transitive": [],
+                            "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython",
+                            "highestVulnerability": {
+                                "id": "CVE-2024-35195",
+                                "title": "Requests Session object does not verify requests after making first request with verify=False",
+                                "source": "osv-github",
+                                "cvssScore": 5.6,
+                                "severity": "MEDIUM",
+                                "cves": [
+                                    "CVE-2024-35195"
+                                ],
+                                "unique": false,
+                                "remediation": {
+                                    "advisories": [
+                                        {
+                                            "advisory": {
+                                                "id": "GHSA-9wx4-h78v-vm56",
+                                                "title": "Requests Session object does not verify requests after making first request with verify=False",
+                                                "url": "https://github.com/advisories/GHSA-9wx4-h78v-vm56"
+                                            },
+                                            "status": "affected",
+                                            "remediations": [
+                                                {}
+                                            ]
+                                        }
+                                    ],
+                                    "trustedContent": {
+                                        "ref": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "ref": "pkg:pypi/flask@3.0.0",
+                            "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
                         }
-                      }
-                    ],
-                    "trustedContent": {
-                      "ref": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
-                    }
-                  }
+                    ]
                 }
-              ],
-              "transitive": [],
-              "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython",
-              "highestVulnerability": {
-                "id": "CVE-2024-35195",
-                "title": "Requests Session object does not verify requests after making first request with verify=False",
-                "source": "osv-github",
-                "cvssScore": 5.6,
-                "severity": "MEDIUM",
-                "cves": [
-                  "CVE-2024-35195"
-                ],
-                "unique": false,
-                "remediation": {
-                  "remediations": [
-                    {
-                      "advisory": {
-                        "id": "GHSA-9wx4-h78v-vm56",
-                        "title": "Requests Session object does not verify requests after making first request with verify=False"
-                      }
-                    }
-                  ],
-                  "trustedContent": {
-                    "ref": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
-                  }
+            },
+            "recommendations": {
+                "trusted-libraries": {
+                    "summary": {
+                        "total": 2
+                    },
+                    "dependencies": [
+                        {
+                            "ref": "pkg:pypi/requests@2.31.0",
+                            "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                        },
+                        {
+                            "ref": "pkg:pypi/flask@3.0.0",
+                            "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+                        }
+                    ]
                 }
-              }
-            },
-            {
-              "ref": "pkg:pypi/flask@3.0.0",
-              "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
             }
-          ]
         }
-      },
-      "recommendations": {
-        "trusted-libraries": {
-          "summary": {
-            "total": 2
-          },
-          "dependencies": [
-            {
-              "ref": "pkg:pypi/requests@2.31.0",
-              "recommendation": "pkg:pypi/requests@2.31.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
+    },
+    "licenses": [
+        {
+            "status": {
+                "ok": false,
+                "name": "deps.dev",
+                "code": 504,
+                "message": "Request timed out",
+                "warnings": {}
             },
-            {
-              "ref": "pkg:pypi/flask@3.0.0",
-              "recommendation": "pkg:pypi/flask@3.0.0?repository_url=https%3A%2F%2Fpackages.redhat.com%2Ftrusted-libraries%2Fpython"
-            }
-          ]
+            "summary": {
+                "total": 0,
+                "concluded": 0,
+                "permissive": 0,
+                "weakCopyleft": 0,
+                "strongCopyleft": 0,
+                "unknown": 0,
+                "deprecated": 0,
+                "osiApproved": 0,
+                "fsfLibre": 0
+            },
+            "packages": {}
         }
-      }
-    }
-  },
-  "licenses": [
-    {
-      "status": {
-        "ok": false,
-        "name": "deps.dev",
-        "code": 504,
-        "message": "Request timed out",
-        "warnings": {}
-      },
-      "summary": {
-        "total": 0,
-        "concluded": 0,
-        "permissive": 0,
-        "weakCopyleft": 0,
-        "strongCopyleft": 0,
-        "unknown": 0,
-        "deprecated": 0,
-        "osiApproved": 0,
-        "fsfLibre": 0
-      },
-      "packages": {}
-    }
-  ]
+    ]
 }

@@ -9,6 +9,7 @@ export interface AppData {
   writeKey?: string | null;
   rhdaSource?: string | null;
   brandingConfig?: BrandingConfig;
+  advisoryIssueTemplate?: string;
 }
 
 export interface BrandingConfig {
@@ -18,6 +19,7 @@ export interface BrandingConfig {
   exploreDescription: string;
   imageRecommendation: string;
   imageRecommendationLink: string;
+  advisoryIssueTemplate?: string;
 }
 
 export interface ReportMap {
@@ -163,12 +165,12 @@ export function getSources(report: Report): SourceItem[] {
 
 export function getSourceName(item: SourceItem): string {
   if (!item || !item.provider) {
-    return 'unknown';
+    return 'Other';
   }
-  const provider = item.provider ?? "unknown";
-  const source = item.source ?? "unknown";
+  const provider = (!item.provider || item.provider === "unknown") ? "Other" : item.provider;
+  const source = (!item.source || item.source === "unknown") ? "Other" : item.source;
 
-  return provider === source ? provider : `${item.provider}/${item.source}`;
+  return provider === source ? provider : `${provider}/${source}`;
 }
 
 export function isReportMap(obj: any): boolean {
@@ -212,6 +214,7 @@ export interface Vulnerability {
   unique: boolean;
   remediation?: {
     fixedIn?: string[] | null;
+    advisories?: AdvisoryRemediation[] | null;
     trustedContent?: {
       ref: string | '';
       status: string | null;
@@ -235,6 +238,43 @@ export interface Cvss {
   cvss: string;
 }
 
+export type RemediationCategory =
+  | 'VENDOR_FIX'
+  | 'WORKAROUND'
+  | 'MITIGATION'
+  | 'NO_FIX_PLANNED'
+  | 'NONE_AVAILABLE'
+  | 'WILL_NOT_FIX';
+
+export interface AdvisoryRemediation {
+  advisory?: AdvisoryInfo;
+  status?: string;
+  versionRanges?: VersionRange[];
+  fixedIn?: string;
+  remediations?: RemediationInfo[];
+}
+
+export interface AdvisoryInfo {
+  id: string;
+  title?: string;
+  url?: string;
+}
+
+export interface RemediationInfo {
+  category?: RemediationCategory;
+  details?: string;
+  url?: string;
+  advisory?: AdvisoryInfo;
+}
+
+export interface VersionRange {
+  versionSchemeId?: string;
+  lowVersion?: string;
+  lowInclusive?: boolean;
+  highVersion?: string;
+  highInclusive?: boolean;
+}
+
 export interface CatalogEntry {
   purl: string;
   catalogUrl: string;
@@ -243,17 +283,45 @@ export interface CatalogEntry {
 export function hasRemediations(vulnerability: Vulnerability): boolean {
   if (
     vulnerability.remediation &&
-    (vulnerability.remediation.fixedIn || vulnerability.remediation?.trustedContent)
+    (vulnerability.remediation.fixedIn ||
+      vulnerability.remediation?.trustedContent ||
+      (vulnerability.remediation.advisories &&
+        vulnerability.remediation.advisories.length > 0))
   ) {
     return true;
   }
   return false;
 }
 
+function mergeRemediation(
+  existing: Vulnerability['remediation'],
+  incoming: Vulnerability['remediation'],
+): Vulnerability['remediation'] {
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+
+  const mergedFixedIn = (existing.fixedIn || []).concat(
+    (incoming.fixedIn || []).filter(
+      (v) => !(existing.fixedIn || []).includes(v),
+    ),
+  );
+
+  const mergedAdvisories = (existing.advisories || []).concat(
+    incoming.advisories || [],
+  );
+
+  return {
+    fixedIn: mergedFixedIn.length > 0 ? mergedFixedIn : existing.fixedIn,
+    advisories:
+      mergedAdvisories.length > 0 ? mergedAdvisories : existing.advisories,
+    trustedContent: existing.trustedContent || incoming.trustedContent,
+  };
+}
+
 export function buildVulnerabilityItems(
   transitiveDependencies: TransitiveDependency[],
 ): VulnerabilityItem[] {
-  var rows: VulnerabilityItem[] = [];
+  const rowMap = new Map<string, VulnerabilityItem>();
   transitiveDependencies
     .map((transitive) => {
       return {
@@ -263,22 +331,29 @@ export function buildVulnerabilityItems(
     })
     .forEach((item) => {
       item.vulnerabilities?.forEach((v) => {
-        if (v.cves && v.cves.length > 0) {
-          v.cves.forEach((cve) => {
-            rows.push({
-              id: cve,
+        const ids =
+          v.cves && v.cves.length > 0 ? v.cves : [v.id];
+        ids.forEach((cveId) => {
+          const key = cveId + '|' + item.dependencyRef;
+          const existing = rowMap.get(key);
+          if (existing) {
+            existing.vulnerability = {
+              ...existing.vulnerability,
+              remediation: mergeRemediation(
+                existing.vulnerability.remediation,
+                v.remediation,
+              ),
+            };
+          } else {
+            rowMap.set(key, {
+              id: cveId,
               dependencyRef: item.dependencyRef,
-              vulnerability: v,
+              vulnerability: { ...v },
             });
-          });
-        } else {
-          rows.push({
-            id: v.id,
-            dependencyRef: item.dependencyRef,
-            vulnerability: v,
-          });
-        }
+          }
+        });
       });
     });
+  const rows = Array.from(rowMap.values());
   return rows.sort((a, b) => b.vulnerability.cvssScore - a.vulnerability.cvssScore);
 }

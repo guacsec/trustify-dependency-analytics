@@ -44,6 +44,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.api.v5.AdvisoryRemediation;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.ProviderStatus;
 import io.github.guacsec.trustifyda.api.v5.Remediation;
@@ -568,8 +569,9 @@ public class RecommendationAggregationTest {
 
     var existingRemediation = new Remediation();
     existingRemediation.addFixedInItem("2.0.0");
-    existingRemediation.addVersionRangesItem(
-        new VersionRange().lowVersion("1.0.0").highVersion("2.0.0"));
+    var advRem = new AdvisoryRemediation();
+    advRem.addVersionRangesItem(new VersionRange().lowVersion("1.0.0").highVersion("2.0.0"));
+    existingRemediation.addAdvisoriesItem(advRem);
 
     var issue = createIssue("CVE-001", "Issue 1", 7.0f);
     issue.remediation(existingRemediation);
@@ -598,10 +600,14 @@ public class RecommendationAggregationTest {
     assertEquals(1, remediation.getFixedIn().size());
     assertEquals("2.0.0", remediation.getFixedIn().get(0));
 
-    assertNotNull(remediation.getVersionRanges());
-    assertEquals(1, remediation.getVersionRanges().size());
-    assertEquals("1.0.0", remediation.getVersionRanges().get(0).getLowVersion());
-    assertEquals("2.0.0", remediation.getVersionRanges().get(0).getHighVersion());
+    assertNotNull(remediation.getAdvisories());
+    assertEquals(1, remediation.getAdvisories().size());
+    assertNotNull(remediation.getAdvisories().get(0).getVersionRanges());
+    assertEquals(1, remediation.getAdvisories().get(0).getVersionRanges().size());
+    assertEquals(
+        "1.0.0", remediation.getAdvisories().get(0).getVersionRanges().get(0).getLowVersion());
+    assertEquals(
+        "2.0.0", remediation.getAdvisories().get(0).getVersionRanges().get(0).getHighVersion());
 
     assertNotNull(remediation.getTrustedContent());
     assertEquals("pkg:npm/package1@2.0.0", remediation.getTrustedContent().getRef().ref());

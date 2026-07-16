@@ -32,4 +32,6 @@ public interface BrandingConfig {
   String imageRecommendation();
 
   String imageRecommendationLink();
+
+  String advisoryIssueTemplate();
 }

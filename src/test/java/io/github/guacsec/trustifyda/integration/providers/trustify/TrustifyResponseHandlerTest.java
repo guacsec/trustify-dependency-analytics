@@ -48,6 +48,7 @@ import org.mockito.ArgumentCaptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.api.v5.AdvisoryRemediation;
 import io.github.guacsec.trustifyda.api.v5.Issue;
 import io.github.guacsec.trustifyda.api.v5.RemediationCategory;
 import io.github.guacsec.trustifyda.api.v5.RemediationInfo;
@@ -751,17 +752,24 @@ public class TrustifyResponseHandlerTest {
     List<String> fixedVersions = issue.getRemediation().getFixedIn();
     assertEquals(1, fixedVersions.size());
     assertEquals("42.5.5", fixedVersions.get(0));
-    assertNotNull(issue.getRemediation().getVersionRanges());
-    assertEquals(1, issue.getRemediation().getVersionRanges().size());
-    assertEquals("42.5.5", issue.getRemediation().getVersionRanges().get(0).getHighVersion());
-    assertEquals(false, issue.getRemediation().getVersionRanges().get(0).getHighInclusive());
-    assertNotNull(issue.getRemediation().getRemediations());
-    assertEquals(1, issue.getRemediation().getRemediations().size());
+    assertNotNull(issue.getRemediation().getAdvisories());
+    assertEquals(1, issue.getRemediation().getAdvisories().size());
+    assertNotNull(issue.getRemediation().getAdvisories().get(0).getVersionRanges());
+    assertEquals(1, issue.getRemediation().getAdvisories().get(0).getVersionRanges().size());
+    assertEquals(
+        "42.5.5",
+        issue.getRemediation().getAdvisories().get(0).getVersionRanges().get(0).getHighVersion());
+    assertEquals(
+        false,
+        issue.getRemediation().getAdvisories().get(0).getVersionRanges().get(0).getHighInclusive());
+    assertNotNull(issue.getRemediation().getAdvisories().get(0).getRemediations());
+    assertEquals(1, issue.getRemediation().getAdvisories().get(0).getRemediations().size());
     assertEquals(
         RemediationCategory.VENDOR_FIX,
-        issue.getRemediation().getRemediations().get(0).getCategory());
+        issue.getRemediation().getAdvisories().get(0).getRemediations().get(0).getCategory());
     assertEquals(
-        "Update to version 42.5.5", issue.getRemediation().getRemediations().get(0).getDetails());
+        "Update to version 42.5.5",
+        issue.getRemediation().getAdvisories().get(0).getRemediations().get(0).getDetails());
   }
 
   @Test
@@ -818,10 +826,16 @@ public class TrustifyResponseHandlerTest {
     Issue issue = issues.get(0);
     assertNotNull(issue.getRemediation());
     assertNull(issue.getRemediation().getFixedIn());
-    assertNotNull(issue.getRemediation().getVersionRanges());
-    assertEquals(1, issue.getRemediation().getVersionRanges().size());
-    assertEquals("42.5.5", issue.getRemediation().getVersionRanges().get(0).getHighVersion());
-    assertEquals(true, issue.getRemediation().getVersionRanges().get(0).getHighInclusive());
+    assertNotNull(issue.getRemediation().getAdvisories());
+    assertEquals(1, issue.getRemediation().getAdvisories().size());
+    assertNotNull(issue.getRemediation().getAdvisories().get(0).getVersionRanges());
+    assertEquals(1, issue.getRemediation().getAdvisories().get(0).getVersionRanges().size());
+    assertEquals(
+        "42.5.5",
+        issue.getRemediation().getAdvisories().get(0).getVersionRanges().get(0).getHighVersion());
+    assertEquals(
+        true,
+        issue.getRemediation().getAdvisories().get(0).getVersionRanges().get(0).getHighInclusive());
   }
 
   @Test
@@ -1367,7 +1381,7 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(packageItem);
     Issue issue = packageItem.issues().get(0);
     assertNotNull(issue.getRemediation());
-    var vr = issue.getRemediation().getVersionRanges().get(0);
+    var vr = issue.getRemediation().getAdvisories().get(0).getVersionRanges().get(0);
     assertEquals("semver", vr.getVersionSchemeId());
     assertEquals("42.0.0", vr.getLowVersion());
     assertEquals(true, vr.getLowInclusive());
@@ -1429,7 +1443,7 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(packageItem);
     Issue issue = packageItem.issues().get(0);
     assertNotNull(issue.getRemediation());
-    var rem = issue.getRemediation().getRemediations().get(0);
+    var rem = issue.getRemediation().getAdvisories().get(0).getRemediations().get(0);
     assertEquals(RemediationCategory.VENDOR_FIX, rem.getCategory());
     assertEquals("Update to latest version", rem.getDetails());
     assertEquals(URI.create("https://example.com/fix"), rem.getUrl());
@@ -1487,7 +1501,7 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(packageItem);
     Issue issue = packageItem.issues().get(0);
     assertNotNull(issue.getRemediation());
-    var rem = issue.getRemediation().getRemediations().get(0);
+    var rem = issue.getRemediation().getAdvisories().get(0).getRemediations().get(0);
     assertNull(rem.getCategory(), "Unknown category should result in null");
     assertEquals("Some details", rem.getDetails());
   }
@@ -1863,9 +1877,9 @@ public class TrustifyResponseHandlerTest {
     assertTrue(issue.getRemediation().getFixedIn().contains("42.5.5"));
     assertTrue(issue.getRemediation().getFixedIn().contains("42.6.1"));
 
-    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
-    assertNotNull(remInfos);
-    assertEquals(2, remInfos.size(), "Should have two advisory-linked remediations");
+    List<AdvisoryRemediation> advisories = issue.getRemediation().getAdvisories();
+    assertNotNull(advisories);
+    assertEquals(2, advisories.size(), "Should have two advisory-linked remediations");
   }
 
   @Test
@@ -1954,24 +1968,90 @@ public class TrustifyResponseHandlerTest {
     Issue issue = issues.get(0);
     assertNotNull(issue.getRemediation());
 
-    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
-    assertNotNull(remInfos);
-    assertEquals(2, remInfos.size(), "Should have two advisory-linked remediations");
+    List<AdvisoryRemediation> advisories = issue.getRemediation().getAdvisories();
+    assertNotNull(advisories);
+    assertEquals(2, advisories.size(), "Should have two advisory-linked remediations");
 
-    RemediationInfo first = remInfos.get(0);
+    AdvisoryRemediation first = advisories.get(0);
     assertNotNull(first.getAdvisory());
     assertEquals("RHSA-2024:1234", first.getAdvisory().getId());
     assertEquals("Red Hat Security Advisory", first.getAdvisory().getTitle());
     assertNotNull(first.getAdvisory().getUrl());
     assertEquals(
         "https://access.redhat.com/errata/RHSA-2024:1234", first.getAdvisory().getUrl().toString());
-    assertEquals(RemediationCategory.VENDOR_FIX, first.getCategory());
+    assertEquals(RemediationCategory.VENDOR_FIX, first.getRemediations().get(0).getCategory());
 
-    RemediationInfo second = remInfos.get(1);
+    AdvisoryRemediation second = advisories.get(1);
     assertNotNull(second.getAdvisory());
     assertEquals("GHSA-2024-5678", second.getAdvisory().getId());
     assertEquals("GitHub Security Advisory", second.getAdvisory().getTitle());
-    assertNull(second.getAdvisory().getUrl(), "Non-URL identifier should result in null url");
+    assertNotNull(second.getAdvisory().getUrl(), "GHSA identifier should generate a URL");
+    assertEquals(
+        "https://github.com/advisories/GHSA-xxxx-yyyy-zzzz",
+        second.getAdvisory().getUrl().toString());
+  }
+
+  @Test
+  void testResponseToIssuesGhsaDocumentIdFallback() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-9999",
+            "title": "Test vulnerability",
+            "base_score": {
+              "score": 7.5,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-ghsa-doc",
+                  "document_id": "GHSA-abcd-efgh-ijkl",
+                  "title": "GHSA via document_id",
+                  "identifier": "urn:example:advisory:12345",
+                  "issuer": {
+                    "id": "issuer-1",
+                    "name": "github"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [],
+                "scores": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+
+    Issue issue = issues.get(0);
+    assertNotNull(issue.getRemediation());
+
+    List<AdvisoryRemediation> advisories = issue.getRemediation().getAdvisories();
+    assertNotNull(advisories);
+    assertEquals(1, advisories.size());
+
+    AdvisoryRemediation adv = advisories.get(0);
+    assertNotNull(adv.getAdvisory());
+    assertEquals("GHSA-abcd-efgh-ijkl", adv.getAdvisory().getId());
+    assertNotNull(adv.getAdvisory().getUrl(), "GHSA document_id should generate a URL as fallback");
+    assertEquals(
+        "https://github.com/advisories/GHSA-abcd-efgh-ijkl", adv.getAdvisory().getUrl().toString());
   }
 
   @Test
@@ -2165,7 +2245,11 @@ public class TrustifyResponseHandlerTest {
     assertEquals("CVE-2023-2454", issue.getId());
     assertNotNull(issue.getRemediation());
 
-    List<RemediationInfo> remInfos = issue.getRemediation().getRemediations();
+    List<AdvisoryRemediation> advisories = issue.getRemediation().getAdvisories();
+    assertNotNull(advisories);
+    assertEquals(1, advisories.size(), "Same document_id should merge into one advisory");
+
+    List<RemediationInfo> remInfos = advisories.get(0).getRemediations();
     assertNotNull(remInfos);
     assertEquals(
         2,
