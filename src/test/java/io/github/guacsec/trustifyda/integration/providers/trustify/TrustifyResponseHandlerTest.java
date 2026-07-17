@@ -2272,4 +2272,312 @@ public class TrustifyResponseHandlerTest {
     assertTrue(issue.getRemediation().getFixedIn().contains("42.5.5"));
     assertTrue(issue.getRemediation().getFixedIn().contains("42.6.1"));
   }
+
+  // advisory present, no explicit remediations, fixedIn exists => VENDOR_FIX default
+  @Test
+  void testAdvisoryWithNoRemediationsButFixedInSetsVendorFix() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-9999",
+            "title": "CVE with advisory but no remediations",
+            "base_score": {
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:x1",
+                  "identifier": "https://example.com/adv-x1",
+                  "document_id": "ADV-FIX-1",
+                  "title": "Advisory with fix"
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.6.0",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+
+    AdvisoryRemediation adv = issue.getRemediation().getAdvisories().get(0);
+    assertNotNull(adv.getRemediations());
+    assertEquals(1, adv.getRemediations().size());
+    assertEquals(RemediationCategory.VENDOR_FIX, adv.getRemediations().get(0).getCategory());
+    assertEquals("42.6.0", adv.getFixedIn());
+  }
+
+  // advisory present, no explicit remediations, no fixedIn => remediation without category
+  @Test
+  void testAdvisoryWithNoRemediationsAndNoFixedIn() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-8888",
+            "title": "CVE with advisory but no remediations and no version range",
+            "base_score": {
+              "score": 3.5,
+              "severity": "low"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:x2",
+                  "identifier": "https://example.com/adv-x2",
+                  "document_id": "ADV-NOFIX-1",
+                  "title": "Advisory without fix"
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+
+    AdvisoryRemediation adv = issue.getRemediation().getAdvisories().get(0);
+    assertNotNull(adv.getRemediations());
+    assertEquals(1, adv.getRemediations().size());
+    assertNull(
+        adv.getRemediations().get(0).getCategory(),
+        "No fixedIn should produce remediation without VENDOR_FIX category");
+    assertNull(adv.getFixedIn());
+  }
+
+  // merge scenario: first purlStatus has no advisory, second has advisory => null existing
+  // advisories
+  @Test
+  void testMergeAdvisoryRemediationWithNullExistingAdvisories() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-7777",
+            "title": "CVE where first purlStatus has no advisory",
+            "base_score": {
+              "score": 6.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:m1",
+                  "identifier": "https://example.com/adv-m1",
+                  "document_id": "ADV-MERGE-1",
+                  "title": "Second advisory"
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.7.0",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+
+    List<AdvisoryRemediation> advisories = issue.getRemediation().getAdvisories();
+    assertNotNull(advisories);
+    assertEquals(1, advisories.size());
+    assertEquals("ADV-MERGE-1", advisories.get(0).getAdvisory().getId());
+    assertTrue(issue.getRemediation().getFixedIn().contains("42.7.0"));
+  }
+
+  // merge keeps score-based severity fallback when new score has no severity string
+  @Test
+  void testMergeIssueDataScoreFallbackSeverity() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-6666",
+            "title": "CVE where first status has no score, second has score without severity",
+            "base_score": null,
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:s1",
+                  "identifier": "https://example.com/adv-s1",
+                  "document_id": "ADV-SCORE-1",
+                  "title": "First advisory"
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:s2",
+                  "identifier": "https://example.com/adv-s2",
+                  "document_id": "ADV-SCORE-2",
+                  "title": "Second advisory"
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": [],
+                "scores": [
+                  {
+                    "source": "cve",
+                    "value": 8.5
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertEquals(8.5f, issue.getCvssScore());
+    assertEquals(
+        Severity.HIGH, issue.getSeverity(), "Score 8.5 without severity should fall back to HIGH");
+  }
+
+  // version sorting: fixedIn list should be sorted by VersionComparator
+  @Test
+  void testFixedInVersionsSorted() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-5555",
+            "title": "CVE with multiple fixed versions",
+            "base_score": {
+              "score": 7.0,
+              "severity": "high"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "id": "adv-sort",
+                  "document_id": "ADV-SORT-1",
+                  "title": "First advisory",
+                  "identifier": "https://example.com/adv-sort-1",
+                  "issuer": { "id": "i1", "name": "source-1" }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.10.0",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              },
+              {
+                "advisory": {
+                  "id": "adv-sort-2",
+                  "document_id": "ADV-SORT-2",
+                  "title": "Second advisory",
+                  "identifier": "https://example.com/adv-sort-2",
+                  "issuer": { "id": "i1", "name": "source-1" }
+                },
+                "status": "affected",
+                "version_range": {
+                  "version_scheme_id": "semver",
+                  "low_version": "0",
+                  "low_inclusive": true,
+                  "high_version": "42.2.0",
+                  "high_inclusive": false
+                },
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    Issue issue = packageItem.issues().get(0);
+    assertNotNull(issue.getRemediation());
+    List<String> fixedIn = issue.getRemediation().getFixedIn();
+    assertEquals(2, fixedIn.size());
+    assertEquals("42.2.0", fixedIn.get(0), "Lower version should come first after sorting");
+    assertEquals("42.10.0", fixedIn.get(1), "Higher version should come second after sorting");
+  }
 }
