@@ -281,16 +281,14 @@ export interface CatalogEntry {
 }
 
 export function hasRemediations(vulnerability: Vulnerability): boolean {
-  if (
-    vulnerability.remediation &&
-    (vulnerability.remediation.fixedIn ||
-      vulnerability.remediation?.trustedContent ||
-      (vulnerability.remediation.advisories &&
-        vulnerability.remediation.advisories.length > 0))
-  ) {
-    return true;
-  }
-  return false;
+  const rem = vulnerability.remediation;
+  if (!rem) return false;
+  return !!(
+    (rem.fixedIn && rem.fixedIn.length > 0) ||
+    rem.trustedContent ||
+    (rem.advisories && rem.advisories.length > 0) ||
+    rem.advisories?.some(a => a.remediations && a.remediations.length > 0)
+  );
 }
 
 function mergeRemediation(
