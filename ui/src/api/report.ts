@@ -264,7 +264,6 @@ export interface RemediationInfo {
   category?: RemediationCategory;
   details?: string;
   url?: string;
-  advisory?: AdvisoryInfo;
 }
 
 export interface VersionRange {
@@ -304,9 +303,17 @@ function mergeRemediation(
     ),
   );
 
-  const mergedAdvisories = (existing.advisories || []).concat(
+  const allAdvisories = (existing.advisories || []).concat(
     incoming.advisories || [],
   );
+  const seen = new Set<string>();
+  const mergedAdvisories = allAdvisories.filter((adv) => {
+    const id = adv.advisory?.id;
+    if (!id) return true;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 
   return {
     fixedIn: mergedFixedIn.length > 0 ? mergedFixedIn : existing.fixedIn,

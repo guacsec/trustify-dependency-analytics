@@ -3,6 +3,7 @@ import { Button, Label, Popover } from '@patternfly/react-core';
 import { AdvisoryRemediation, RemediationCategory, RemediationInfo, AdvisoryInfo, VersionRange } from '../api/report';
 import { useAppContext } from '../App';
 import { advisoryLink } from '../utils/utils';
+import { formatRange, compareVersions } from '../utils/version';
 
 interface AdvisoryRemediationsProps {
   advisories: AdvisoryRemediation[];
@@ -36,45 +37,11 @@ const categoryColors: Partial<Record<RemediationCategory, 'blue' | 'green' | 'or
   WILL_NOT_FIX: 'red',
 };
 
-const formatRange = (range: VersionRange): string => {
-  const parts: string[] = [];
-  if (range.lowVersion) {
-    parts.push(`${range.lowInclusive ? '>=' : '>'} ${range.lowVersion}`);
-  }
-  if (range.highVersion) {
-    parts.push(`${range.highInclusive ? '<=' : '<'} ${range.highVersion}`);
-  }
-  return parts.join(', ') || 'Unknown range';
-};
-
 const getUniqueCategories = (remediations: RemediationInfo[]): RemediationCategory[] => {
   const categories = remediations
     .map(r => r.category)
     .filter((c): c is RemediationCategory => !!c);
   return categories.filter((c, i, arr) => arr.indexOf(c) === i);
-};
-
-const compareVersions = (a: string, b: string): number => {
-  const partsA = a.split(/[.-]/);
-  const partsB = b.split(/[.-]/);
-  const len = Math.max(partsA.length, partsB.length);
-  for (let i = 0; i < len; i++) {
-    const sa = i < partsA.length ? partsA[i] : '';
-    const sb = i < partsB.length ? partsB[i] : '';
-    const na = /^\d+$/.test(sa) ? parseInt(sa, 10) : NaN;
-    const nb = /^\d+$/.test(sb) ? parseInt(sb, 10) : NaN;
-    if (!isNaN(na) && !isNaN(nb)) {
-      if (na !== nb) return na - nb;
-    } else if (!isNaN(na)) {
-      return -1;
-    } else if (!isNaN(nb)) {
-      return 1;
-    } else {
-      const cmp = sa.localeCompare(sb, undefined, { sensitivity: 'base' });
-      if (cmp !== 0) return cmp;
-    }
-  }
-  return 0;
 };
 
 function buildFixedInEntries(advisories: AdvisoryRemediation[]): FixedInEntry[] {
@@ -204,7 +171,7 @@ export const AdvisoryRemediations: React.FC<AdvisoryRemediationsProps> = ({ advi
         });
 
         return (
-          <div key={index} style={{ marginBottom: index < entries.length - 1 ? '6px' : undefined }}>
+          <div key={`${entry.advisory?.id ?? 'adv'}-${entry.version || index}`} style={{ marginBottom: index < entries.length - 1 ? '6px' : undefined }}>
             <Popover
               headerContent={<strong>{entry.version ? `Fixed in ${entry.version}` : advisoryId}</strong>}
               bodyContent={popoverBody}
