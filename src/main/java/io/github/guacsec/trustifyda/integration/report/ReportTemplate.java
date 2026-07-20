@@ -19,7 +19,6 @@ package io.github.guacsec.trustifyda.integration.report;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,10 +32,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
 import io.github.guacsec.trustifyda.integration.Constants;
-import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -51,8 +48,6 @@ public class ReportTemplate {
 
   @ConfigProperty(name = "report.remediation.template")
   String remediationTemplate;
-
-  @Inject UBIRecommendation ubiRecommendation;
 
   @ConfigProperty(name = Constants.TELEMETRY_WRITE_KEY)
   Optional<String> writeKey;
@@ -74,7 +69,7 @@ public class ReportTemplate {
     params.put("report", report);
     params.put("cveIssueTemplate", cveIssuePathRegex);
     params.put("remediationTemplate", remediationTemplate);
-    params.put("imageMapping", getImageMapping());
+    params.put("imageMapping", "[]");
     params.put("rhdaSource", rhdaSource);
     getBrandingConfig()
         .ifPresent(config -> params.put("brandingConfig", getBrandingConfigMap(config)));
@@ -94,22 +89,6 @@ public class ReportTemplate {
     String sanitizedReport = report.replaceAll("<script>", "\\\\<script\\\\>");
     sanitizedReport = sanitizedReport.replaceAll("%40", "");
     return sanitizedReport;
-  }
-
-  private String getImageMapping() throws JsonProcessingException {
-    List<Map<String, String>> urlMapping =
-        ubiRecommendation.purl().keySet().stream()
-            .map(
-                ubi -> {
-                  Map<String, String> urls = new HashMap<>(2);
-                  urls.put("purl", ubiRecommendation.purl().get(ubi));
-                  urls.put("catalogUrl", ubiRecommendation.catalogurl().get(ubi));
-                  return urls;
-                })
-            .toList();
-
-    ObjectWriter objectWriter = new ObjectMapper().writer();
-    return objectWriter.writeValueAsString(urlMapping);
   }
 
   private Optional<BrandingConfig> getBrandingConfig() {

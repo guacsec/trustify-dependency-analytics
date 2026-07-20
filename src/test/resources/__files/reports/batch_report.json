@@ -1124,19 +1124,7 @@
           "warnings": {}
         },
         "sources": {},
-        "recommendations": {
-          "hardened-images": {
-            "summary": {
-              "total": 1
-            },
-            "dependencies": [
-              {
-                "ref": "pkg:oci/debian@sha256%3A7c288032ecf3319045d9fa538c3b0cc868a320d01d03bce15b99c2c336319994?tag=0.0.1",
-                "recommendation": "pkg:oci/ubi@sha256%3Af5983f7c7878cc9b26a3962be7756e3c810e9831b0b9f9613e6f6b445f884e74?arch=amd64&repository_url=registry.access.redhat.com%2Fubi9%2Fubi&tag=9.3-1552"
-              }
-            ]
-          }
-        }
+        "recommendations": {}
       }
     },
     "licenses": [
