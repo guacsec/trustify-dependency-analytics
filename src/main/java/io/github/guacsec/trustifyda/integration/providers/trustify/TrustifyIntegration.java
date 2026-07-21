@@ -42,7 +42,6 @@ import io.github.guacsec.trustifyda.integration.Constants;
 import io.github.guacsec.trustifyda.integration.cache.CacheService;
 import io.github.guacsec.trustifyda.integration.providers.VulnerabilityProvider;
 import io.github.guacsec.trustifyda.integration.providers.trustify.hardened.HardenedImageProvider;
-import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderHealthCheckResult;
@@ -84,7 +83,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   @Inject TrustifyResponseHandler responseHandler;
   @Inject TrustifyRequestBuilder requestBuilder;
   @Inject ObjectMapper mapper;
-  @Inject UBIRecommendation ubiRecommendation;
   @Inject HardenedImageProvider hardenedImageProvider;
   @Inject MeterRegistry registry;
   @Inject CacheService cacheService;
@@ -94,7 +92,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
   private static final List<String> FIXED_STATUSES = List.of("NotAffected", "Fixed");
   private static final String OCI_PURL_TYPE = "oci";
   private static final String TRUSTED_CONTENT_SOURCE = "trusted-content";
-  private static final String HARDENED_IMAGES_SOURCE = "hardened-images";
 
   @Override
   public void configure() throws Exception {
@@ -372,11 +369,9 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
    */
   public void processRecommendations(Exchange exchange) throws IOException {
     byte[] tcResponse = exchange.getIn().getBody(byte[].class);
-    String sbomId = exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class);
 
     var response = mapper.readValue(tcResponse, RecommendationsResponse.class);
     var mergedRecommendations = indexRecommendations(response);
-    mergedRecommendations.putAll(getUBIRecommendation(sbomId));
 
     exchange.getMessage().setBody(mergedRecommendations);
   }
@@ -409,26 +404,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
               }
             });
     return result;
-  }
-
-  private Map<PackageRef, IndexedRecommendation> getUBIRecommendation(String sbomId) {
-    if (sbomId == null) {
-      return Collections.emptyMap();
-    }
-
-    var pkgRef = new PackageRef(sbomId);
-    if (!OCI_PURL_TYPE.equals(pkgRef.purl().getType())) {
-      return Collections.emptyMap();
-    }
-
-    var recommendedUBIPurl = ubiRecommendation.mapping().get(pkgRef.name());
-    if (recommendedUBIPurl != null) {
-      var recommendation =
-          new IndexedRecommendation(
-              new PackageRef(recommendedUBIPurl), null, HARDENED_IMAGES_SOURCE);
-      return Collections.singletonMap(pkgRef, recommendation);
-    }
-    return Collections.emptyMap();
   }
 
   private void processHardenedRecommendations(Exchange exchange) {

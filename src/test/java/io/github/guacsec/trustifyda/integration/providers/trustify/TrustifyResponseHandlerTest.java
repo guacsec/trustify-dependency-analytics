@@ -53,7 +53,6 @@ import io.github.guacsec.trustifyda.api.v5.RemediationCategory;
 import io.github.guacsec.trustifyda.api.v5.RemediationInfo;
 import io.github.guacsec.trustifyda.api.v5.Severity;
 import io.github.guacsec.trustifyda.integration.Constants;
-import io.github.guacsec.trustifyda.integration.providers.trustify.ubi.UBIRecommendation;
 import io.github.guacsec.trustifyda.model.DependencyTree;
 import io.github.guacsec.trustifyda.model.DirectDependency;
 import io.github.guacsec.trustifyda.model.PackageItem;
@@ -66,7 +65,6 @@ public class TrustifyResponseHandlerTest {
   private DependencyTree dependencyTree;
 
   private TrustifyIntegration trustifyIntegration;
-  private UBIRecommendation ubiRecommendation;
 
   private static final PackageRef rootPackageRef = new PackageRef("pkg:maven/org.acme/app@1.0");
 
@@ -89,15 +87,6 @@ public class TrustifyResponseHandlerTest {
     // Setup for TrustifyIntegration.processRecommendations() tests
     trustifyIntegration = new TrustifyIntegration();
     trustifyIntegration.mapper = new ObjectMapper();
-
-    // Create a mock UBIRecommendation
-    ubiRecommendation = mock(UBIRecommendation.class);
-    Map<String, String> mapping = new HashMap<>();
-    mapping.put("alpine", "pkg:oci/ubi@0.0.2");
-    when(ubiRecommendation.mapping()).thenReturn(mapping);
-    when(ubiRecommendation.purl()).thenReturn(Collections.emptyMap());
-    when(ubiRecommendation.catalogurl()).thenReturn(Collections.emptyMap());
-    trustifyIntegration.ubiRecommendation = ubiRecommendation;
   }
 
   private static Stream<String> testResponseToIssuesWithValidData() {
@@ -987,40 +976,6 @@ public class TrustifyResponseHandlerTest {
     Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
     assertNotNull(recommendations);
     assertTrue(recommendations.isEmpty());
-  }
-
-  @Test
-  void testProcessRecommendationsWithSbomId() throws IOException {
-    String sbomId = "pkg:oci/alpine@0.0.1";
-    Exchange exchange = mock(Exchange.class);
-    Message inMessage = mock(Message.class);
-    Message outMessage = mock(Message.class);
-
-    when(exchange.getIn()).thenReturn(inMessage);
-    when(exchange.getMessage()).thenReturn(outMessage);
-    when(exchange.getProperty(Constants.SBOM_ID_PROPERTY, String.class)).thenReturn(sbomId);
-
-    byte[] responseBytes =
-        getClass()
-            .getClassLoader()
-            .getResourceAsStream("__files/trustedcontent/empty_report.json")
-            .readAllBytes();
-    when(inMessage.getBody(byte[].class)).thenReturn(responseBytes);
-
-    trustifyIntegration.processRecommendations(exchange);
-
-    @SuppressWarnings("rawtypes")
-    ArgumentCaptor<Map> bodyCaptor = forClass(Map.class);
-    verify(outMessage).setBody(bodyCaptor.capture());
-    @SuppressWarnings("unchecked")
-    Map<PackageRef, IndexedRecommendation> recommendations = bodyCaptor.getValue();
-    assertNotNull(recommendations);
-
-    PackageRef sbomRef = new PackageRef(sbomId);
-    IndexedRecommendation recommendation =
-        new IndexedRecommendation(new PackageRef("pkg:oci/ubi@0.0.2"), null, "hardened-images");
-    assertEquals(1, recommendations.size());
-    assertEquals(recommendation, recommendations.get(sbomRef));
   }
 
   @Test

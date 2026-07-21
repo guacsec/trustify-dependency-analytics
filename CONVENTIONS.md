@@ -61,8 +61,7 @@ src/main/java/io/github/guacsec/trustifyda/
 │   ├── lock/                       # Distributed locking (LockService)
 │   ├── providers/                  # Vulnerability providers
 │   │   └── trustify/
-│   │       ├── hardened/           # Hardened image recommendation provider
-│   │       └── ubi/                # UBI image recommendation (config-based)
+│   │       └── hardened/           # Hardened image recommendation provider
 │   ├── report/                     # Report generation
 │   ├── registry/                   # Ecosystem registry integrations (PEP 691, etc.)
 │   ├── sbom/                       # SBOM parsing

@@ -123,9 +123,9 @@ public class RecommendationAggregation implements AggregationStrategy {
 
   /**
    * Normalizes recommendation maps to a consistent List-valued format. Handles both the legacy
-   * single-value format (Map&lt;PackageRef, IndexedRecommendation&gt;) from trusted-content/UBI
-   * providers and the new list format (Map&lt;PackageRef, List&lt;IndexedRecommendation&gt;&gt;)
-   * from the hardened image provider.
+   * single-value format (Map&lt;PackageRef, IndexedRecommendation&gt;) from the trusted-content
+   * provider and the list format (Map&lt;PackageRef, List&lt;IndexedRecommendation&gt;&gt;) from
+   * the hardened image provider.
    */
   @SuppressWarnings("unchecked")
   private Map<PackageRef, List<IndexedRecommendation>> normalizeRecommendations(
