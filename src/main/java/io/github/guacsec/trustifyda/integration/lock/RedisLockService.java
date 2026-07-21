@@ -18,48 +18,53 @@
 package io.github.guacsec.trustifyda.integration.lock;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.logging.Logger;
 
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.SetArgs;
-import io.quarkus.redis.datasource.value.ValueCommands;
+import io.vertx.mutiny.redis.client.RedisAPI;
+import io.vertx.mutiny.redis.client.Response;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * Redis-based distributed lock implementation. Each instance is identified by a random UUID to
- * ensure only the lock owner can release it. Uses atomic SET NX EX GET to prevent race conditions.
+ * Redis-based distributed lock following the single-instance Redlock pattern. Uses {@code SET NX
+ * EX} for atomic acquisition and a Lua script for atomic owner-checked release.
  */
 @ApplicationScoped
 public class RedisLockService implements LockService {
 
   private static final Logger LOG = Logger.getLogger(RedisLockService.class);
 
-  private final ValueCommands<String, String> lockCommands;
-  private final KeyCommands<String> keyCommands;
+  private static final String RELEASE_SCRIPT =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then "
+          + "return redis.call('del', KEYS[1]) "
+          + "else "
+          + "return 0 "
+          + "end";
+
+  private final RedisAPI redis;
   private final String instanceId = UUID.randomUUID().toString();
 
-  public RedisLockService(RedisDataSource ds) {
-    this.lockCommands = ds.value(String.class);
-    this.keyCommands = ds.key();
+  public RedisLockService(RedisAPI redis) {
+    this.redis = redis;
   }
 
   @Override
   public boolean tryAcquire(String key, Duration ttl) {
-    String previous = lockCommands.setGet(key, instanceId, new SetArgs().nx().ex(ttl));
-    return previous == null;
+    Response response =
+        redis
+            .set(List.of(key, instanceId, "NX", "EX", String.valueOf(ttl.getSeconds())))
+            .await()
+            .indefinitely();
+    return response != null && "OK".equals(response.toString());
   }
 
   @Override
   public void release(String key) {
     try {
-      String currentHolder = lockCommands.get(key);
-      if (instanceId.equals(currentHolder)) {
-        keyCommands.del(key);
-      }
+      redis.eval(List.of(RELEASE_SCRIPT, "1", key, instanceId)).await().indefinitely();
     } catch (Exception e) {
       LOG.warnf(e, "Failed to release distributed lock: %s", key);
     }
