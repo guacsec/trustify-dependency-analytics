@@ -105,10 +105,23 @@ export const cveLink = (issueId: string, appData: AppData) => {
   return appData.cveIssueTemplate.replace(ISSUE_PLACEHOLDER, issueId);
 }
 
-export const remediationLink = (packageRef: string, appData: AppData) => {
-  const packageUrl = PackageURL.fromString(packageRef);
-  const name = encodeURIComponent(extractName(packageUrl));
-  return appData.remediationTemplate.replace('__PACKAGE_TYPE__', packageUrl.type).replace('__PACKAGE_NAME__', name).replace('__PACKAGE_VERSION__', packageUrl.version || '');
+const CVE_REGEX = /CVE-\d{4}-\d+/;
+const RHSA_REGEX = /RH[A-Z]{2}-\d{4}[_:]\d+/;
+
+export const advisoryLink = (url: string, appData: AppData): string => {
+  const template = appData.advisoryIssueTemplate || appData.brandingConfig?.advisoryIssueTemplate;
+  if (!template) {
+    return url;
+  }
+  const cveMatch = url.match(CVE_REGEX);
+  if (cveMatch) {
+    return template.replace(ISSUE_PLACEHOLDER, cveMatch[0]);
+  }
+  const rhsaMatch = url.match(RHSA_REGEX);
+  if (rhsaMatch) {
+    return template.replace(ISSUE_PLACEHOLDER, rhsaMatch[0]);
+  }
+  return url;
 }
 
 export const uppercaseFirstLetter = (val: string) => {

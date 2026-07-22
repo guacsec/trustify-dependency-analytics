@@ -73,6 +73,10 @@ public class ReportTemplate {
     params.put("rhdaSource", rhdaSource);
     getBrandingConfig()
         .ifPresent(config -> params.put("brandingConfig", getBrandingConfigMap(config)));
+    ConfigProvider.getConfig()
+        .getOptionalValue("branding.advisory-issue-template", String.class)
+        .filter(t -> !t.isEmpty())
+        .ifPresent(t -> params.put("advisoryIssueTemplate", t));
     if (!disabled && writeKey.isPresent()) {
       params.put("userId", userId);
       params.put("anonymousId", anonymousId);
@@ -111,6 +115,9 @@ public class ReportTemplate {
                           .orElse(""),
                       config
                           .getOptionalValue("branding.image-remediation-link", String.class)
+                          .orElse(""),
+                      config
+                          .getOptionalValue("branding.advisory-issue-template", String.class)
                           .orElse("")));
     } catch (Exception e) {
       return Optional.empty();
@@ -125,6 +132,9 @@ public class ReportTemplate {
     branding.put("exploreDescription", config.exploreDescription());
     branding.put("imageRecommendation", config.imageRecommendation());
     branding.put("imageRecommendationLink", config.imageRecommendationLink());
+    if (!config.advisoryIssueTemplate().isEmpty()) {
+      branding.put("advisoryIssueTemplate", config.advisoryIssueTemplate());
+    }
     return branding;
   }
 
@@ -136,6 +146,7 @@ public class ReportTemplate {
     private final String exploreDescription;
     private final String imageRecommendation;
     private final String imageRecommendationLink;
+    private final String advisoryIssueTemplate;
 
     public BrandingConfigImpl(
         String displayName,
@@ -143,13 +154,15 @@ public class ReportTemplate {
         String exploreTitle,
         String exploreDescription,
         String imageRecommendation,
-        String imageRecommendationLink) {
+        String imageRecommendationLink,
+        String advisoryIssueTemplate) {
       this.displayName = displayName;
       this.exploreUrl = exploreUrl;
       this.exploreTitle = exploreTitle;
       this.exploreDescription = exploreDescription;
       this.imageRecommendation = imageRecommendation;
       this.imageRecommendationLink = imageRecommendationLink;
+      this.advisoryIssueTemplate = advisoryIssueTemplate;
     }
 
     @Override
@@ -180,6 +193,11 @@ public class ReportTemplate {
     @Override
     public String imageRecommendationLink() {
       return imageRecommendationLink;
+    }
+
+    @Override
+    public String advisoryIssueTemplate() {
+      return advisoryIssueTemplate;
     }
   }
 

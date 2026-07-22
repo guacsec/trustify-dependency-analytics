@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.api.v5.AdvisoryRemediation;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
 import io.github.guacsec.trustifyda.api.v5.DependencyReport;
 import io.github.guacsec.trustifyda.api.v5.Issue;
@@ -176,8 +177,9 @@ public class RegistryEnrichmentServiceTest {
 
     var existingRemediation = new Remediation();
     existingRemediation.addFixedInItem("2.32.0");
-    existingRemediation.addVersionRangesItem(
-        new VersionRange().lowVersion("2.31.0").highVersion("2.32.0"));
+    var advRem = new AdvisoryRemediation();
+    advRem.addVersionRangesItem(new VersionRange().lowVersion("2.31.0").highVersion("2.32.0"));
+    existingRemediation.addAdvisoriesItem(advRem);
 
     var issue = new Issue().id("CVE-2024-35195").remediation(existingRemediation);
     dep.issues(new ArrayList<>(List.of(issue)));
@@ -194,9 +196,12 @@ public class RegistryEnrichmentServiceTest {
     assertEquals(1, remediation.getFixedIn().size());
     assertEquals("2.32.0", remediation.getFixedIn().get(0));
 
-    assertNotNull(remediation.getVersionRanges());
-    assertEquals(1, remediation.getVersionRanges().size());
-    assertEquals("2.31.0", remediation.getVersionRanges().get(0).getLowVersion());
+    assertNotNull(remediation.getAdvisories());
+    assertEquals(1, remediation.getAdvisories().size());
+    assertNotNull(remediation.getAdvisories().get(0).getVersionRanges());
+    assertEquals(1, remediation.getAdvisories().get(0).getVersionRanges().size());
+    assertEquals(
+        "2.31.0", remediation.getAdvisories().get(0).getVersionRanges().get(0).getLowVersion());
 
     assertNotNull(remediation.getTrustedContent());
     assertEquals(dep.getRecommendation(), remediation.getTrustedContent().getRef());

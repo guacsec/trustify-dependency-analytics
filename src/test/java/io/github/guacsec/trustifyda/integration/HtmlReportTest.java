@@ -110,6 +110,94 @@ public class HtmlReportTest extends AbstractAnalysisTest {
   }
 
   @Test
+  public void testHtmlRemediationDetails() throws IOException {
+    stubAllProviders();
+
+    String body =
+        given()
+            .header(CONTENT_TYPE, Constants.CYCLONEDX_MEDIATYPE_JSON)
+            .body(loadSBOMFile(CYCLONEDX))
+            .header("Accept", MediaType.TEXT_HTML)
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .contentType(MediaType.TEXT_HTML)
+            .header(
+                Constants.EXHORT_REQUEST_ID_HEADER,
+                MatchesPattern.matchesPattern(REGEX_MATCHER_REQUEST_ID))
+            .extract()
+            .body()
+            .asString();
+
+    var webClient = initWebClient();
+    HtmlPage page = extractPage(webClient, body);
+    HtmlButton srcBtn = page.getFirstByXPath("//button[@aria-label='trustify/redhat-csaf source']");
+    assertNotNull(srcBtn);
+
+    page = click(webClient, srcBtn);
+
+    DomNodeList<DomElement> tables = page.getElementsByTagName("table");
+    DomElement table = tables.get(0);
+    HtmlTableBody tbody = getTableBodyForDependency("io.quarkus:quarkus-hibernate-orm", table);
+    assertNotNull(tbody);
+    page = expandTransitiveTableDataCell(webClient, tbody);
+
+    table =
+        page.getFirstByXPath(
+            "//table[contains(@aria-label, 'trustify/osv-github transitive vulnerabilities')]");
+    List<HtmlTableBody> tbodies = table.getByXPath(".//tbody");
+    List<HtmlTableBody> issues =
+        tbodies.stream()
+            .filter(
+                issuesTbody -> {
+                  List<HtmlAnchor> tds = issuesTbody.getByXPath("./tr/td");
+                  return tds.size() == 6;
+                })
+            .toList();
+    assertNotNull(issues);
+
+    HtmlTableBody cve42003 =
+        issues.stream()
+            .filter(issue -> issue.asNormalizedText().contains("CVE-2022-42003"))
+            .findFirst()
+            .orElse(null);
+    assertNotNull(cve42003, "CVE-2022-42003 issue row should be present");
+
+    HtmlElement remediationCell = cve42003.getFirstByXPath("./tr/td[6]");
+    assertNotNull(remediationCell);
+
+    HtmlButton popoverTrigger = remediationCell.getFirstByXPath(".//button");
+    assertNotNull(popoverTrigger, "Remediation cell should contain a popover trigger button");
+    assertTrue(
+        remediationCell.getTextContent().contains("Workaround"),
+        "Remediation cell should display Workaround category label");
+
+    page = click(webClient, popoverTrigger);
+
+    HtmlElement popoverDialog = page.getFirstByXPath("//div[@role='dialog']");
+    assertNotNull(popoverDialog, "Clicking the trigger should open a popover dialog");
+
+    HtmlElement categoryLabel =
+        popoverDialog.getFirstByXPath(".//strong[contains(text(),'Workaround')]");
+    assertNotNull(categoryLabel, "Popover should display remediation category label");
+
+    HtmlAnchor detailsLink =
+        popoverDialog.getFirstByXPath(".//a[contains(@href, 'jackson-databind')]");
+    assertNotNull(detailsLink, "Popover should display remediation details link");
+    assertEquals(
+        "https://github.com/FasterXML/jackson-databind/issues/3590",
+        detailsLink.getAttribute("href"));
+    assertTrue(
+        detailsLink.getTextContent().contains("Disable UNWRAP_SINGLE_VALUE_ARRAYS"),
+        "Details link text should contain remediation details");
+
+    String popoverText = popoverDialog.asNormalizedText();
+    assertTrue(popoverText.contains("GHSA-jjjh-jjxp-wpff"), "Popover should display advisory ID");
+  }
+
+  @Test
   public void testHtmlLicensesTableAndPieChart() throws IOException {
     stubAllProviders();
 

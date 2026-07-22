@@ -545,8 +545,7 @@ public abstract class ProviderResponseHandler {
 
   private boolean hasUpstreamRemediation(Remediation r) {
     return (r.getFixedIn() != null && !r.getFixedIn().isEmpty())
-        || (r.getVersionRanges() != null && !r.getVersionRanges().isEmpty())
-        || (r.getRemediations() != null && !r.getRemediations().isEmpty());
+        || (r.getAdvisories() != null && !r.getAdvisories().isEmpty());
   }
 
   private boolean hasTrustedContentRemediation(Remediation r) {
