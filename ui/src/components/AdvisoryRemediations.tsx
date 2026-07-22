@@ -10,12 +10,16 @@ interface AdvisoryRemediationsProps {
   vulnerabilityTitle?: string;
 }
 
-interface FixedInEntry {
-  version: string;
-  ranges: VersionRange[];
+interface AdvisoryDetail {
   advisory?: AdvisoryInfo;
   status?: string;
   remediations: RemediationInfo[];
+}
+
+interface FixedInEntry {
+  version: string;
+  ranges: VersionRange[];
+  advisoryDetails: AdvisoryDetail[];
   categories: RemediationCategory[];
 }
 
@@ -44,51 +48,64 @@ const getUniqueCategories = (remediations: RemediationInfo[]): RemediationCatego
   return categories.filter((c, i, arr) => arr.indexOf(c) === i);
 };
 
+const isSameRange = (a: VersionRange, b: VersionRange): boolean =>
+  a.lowVersion === b.lowVersion &&
+  a.highVersion === b.highVersion &&
+  a.lowInclusive === b.lowInclusive &&
+  a.highInclusive === b.highInclusive &&
+  a.versionSchemeId === b.versionSchemeId;
+
 function buildFixedInEntries(advisories: AdvisoryRemediation[]): FixedInEntry[] {
-  const entries: FixedInEntry[] = [];
+  const grouped = new Map<string, { ranges: VersionRange[]; advisoryDetails: AdvisoryDetail[]; categories: RemediationCategory[] }>();
 
   advisories.forEach(adv => {
     const ranges = adv.versionRanges || [];
     const remediations = adv.remediations || [];
-    const categories = getUniqueCategories(remediations);
+    const detail: AdvisoryDetail = { advisory: adv.advisory, status: adv.status, remediations };
 
     const rangeVersions = ranges
       .filter(r => r.highVersion && !r.highInclusive)
       .map(r => r.highVersion as string);
     const uniqueRangeVersions = rangeVersions.filter((v, i, arr) => arr.indexOf(v) === i);
 
-    if (uniqueRangeVersions.length > 0) {
-      uniqueRangeVersions.forEach(version => {
-        const matchingRanges = ranges.filter(r => r.highVersion === version && !r.highInclusive);
-        entries.push({
-          version,
-          ranges: matchingRanges,
-          advisory: adv.advisory,
-          status: adv.status,
-          remediations,
-          categories,
+    const versions = uniqueRangeVersions.length > 0
+      ? uniqueRangeVersions
+      : [adv.fixedIn || ''];
+
+    versions.forEach(version => {
+      const matchingRanges = uniqueRangeVersions.length > 0
+        ? ranges.filter(r => r.highVersion === version && !r.highInclusive)
+        : ranges;
+
+      const group = grouped.get(version);
+      if (group) {
+        group.advisoryDetails.push(detail);
+        for (const r of matchingRanges) {
+          if (!group.ranges.some(existing => isSameRange(existing, r))) {
+            group.ranges.push(r);
+          }
+        }
+        for (const cat of getUniqueCategories(remediations)) {
+          if (!group.categories.includes(cat)) {
+            group.categories.push(cat);
+          }
+        }
+      } else {
+        grouped.set(version, {
+          ranges: [...matchingRanges],
+          advisoryDetails: [detail],
+          categories: getUniqueCategories(remediations),
         });
-      });
-    } else if (adv.fixedIn) {
-      entries.push({
-        version: adv.fixedIn,
-        ranges,
-        advisory: adv.advisory,
-        status: adv.status,
-        remediations,
-        categories,
-      });
-    } else {
-      entries.push({
-        version: '',
-        ranges,
-        advisory: adv.advisory,
-        status: adv.status,
-        remediations,
-        categories,
-      });
-    }
+      }
+    });
   });
+
+  const entries: FixedInEntry[] = Array.from(grouped.entries()).map(([version, group]) => ({
+    version,
+    ranges: group.ranges,
+    advisoryDetails: group.advisoryDetails,
+    categories: group.categories,
+  }));
 
   return entries.sort((a, b) => {
     if (!a.version) return 1;
@@ -104,19 +121,10 @@ export const AdvisoryRemediations: React.FC<AdvisoryRemediationsProps> = ({ advi
   return (
     <div style={{ marginTop: '4px' }}>
       {entries.map((entry, index) => {
-        const advisoryUrl = entry.advisory?.url
-          ? advisoryLink(entry.advisory.url, appData)
-          : undefined;
-        const advisoryId = entry.advisory?.id || `Advisory ${index + 1}`;
+        const firstAdvisoryId = entry.advisoryDetails[0]?.advisory?.id || `Advisory ${index + 1}`;
 
         const popoverBody = (
           <div>
-            {entry.status && (
-              <p><strong>Status:</strong> {entry.status}</p>
-            )}
-            {entry.version && (
-              <p><strong>Fixed in:</strong> {entry.version}</p>
-            )}
             {entry.ranges.length > 0 && (
               <div style={{ marginTop: '4px' }}>
                 <strong>Affected range{entry.ranges.length > 1 ? 's' : ''}:</strong>
@@ -125,38 +133,51 @@ export const AdvisoryRemediations: React.FC<AdvisoryRemediationsProps> = ({ advi
                 ))}
               </div>
             )}
-            {entry.remediations.length > 0 && (
-              <div style={{ marginTop: '4px' }}>
-                <strong>Remediation{entry.remediations.length > 1 ? 's' : ''}:</strong>
-                {entry.remediations.map((rem, i) => {
-                  const catLabel = rem.category ? categoryLabels[rem.category] ?? rem.category : 'Remediation';
-                  const isRedundant = vulnerabilityTitle && rem.details && rem.details.trim() === vulnerabilityTitle.trim();
-                  const remUrl = rem.url ? advisoryLink(rem.url, appData) : undefined;
-                  return (
-                    <div key={i}>
-                      <strong>{catLabel}</strong>
-                      {rem.details && !isRedundant && (
-                        <>
-                          {': '}
-                          {remUrl ? (
-                            <a href={remUrl} target="_blank" rel="noreferrer">{rem.details}</a>
-                          ) : (
-                            rem.details
-                          )}
-                        </>
-                      )}
+            {entry.advisoryDetails.map((detail, di) => {
+              const advUrl = detail.advisory?.url
+                ? advisoryLink(detail.advisory.url, appData)
+                : undefined;
+              const advId = detail.advisory?.id || `Advisory ${di + 1}`;
+              return (
+                <div key={di} style={{ marginTop: di === 0 ? '8px' : '12px', paddingTop: di > 0 ? '8px' : undefined, borderTop: di > 0 ? '1px solid var(--pf-t--global--border--color--default)' : undefined }}>
+                  <p style={{ fontWeight: 600 }}>
+                    {advUrl ? (
+                      <a href={advUrl} target="_blank" rel="noreferrer">{advId}</a>
+                    ) : (
+                      advId
+                    )}
+                  </p>
+                  {detail.status && (
+                    <p><strong>Status:</strong> {detail.status}</p>
+                  )}
+                  {detail.remediations.length > 0 && (
+                    <div style={{ marginTop: '4px' }}>
+                      <strong>Remediation{detail.remediations.length > 1 ? 's' : ''}:</strong>
+                      {detail.remediations.map((rem, ri) => {
+                        const catLabel = rem.category ? categoryLabels[rem.category] ?? rem.category : 'Remediation';
+                        const isRedundant = vulnerabilityTitle && rem.details && rem.details.trim() === vulnerabilityTitle.trim();
+                        const remUrl = rem.url ? advisoryLink(rem.url, appData) : undefined;
+                        return (
+                          <div key={ri}>
+                            <strong>{catLabel}</strong>
+                            {rem.details && !isRedundant && (
+                              <>
+                                {': '}
+                                {remUrl ? (
+                                  <a href={remUrl} target="_blank" rel="noreferrer">{rem.details}</a>
+                                ) : (
+                                  rem.details
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-            {advisoryUrl && (
-              <p style={{ marginTop: '4px' }}>
-                <a href={advisoryUrl} target="_blank" rel="noreferrer">
-                  {entry.advisory?.title || advisoryId}
-                </a>
-              </p>
-            )}
+                  )}
+                </div>
+              );
+            })}
           </div>
         );
 
@@ -171,13 +192,13 @@ export const AdvisoryRemediations: React.FC<AdvisoryRemediationsProps> = ({ advi
         });
 
         return (
-          <div key={`${entry.advisory?.id ?? 'adv'}-${entry.version || index}`} style={{ marginBottom: index < entries.length - 1 ? '6px' : undefined }}>
+          <div key={`${entry.version || firstAdvisoryId}-${index}`} style={{ marginBottom: index < entries.length - 1 ? '6px' : undefined }}>
             <Popover
-              headerContent={<strong>{entry.version ? `Fixed in ${entry.version}` : advisoryId}</strong>}
+              headerContent={<strong>{entry.version ? `Fixed in ${entry.version}` : firstAdvisoryId}</strong>}
               bodyContent={popoverBody}
             >
               <Button variant="link" isInline style={{ fontWeight: 500 }}>
-                {entry.version || (entry.categories.length === 0 ? advisoryId : null)}
+                {entry.version || (entry.categories.length === 0 ? firstAdvisoryId : null)}
               </Button>
             </Popover>
             {categoryChips}
