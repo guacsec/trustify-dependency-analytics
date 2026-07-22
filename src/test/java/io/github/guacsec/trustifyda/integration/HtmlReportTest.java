@@ -194,9 +194,7 @@ public class HtmlReportTest extends AbstractAnalysisTest {
         "Details link text should contain remediation details");
 
     String popoverText = popoverDialog.asNormalizedText();
-    assertTrue(
-        popoverText.contains("Uncontrolled Resource Consumption in Jackson-databind"),
-        "Popover should display advisory title");
+    assertTrue(popoverText.contains("GHSA-jjjh-jjxp-wpff"), "Popover should display advisory ID");
   }
 
   @Test
