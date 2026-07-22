@@ -167,8 +167,8 @@ export function getSourceName(item: SourceItem): string {
   if (!item || !item.provider) {
     return 'Other';
   }
-  const provider = (!item.provider || item.provider === "unknown") ? "Other" : item.provider;
-  const source = (!item.source || item.source === "unknown") ? "Other" : item.source;
+  const provider = (!item.provider || item.provider === "unknown" || item.provider === "manual") ? "Other" : item.provider;
+  const source = (!item.source || item.source === "unknown" || item.source === "manual") ? "Other" : item.source;
 
   return provider === source ? provider : `${provider}/${source}`;
 }

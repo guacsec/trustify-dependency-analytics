@@ -60,7 +60,7 @@ import jakarta.inject.Inject;
 public class TrustifyResponseHandler extends ProviderResponseHandler {
 
   private static final Logger LOGGER = Logger.getLogger(TrustifyResponseHandler.class);
-  private static final String DEFAULT_SOURCE = "unknown";
+  private static final String DEFAULT_SOURCE = "manual";
 
   @Inject ObjectMapper mapper;
 
@@ -466,14 +466,20 @@ public class TrustifyResponseHandler extends ProviderResponseHandler {
     if (advisory == null) {
       return DEFAULT_SOURCE;
     }
+    var labels = advisory.get("labels");
+    if (labels != null && !labels.isNull()) {
+      var importer = JsonUtils.getTextValue(labels, "importer");
+      if (importer != null && !importer.isBlank()) {
+        return importer;
+      }
+    }
     var issuer = advisory.get("issuer");
-    if (issuer == null || issuer.isNull()) {
-      return DEFAULT_SOURCE;
+    if (issuer != null && !issuer.isNull()) {
+      var name = JsonUtils.getTextValue(issuer, "name");
+      if (name != null && !name.isBlank()) {
+        return name;
+      }
     }
-    var name = JsonUtils.getTextValue(issuer, "name");
-    if (name == null || name.isBlank()) {
-      return DEFAULT_SOURCE;
-    }
-    return name;
+    return DEFAULT_SOURCE;
   }
 }

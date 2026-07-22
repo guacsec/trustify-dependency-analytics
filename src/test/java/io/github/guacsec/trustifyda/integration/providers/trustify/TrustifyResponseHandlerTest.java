@@ -688,7 +688,7 @@ public class TrustifyResponseHandlerTest {
     assertEquals(1, issues.size());
 
     Issue issue = issues.get(0);
-    assertEquals("unknown", issue.getSource());
+    assertEquals("manual", issue.getSource());
   }
 
   @Test
@@ -1543,7 +1543,7 @@ public class TrustifyResponseHandlerTest {
     assertNotNull(packageItem);
     List<Issue> issues = packageItem.issues();
     assertEquals(1, issues.size());
-    assertEquals("unknown", issues.get(0).getSource());
+    assertEquals("manual", issues.get(0).getSource());
   }
 
   @Test
@@ -1594,7 +1594,117 @@ public class TrustifyResponseHandlerTest {
     List<Issue> issues = packageItem.issues();
     assertEquals(1, issues.size());
     assertEquals(
-        "unknown", issues.get(0).getSource(), "Blank issuer name should fall back to 'unknown'");
+        "manual", issues.get(0).getSource(), "Blank issuer name should fall back to 'manual'");
+  }
+
+  @Test
+  void testResponseToIssuesWithImporterLabel() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-7777",
+            "title": "CVE with importer label",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:999",
+                  "document_id": "RHSA-2024:999",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  },
+                  "labels": {
+                    "importer": "redhat-csaf"
+                  }
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(
+        "redhat-csaf",
+        issues.get(0).getSource(),
+        "Importer label should take priority over issuer name");
+  }
+
+  @Test
+  void testResponseToIssuesWithImporterLabelFallsBackToIssuer() throws IOException {
+    String jsonResponse =
+        """
+    {
+      "pkg:maven/org.postgresql/postgresql@42.5.0": {
+        "details": [
+          {
+            "identifier": "CVE-2024-8888",
+            "title": "CVE with empty labels but valid issuer",
+            "base_score": {
+              "type": "3.1",
+              "score": 5.0,
+              "severity": "medium"
+            },
+            "purl_statuses": [
+              {
+                "advisory": {
+                  "uuid": "urn:uuid:a1",
+                  "identifier": "RHSA-2024:888",
+                  "document_id": "RHSA-2024:888",
+                  "title": "Advisory",
+                  "issuer": {
+                    "id": "id-1",
+                    "name": "Red Hat Product Security"
+                  },
+                  "labels": {}
+                },
+                "status": "affected",
+                "version_range": null,
+                "remediations": []
+              }
+            ]
+          }
+        ],
+        "warnings": []
+      }
+    }
+    """;
+
+    byte[] responseBytes = jsonResponse.getBytes();
+    ProviderResponse result =
+        handler.responseToIssues(buildExchange(responseBytes, dependencyTree));
+
+    PackageItem packageItem = result.pkgItems().get("pkg:maven/org.postgresql/postgresql@42.5.0");
+    assertNotNull(packageItem);
+    List<Issue> issues = packageItem.issues();
+    assertEquals(1, issues.size());
+    assertEquals(
+        "Red Hat Product Security",
+        issues.get(0).getSource(),
+        "Should fall back to issuer name when no importer label");
   }
 
   @Test
