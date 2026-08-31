@@ -252,6 +252,18 @@ public class ProviderResponseHandlerTest {
                         Collections.emptyList())),
             tree().direct("aa").withTransitive("aaa").build(),
             new SourceSummary().direct(2).transitive(1).total(3).high(1).unknown(2).dependencies(2),
+            TEST_SOURCE),
+        // Case 8: same CVE on two direct dependencies — total must be 1 (deduplicated)
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1", null, List.of(buildIssue(1, 7f)), Collections.emptyList()),
+                "pkg:npm/ab@1",
+                new PackageItem(
+                    "pkg:npm/ab@1", null, List.of(buildIssue(1, 7f)), Collections.emptyList())),
+            tree().direct("aa").direct("ab").build(),
+            new SourceSummary().direct(1).transitive(0).total(1).high(1).dependencies(2),
             TEST_SOURCE));
   }
 

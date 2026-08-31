@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -518,23 +519,27 @@ public abstract class ProviderResponseHandler {
         .filter(Objects::nonNull)
         .forEach(
             i -> {
-              var vulnerabilities = countVulnerabilities(i);
+              var ids = cveIds(i);
               var severity = i.getSeverity();
-              if (severity == null) {
-                counter.unknown.addAndGet(vulnerabilities);
-              } else {
-                switch (severity) {
-                  case CRITICAL -> counter.critical.addAndGet(vulnerabilities);
-                  case HIGH -> counter.high.addAndGet(vulnerabilities);
-                  case MEDIUM -> counter.medium.addAndGet(vulnerabilities);
-                  case LOW -> counter.low.addAndGet(vulnerabilities);
-                  case UNKNOWN -> counter.unknown.addAndGet(vulnerabilities);
-                }
-              }
-              counter.total.addAndGet(vulnerabilities);
-              if (isDirect) {
-                counter.direct.addAndGet(vulnerabilities);
-              }
+              ids.forEach(
+                  id -> {
+                    if (counter.seenTotal.add(id)) {
+                      if (severity == null) {
+                        counter.unknown.incrementAndGet();
+                      } else {
+                        switch (severity) {
+                          case CRITICAL -> counter.critical.incrementAndGet();
+                          case HIGH -> counter.high.incrementAndGet();
+                          case MEDIUM -> counter.medium.incrementAndGet();
+                          case LOW -> counter.low.incrementAndGet();
+                          case UNKNOWN -> counter.unknown.incrementAndGet();
+                        }
+                      }
+                    }
+                    if (isDirect) {
+                      counter.seenDirect.add(id);
+                    }
+                  });
               if (i.getRemediation() != null
                   && (hasUpstreamRemediation(i.getRemediation())
                       || hasTrustedContentRemediation(i.getRemediation()))) {
@@ -552,32 +557,32 @@ public abstract class ProviderResponseHandler {
     return r.getTrustedContent() != null && r.getTrustedContent().getRef() != null;
   }
 
-  private int countVulnerabilities(Issue i) {
+  private List<String> cveIds(Issue i) {
     if (i.getCves() != null && !i.getCves().isEmpty()) {
-      return i.getCves().size();
+      return i.getCves();
     }
-    if (i.getUnique() != null && i.getUnique()) {
-      return 1;
+    if (Boolean.TRUE.equals(i.getUnique())) {
+      return List.of(i.getId());
     }
-    return 0;
+    return List.of();
   }
 
   private static final record VulnerabilityCounter(
-      AtomicInteger total,
+      Set<String> seenTotal,
+      Set<String> seenDirect,
       AtomicInteger critical,
       AtomicInteger high,
       AtomicInteger medium,
       AtomicInteger low,
       AtomicInteger unknown,
-      AtomicInteger direct,
       AtomicInteger dependencies,
       AtomicInteger remediations,
       AtomicInteger recommendations) {
 
     VulnerabilityCounter() {
       this(
-          new AtomicInteger(),
-          new AtomicInteger(),
+          ConcurrentHashMap.newKeySet(),
+          ConcurrentHashMap.newKeySet(),
           new AtomicInteger(),
           new AtomicInteger(),
           new AtomicInteger(),
@@ -590,14 +595,14 @@ public abstract class ProviderResponseHandler {
 
     SourceSummary getSummary() {
       return new SourceSummary()
-          .total(total.get())
+          .total(seenTotal.size())
           .critical(critical.get())
           .high(high.get())
           .medium(medium.get())
           .low(low.get())
           .unknown(unknown.get())
-          .direct(direct.get())
-          .transitive(total.get() - direct.get())
+          .direct(seenDirect.size())
+          .transitive(seenTotal.size() - seenDirect.size())
           .dependencies(dependencies.get())
           .remediations(remediations.get())
           .recommendations(recommendations.get());
