@@ -559,9 +559,9 @@ public abstract class ProviderResponseHandler {
 
   private List<String> cveIds(Issue i) {
     if (i.getCves() != null && !i.getCves().isEmpty()) {
-      return i.getCves();
+      return i.getCves().stream().filter(Objects::nonNull).toList();
     }
-    if (Boolean.TRUE.equals(i.getUnique())) {
+    if (Boolean.TRUE.equals(i.getUnique()) && i.getId() != null) {
       return List.of(i.getId());
     }
     return List.of();
