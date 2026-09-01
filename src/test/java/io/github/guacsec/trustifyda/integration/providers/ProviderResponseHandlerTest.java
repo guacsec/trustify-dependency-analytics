@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -252,6 +253,53 @@ public class ProviderResponseHandlerTest {
                         Collections.emptyList())),
             tree().direct("aa").withTransitive("aaa").build(),
             new SourceSummary().direct(2).transitive(1).total(3).high(1).unknown(2).dependencies(2),
+            TEST_SOURCE),
+        // Case 8: same CVE on two direct dependencies — total must be 1 (deduplicated)
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1", null, List.of(buildIssue(1, 7f)), Collections.emptyList()),
+                "pkg:npm/ab@1",
+                new PackageItem(
+                    "pkg:npm/ab@1", null, List.of(buildIssue(1, 7f)), Collections.emptyList())),
+            tree().direct("aa").direct("ab").build(),
+            new SourceSummary().direct(1).transitive(0).total(1).high(1).dependencies(2),
+            TEST_SOURCE),
+        // Case 9: null CVE entry in list — null filtered, one valid CVE counted
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1",
+                    null,
+                    List.of(
+                        new Issue()
+                            .id("ISSUE-001")
+                            .source(TEST_SOURCE)
+                            .severity(SeverityUtils.fromScore(7f))
+                            .cves(Arrays.asList(null, "CVE-001"))
+                            .cvssScore(7f)),
+                    Collections.emptyList())),
+            tree().direct("aa").build(),
+            new SourceSummary().direct(1).transitive(0).total(1).high(1).dependencies(1),
+            TEST_SOURCE),
+        // Case 10: unique issue with null ID — empty CVE list returned, total=0
+        Arguments.of(
+            Map.of(
+                "pkg:npm/aa@1",
+                new PackageItem(
+                    "pkg:npm/aa@1",
+                    null,
+                    List.of(
+                        new Issue()
+                            .unique(true)
+                            .source(TEST_SOURCE)
+                            .severity(SeverityUtils.fromScore(7f))
+                            .cvssScore(7f)),
+                    Collections.emptyList())),
+            tree().direct("aa").build(),
+            new SourceSummary().dependencies(1),
             TEST_SOURCE));
   }
 
