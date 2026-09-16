@@ -121,9 +121,9 @@ public class SpdxLicenseServiceTest {
     var modelStore = new InMemSpdxStore();
     AnyLicenseInfo parsedDeprecated =
         LicenseExpressionParser.parseLicenseExpression(
-            "GPL-2.0-with-classpath-exception", modelStore, null, null, null);
+            "GPL-2.0-with-classpath-exception", modelStore, null, null, null, null);
     AnyLicenseInfo parsedModern =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "GPL-2.0-only WITH Classpath-exception-2.0", modelStore, null, null, null);
     assertTrue(parsedDeprecated instanceof ListedLicense);
     assertTrue(parsedModern instanceof WithAdditionOperator);
@@ -140,7 +140,7 @@ public class SpdxLicenseServiceTest {
   void testSpdxLib_deprecatedForm_parsesAsListedLicense() throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
         LicenseExpressionParser.parseLicenseExpression(
-            "GPL-2.0-with-classpath-exception", new InMemSpdxStore(), null, null, null);
+            "GPL-2.0-with-classpath-exception", new InMemSpdxStore(), null, null, null, null);
     assertTrue(info instanceof ListedLicense);
     ListedLicense lic = (ListedLicense) info;
     // ID is the full deprecated identifier
@@ -160,7 +160,7 @@ public class SpdxLicenseServiceTest {
     var store = new InMemSpdxStore();
     AnyLicenseInfo info =
         LicenseExpressionParser.parseLicenseExpression(
-            "GPL-2.0-with-classpath-exception", store, null, null, null);
+            "GPL-2.0-with-classpath-exception", store, null, null, null, null);
     assertTrue(info instanceof ListedLicense);
     ListedLicense lic = (ListedLicense) info;
     var osi = lic.getIsOsiApproved();
@@ -216,7 +216,7 @@ public class SpdxLicenseServiceTest {
   @Test
   void testSpdxLib_modernForm_parsesAsWithAdditionOperator() throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "GPL-2.0-only WITH Classpath-exception-2.0", new InMemSpdxStore(), null, null, null);
     assertTrue(info instanceof WithAdditionOperator);
     WithAdditionOperator with = (WithAdditionOperator) info;
@@ -232,7 +232,7 @@ public class SpdxLicenseServiceTest {
   @Test
   void testSpdxLib_modernForm_exceptionHasIdAndName() throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "GPL-2.0-only WITH Classpath-exception-2.0", new InMemSpdxStore(), null, null, null);
     assertTrue(info instanceof WithAdditionOperator);
     WithAdditionOperator with = (WithAdditionOperator) info;
@@ -273,7 +273,7 @@ public class SpdxLicenseServiceTest {
   void testSpdxLib_andExpression_conjunctiveSetWithTwoMembers()
       throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "MIT AND GPL-3.0", new InMemSpdxStore(), null, null, null);
     assertTrue(info instanceof ConjunctiveLicenseSet);
     ConjunctiveLicenseSet andSet = (ConjunctiveLicenseSet) info;
@@ -292,7 +292,7 @@ public class SpdxLicenseServiceTest {
   @Test
   void testSpdxLib_orExpression_disjunctiveSetWithTwoMembers() throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "MIT OR GPL-3.0", new InMemSpdxStore(), null, null, null);
     assertTrue(info instanceof DisjunctiveLicenseSet);
     DisjunctiveLicenseSet orSet = (DisjunctiveLicenseSet) info;
@@ -311,7 +311,7 @@ public class SpdxLicenseServiceTest {
   @Test
   void testSpdxLib_parenthesis_orAndStructure() throws InvalidSPDXAnalysisException {
     AnyLicenseInfo info =
-        LicenseExpressionParser.parseLicenseExpression(
+        LicenseInfoFactory.parseSPDXLicenseString(
             "(MIT OR Apache-2.0) AND GPL-3.0", new InMemSpdxStore(), null, null, null);
     assertTrue(info instanceof ConjunctiveLicenseSet);
     ConjunctiveLicenseSet andSet = (ConjunctiveLicenseSet) info;
@@ -487,7 +487,8 @@ public class SpdxLicenseServiceTest {
 
   @Test
   void testIdentifyLicense_unknown() {
-    var licenseContent = """
+    var licenseContent =
+        """
         Unknown License
         """;
     assertThrows(NotFoundException.class, () -> service.identifyLicense(licenseContent));

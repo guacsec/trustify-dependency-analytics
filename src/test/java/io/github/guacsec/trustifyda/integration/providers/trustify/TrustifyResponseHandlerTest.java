@@ -176,208 +176,208 @@ public class TrustifyResponseHandlerTest {
         """,
         // v3 response with details field
         """
-          {
-            "pkg:maven/org.postgresql/postgresql@42.5.0": {
-              "details": [
-                {
-                  "normative": true,
-                  "identifier": "CVE-2022-41946",
-                  "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
-                  "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
-                  "cwes": [
-                    "CWE-200",
-                    "CWE-377"
-                  ],
-                  "base_score": {
-                    "type": "3.1",
-                    "score": 5.8,
-                    "severity": "medium"
-                  },
-                  "purl_statuses": [
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
-                        "identifier": "GHSA-562r-vg33-8x8h",
-                        "document_id": "GHSA-562r-vg33-8x8h",
-                        "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                        "issuer": null
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    }
-                  ]
-                },
-                {
-                  "normative": true,
-                  "identifier": "CVE-2024-1597",
-                  "title": "pgjdbc SQL Injection via line comment generation",
-                  "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
-                  "cwes": [
-                    "CWE-89"
-                  ],
-                  "base_score": {
-                    "type": "3.1",
-                    "score": 9.8,
-                    "severity": "critical"
-                  },
-                  "purl_statuses": [
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
-                        "identifier": "https://www.redhat.com/#RHSA-2024_1797",
-                        "document_id": "RHSA-2024:1797",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                        "issuer": {
-                          "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                          "name": "Red Hat Product Security"
-                        }
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    },
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
-                        "identifier": "https://www.redhat.com/#RHSA-2024_1662",
-                        "document_id": "RHSA-2024:1662",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                        "issuer": {
-                          "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                          "name": "Red Hat Product Security"
-                        }
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    }
-                  ]
-                }
-              ]
-            },
-            "warnings": []
-          },
-     """,
+             {
+               "pkg:maven/org.postgresql/postgresql@42.5.0": {
+                 "details": [
+                   {
+                     "normative": true,
+                     "identifier": "CVE-2022-41946",
+                     "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
+                     "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
+                     "cwes": [
+                       "CWE-200",
+                       "CWE-377"
+                     ],
+                     "base_score": {
+                       "type": "3.1",
+                       "score": 5.8,
+                       "severity": "medium"
+                     },
+                     "purl_statuses": [
+                       {
+                         "advisory": {
+                           "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
+                           "identifier": "GHSA-562r-vg33-8x8h",
+                           "document_id": "GHSA-562r-vg33-8x8h",
+                           "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+                           "issuer": null
+                         },
+                         "status": "affected",
+                         "version_range": null,
+                         "remediations": []
+                       }
+                     ]
+                   },
+                   {
+                     "normative": true,
+                     "identifier": "CVE-2024-1597",
+                     "title": "pgjdbc SQL Injection via line comment generation",
+                     "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
+                     "cwes": [
+                       "CWE-89"
+                     ],
+                     "base_score": {
+                       "type": "3.1",
+                       "score": 9.8,
+                       "severity": "critical"
+                     },
+                     "purl_statuses": [
+                       {
+                         "advisory": {
+                           "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
+                           "identifier": "https://www.redhat.com/#RHSA-2024_1797",
+                           "document_id": "RHSA-2024:1797",
+                           "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                           "issuer": {
+                             "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                             "name": "Red Hat Product Security"
+                           }
+                         },
+                         "status": "affected",
+                         "version_range": null,
+                         "remediations": []
+                       },
+                       {
+                         "advisory": {
+                           "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
+                           "identifier": "https://www.redhat.com/#RHSA-2024_1662",
+                           "document_id": "RHSA-2024:1662",
+                           "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                           "issuer": {
+                             "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                             "name": "Red Hat Product Security"
+                           }
+                         },
+                         "status": "affected",
+                         "version_range": null,
+                         "remediations": []
+                       }
+                     ]
+                   }
+                 ]
+               },
+               "warnings": []
+             },
+        """,
         // v3 response with withdrawn field
         """
-          {
-            "pkg:maven/org.postgresql/postgresql@42.5.0": {
-              "details": [
-                {
-                  "normative": true,
-                  "identifier": "CVE-2022-41948",
-                  "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                  "description": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                  "withdrawn": "2024-01-01T00:00:00Z",
-                  "purl_statuses": [
+              {
+                "pkg:maven/org.postgresql/postgresql@42.5.0": {
+                  "details": [
                     {
-                      "advisory": {
-                        "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9900",
-                        "identifier": "CVE-2022-41948",
-                        "document_id": "CVE-2022-41948",
-                        "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                        "issuer": null
+                      "normative": true,
+                      "identifier": "CVE-2022-41948",
+                      "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
+                      "description": "This CVE is a placeholder for a vulnerability that has been withdrawn",
+                      "withdrawn": "2024-01-01T00:00:00Z",
+                      "purl_statuses": [
+                        {
+                          "advisory": {
+                            "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9900",
+                            "identifier": "CVE-2022-41948",
+                            "document_id": "CVE-2022-41948",
+                            "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
+                            "issuer": null
+                          },
+                          "status": "affected",
+                          "version_range": null,
+                          "remediations": []
+                        }
+                      ]
+                    },
+                    {
+                      "normative": true,
+                      "identifier": "CVE-2022-41946",
+                      "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
+                      "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
+                      "cwes": [
+                        "CWE-200",
+                        "CWE-377"
+                      ],
+                      "base_score": {
+                        "type": "3.1",
+                        "score": 5.8,
+                        "severity": "medium"
                       },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
+                      "purl_statuses": [
+                        {
+                          "advisory": {
+                            "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
+                            "identifier": "GHSA-562r-vg33-8x8h",
+                            "document_id": "GHSA-562r-vg33-8x8h",
+                            "title": "TemporaryFolder on unix-like systems does not limit access to created files",
+                            "issuer": null
+                          },
+                          "status": "affected",
+                          "version_range": null,
+                          "remediations": []
+                        },
+                        {
+                          "advisory": {
+                            "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9908",
+                            "identifier": "CVE-2022-41946",
+                            "document_id": "CVE-2022-41946",
+                            "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
+                            "issuer": null,
+                            "withdrawn": "2024-01-01T00:00:00Z"
+                          },
+                          "status": "affected",
+                          "version_range": null,
+                          "remediations": []
+                        }
+                      ]
+                    },
+                    {
+                      "normative": true,
+                      "identifier": "CVE-2024-1597",
+                      "title": "pgjdbc SQL Injection via line comment generation",
+                      "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
+                      "cwes": [
+                        "CWE-89"
+                      ],
+                      "base_score": {
+                        "type": "3.1",
+                        "score": 9.8,
+                        "severity": "critical"
+                      },
+                      "purl_statuses": [
+                        {
+                          "advisory": {
+                            "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
+                            "identifier": "https://www.redhat.com/#RHSA-2024_1797",
+                            "document_id": "RHSA-2024:1797",
+                            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
+                            "issuer": {
+                              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                              "name": "Red Hat Product Security"
+                            }
+                          },
+                          "status": "affected",
+                          "version_range": null,
+                          "remediations": []
+                        },
+                        {
+                          "advisory": {
+                            "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
+                            "identifier": "https://www.redhat.com/#RHSA-2024_1662",
+                            "document_id": "RHSA-2024:1662",
+                            "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
+                            "issuer": {
+                              "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                              "name": "Red Hat Product Security"
+                            }
+                          },
+                          "status": "affected",
+                          "version_range": null,
+                          "remediations": []
+                        }
+                      ]
                     }
                   ]
                 },
-                {
-                  "normative": true,
-                  "identifier": "CVE-2022-41946",
-                  "title": "TemporaryFolder on unix-like systems does not limit access to created files in pgjdbc",
-                  "description": "pgjdbc is an open source postgresql JDBC Driver. In affected versions a prepared statement using either `PreparedStatement.setText(int, InputStream)` or `PreparedStatemet.setBytea(int, InputStream)` will create a temporary file if the InputStream is larger than 2k. This will create a temporary file which is readable by other users on Unix like systems, but not MacOS. On Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system. This vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability. Because certain JDK file system APIs were only added in JDK 1.7, this this fix is dependent upon the version of the JDK you are using. Java 1.7 and higher users: this vulnerability is fixed in 4.5.0. Java 1.6 and lower users: no patch is available. If you are unable to patch, or are stuck running on Java 1.6, specifying the java.io.tmpdir system environment variable to a directory that is exclusively owned by the executing user will mitigate this vulnerability.",
-                  "cwes": [
-                    "CWE-200",
-                    "CWE-377"
-                  ],
-                  "base_score": {
-                    "type": "3.1",
-                    "score": 5.8,
-                    "severity": "medium"
-                  },
-                  "purl_statuses": [
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d99ed",
-                        "identifier": "GHSA-562r-vg33-8x8h",
-                        "document_id": "GHSA-562r-vg33-8x8h",
-                        "title": "TemporaryFolder on unix-like systems does not limit access to created files",
-                        "issuer": null
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    },
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:595a7085-f230-42b5-9c8f-ab25939d9908",
-                        "identifier": "CVE-2022-41946",
-                        "document_id": "CVE-2022-41946",
-                        "title": "This CVE is a placeholder for a vulnerability that has been withdrawn",
-                        "issuer": null,
-                        "withdrawn": "2024-01-01T00:00:00Z"
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    }
-                  ]
-                },
-                {
-                  "normative": true,
-                  "identifier": "CVE-2024-1597",
-                  "title": "pgjdbc SQL Injection via line comment generation",
-                  "description": "pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability. A placeholder for a numeric value must be immediately preceded by a minus. There must be a second placeholder for a string value after the first placeholder; both must be on the same line. By constructing a matching string payload, the attacker can inject SQL to alter the query,bypassing the protections that parameterized queries bring against SQL Injection attacks. Versions before 42.7.2, 42.6.1, 42.5.5, 42.4.4, 42.3.9, and 42.2.28 are affected.",
-                  "cwes": [
-                    "CWE-89"
-                  ],
-                  "base_score": {
-                    "type": "3.1",
-                    "score": 9.8,
-                    "severity": "critical"
-                  },
-                  "purl_statuses": [
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:020c0585-32db-4949-bd41-87850add2277",
-                        "identifier": "https://www.redhat.com/#RHSA-2024_1797",
-                        "document_id": "RHSA-2024:1797",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 2.13.9.SP2 release and security update",
-                        "issuer": {
-                          "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                          "name": "Red Hat Product Security"
-                        }
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    },
-                    {
-                      "advisory": {
-                        "uuid": "urn:uuid:ea8dd8f5-40a9-4817-ba11-9606f799fe6e",
-                        "identifier": "https://www.redhat.com/#RHSA-2024_1662",
-                        "document_id": "RHSA-2024:1662",
-                        "title": "Red Hat Security Advisory: Red Hat build of Quarkus 3.2.11 release and security update",
-                        "issuer": {
-                          "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                          "name": "Red Hat Product Security"
-                        }
-                      },
-                      "status": "affected",
-                      "version_range": null,
-                      "remediations": []
-                    }
-                  ]
-                }
-              ]
-            },
-            "warnings": []
-          },
-    """);
+                "warnings": []
+              },
+        """);
   }
 
   @ParameterizedTest
@@ -418,39 +418,39 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithMultipleScoreTypes() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
         {
-          "identifier": "CVE-2024-1597",
-          "title": "Test CVE",
-          "base_score": {
-            "type": "4.0",
-            "score": 7.2,
-            "severity": "high"
-          },
-          "purl_statuses": [
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
             {
-              "advisory": {
-                "uuid": "urn:uuid:a1",
-                "identifier": "RHSA-2024:1662",
-                "document_id": "RHSA-2024:1662",
-                "title": "Advisory",
-                "issuer": {
-                  "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                  "name": "Red Hat Product Security"
-                }
+              "identifier": "CVE-2024-1597",
+              "title": "Test CVE",
+              "base_score": {
+                "type": "4.0",
+                "score": 7.2,
+                "severity": "high"
               },
-              "status": "affected",
-              "version_range": null,
-              "remediations": []
+              "purl_statuses": [
+                {
+                  "advisory": {
+                    "uuid": "urn:uuid:a1",
+                    "identifier": "RHSA-2024:1662",
+                    "document_id": "RHSA-2024:1662",
+                    "title": "Advisory",
+                    "issuer": {
+                      "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                      "name": "Red Hat Product Security"
+                    }
+                  },
+                  "status": "affected",
+                  "version_range": null,
+                  "remediations": []
+                }
+              ]
             }
-          ]
+          ]},
+          "warnings": []
         }
-      ]},
-      "warnings": []
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -483,13 +483,13 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithEmptyVulnerabilityArray() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": []
-      },
-      "warnings": []
-    }
-    """;
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": []
+          },
+          "warnings": []
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -506,15 +506,15 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithMissingStatusField() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": [
         {
-          "identifier": "CVE-2024-1597",
-          "title": "Test CVE"
+          "pkg:maven/org.postgresql/postgresql@42.5.0": [
+            {
+              "identifier": "CVE-2024-1597",
+              "title": "Test CVE"
+            }
+          ]
         }
-      ]
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -531,18 +531,18 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithMissingAffectedField() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
         {
-          "identifier": "CVE-2024-1597",
-          "title": "Test CVE",
-          "purl_statuses": []
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
+            {
+              "identifier": "CVE-2024-1597",
+              "title": "Test CVE",
+              "purl_statuses": []
+            }
+          ]},
+          "warnings": []
         }
-      ]},
-      "warnings": []
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -559,31 +559,31 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithNoScores() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
         {
-          "identifier": "CVE-2024-1597",
-          "title": "Test CVE",
-          "purl_statuses": [
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
             {
-              "advisory": {
-                "uuid": "urn:uuid:advisory-1",
-                "identifier": "advisory-1",
-                "document_id": "advisory-1",
-                "title": "Advisory 1",
-                "issuer": null
-              },
-              "status": "affected",
-              "version_range": null,
-              "remediations": []
+              "identifier": "CVE-2024-1597",
+              "title": "Test CVE",
+              "purl_statuses": [
+                {
+                  "advisory": {
+                    "uuid": "urn:uuid:advisory-1",
+                    "identifier": "advisory-1",
+                    "document_id": "advisory-1",
+                    "title": "Advisory 1",
+                    "issuer": null
+                  },
+                  "status": "affected",
+                  "version_range": null,
+                  "remediations": []
+                }
+              ]
             }
-          ]
+          ]},
+          "warnings": []
         }
-      ]},
-      "warnings": []
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -603,34 +603,34 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithFallbackToDescription() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": [
         {
-          "identifier": "CVE-2024-1597",
-          "description": "This is a description used as title",
-          "base_score": {
-            "type": "3.1",
-            "score": 9.8,
-            "severity": "critical"
-          },
-          "purl_statuses": [
+          "pkg:maven/org.postgresql/postgresql@42.5.0": [
             {
-              "advisory": {
-                "uuid": "urn:uuid:a1",
-                "identifier": "RHSA-2024:1662",
-                "document_id": "RHSA-2024:1662",
-                "title": "Advisory",
-                "issuer": null
+              "identifier": "CVE-2024-1597",
+              "description": "This is a description used as title",
+              "base_score": {
+                "type": "3.1",
+                "score": 9.8,
+                "severity": "critical"
               },
-              "status": "affected",
-              "version_range": null,
-              "remediations": []
+              "purl_statuses": [
+                {
+                  "advisory": {
+                    "uuid": "urn:uuid:a1",
+                    "identifier": "RHSA-2024:1662",
+                    "document_id": "RHSA-2024:1662",
+                    "title": "Advisory",
+                    "issuer": null
+                  },
+                  "status": "affected",
+                  "version_range": null,
+                  "remediations": []
+                }
+              ]
             }
           ]
         }
-      ]
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -649,34 +649,34 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithDefaultSource() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": [
         {
-          "identifier": "CVE-2024-1597",
-          "description": "This is a description used as title",
-          "base_score": {
-            "type": "3.1",
-            "score": 9.8,
-            "severity": "critical"
-          },
-          "purl_statuses": [
+          "pkg:maven/org.postgresql/postgresql@42.5.0": [
             {
-              "advisory": {
-                "uuid": "urn:uuid:a1",
-                "identifier": "RHSA-2024:1662",
-                "document_id": "RHSA-2024:1662",
-                "title": "Advisory",
-                "issuer": null
+              "identifier": "CVE-2024-1597",
+              "description": "This is a description used as title",
+              "base_score": {
+                "type": "3.1",
+                "score": 9.8,
+                "severity": "critical"
               },
-              "status": "affected",
-              "version_range": null,
-              "remediations": []
+              "purl_statuses": [
+                {
+                  "advisory": {
+                    "uuid": "urn:uuid:a1",
+                    "identifier": "RHSA-2024:1662",
+                    "document_id": "RHSA-2024:1662",
+                    "title": "Advisory",
+                    "issuer": null
+                  },
+                  "status": "affected",
+                  "version_range": null,
+                  "remediations": []
+                }
+              ]
             }
           ]
         }
-      ]
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -695,48 +695,48 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithMultipleFixedVersions() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 9.8,
-              "severity": "critical"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:1662",
-                  "document_id": "RHSA-2024:1662",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                    "name": "Red Hat Product Security"
-                  }
+                "identifier": "CVE-2024-1597",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 9.8,
+                  "severity": "critical"
                 },
-                "status": "affected",
-                "version_range": {
-                  "high_version": "42.5.5",
-                  "high_inclusive": false
-                },
-                "remediations": [
+                "purl_statuses": [
                   {
-                    "category": "vendor_fix",
-                    "details": "Update to version 42.5.5"
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:1662",
+                      "document_id": "RHSA-2024:1662",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "high_version": "42.5.5",
+                      "high_inclusive": false
+                    },
+                    "remediations": [
+                      {
+                        "category": "vendor_fix",
+                        "details": "Update to version 42.5.5"
+                      }
+                    ]
                   }
                 ]
               }
             ]
-          }
-        ]
-      },
-      "warnings": []
-    }
-    """;
+          },
+          "warnings": []
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -776,43 +776,43 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithHighInclusiveVersionRange() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 9.8,
-              "severity": "critical"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:1662",
-                  "document_id": "RHSA-2024:1662",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                    "name": "Red Hat Product Security"
+                "identifier": "CVE-2024-1597",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 9.8,
+                  "severity": "critical"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:1662",
+                      "document_id": "RHSA-2024:1662",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "high_version": "42.5.5",
+                      "high_inclusive": true
+                    },
+                    "remediations": []
                   }
-                },
-                "status": "affected",
-                "version_range": {
-                  "high_version": "42.5.5",
-                  "high_inclusive": true
-                },
-                "remediations": []
+                ]
               }
             ]
-          }
-        ]
-      },
-      "warnings": []
-    }
-    """;
+          },
+          "warnings": []
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -842,36 +842,36 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithDependencyNotInTree() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/some.other/package@1.0.0": {
-        "details": [
         {
-          "identifier": "CVE-2024-1597",
-          "title": "Test CVE",
-          "base_score": {
-            "type": "3.1",
-            "score": 9.8,
-            "severity": "critical"
-          },
-          "purl_statuses": [
+          "pkg:maven/some.other/package@1.0.0": {
+            "details": [
             {
-              "advisory": {
-                "uuid": "urn:uuid:a1",
-                "identifier": "RHSA-2024:1662",
-                "document_id": "RHSA-2024:1662",
-                "title": "Advisory",
-                "issuer": null
+              "identifier": "CVE-2024-1597",
+              "title": "Test CVE",
+              "base_score": {
+                "type": "3.1",
+                "score": 9.8,
+                "severity": "critical"
               },
-              "status": "affected",
-              "version_range": null,
-              "remediations": []
+              "purl_statuses": [
+                {
+                  "advisory": {
+                    "uuid": "urn:uuid:a1",
+                    "identifier": "RHSA-2024:1662",
+                    "document_id": "RHSA-2024:1662",
+                    "title": "Advisory",
+                    "issuer": null
+                  },
+                  "status": "affected",
+                  "version_range": null,
+                  "remediations": []
+                }
+              ]
             }
-          ]
+          ]},
+          "warnings": []
         }
-      ]},
-      "warnings": []
-    }
-    """;
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -996,72 +996,72 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithUnscannedRefs() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": {
-        "details": [],
-        "warnings": ["Unable to process: missing version component"]
-      },
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 9.8,
-              "severity": "critical"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar": {
+            "details": [],
+            "warnings": ["Unable to process: missing version component"]
+          },
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": null
+                "identifier": "CVE-2024-1597",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 9.8,
+                  "severity": "critical"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": null
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
+              }
+            ],
+            "warnings": []
+          },
+          "pkg:maven/com.example/package@1.0.0": {
+            "details": [],
+            "warnings": ["Some warning message"]
+          },
+          "pkg:maven/com.other/package@2.0.0": {
+            "details": [
+              {
+                "identifier": "CVE-2024-1234",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 7.5,
+                  "severity": "high"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a2",
+                      "identifier": "advisory-2",
+                      "document_id": "advisory-2",
+                      "title": "Advisory",
+                      "issuer": null
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
             ]
           }
-        ],
-        "warnings": []
-      },
-      "pkg:maven/com.example/package@1.0.0": {
-        "details": [],
-        "warnings": ["Some warning message"]
-      },
-      "pkg:maven/com.other/package@2.0.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1234",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 7.5,
-              "severity": "high"
-            },
-            "purl_statuses": [
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:a2",
-                  "identifier": "advisory-2",
-                  "document_id": "advisory-2",
-                  "title": "Advisory",
-                  "issuer": null
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              }
-            ]
-          }
-        ]
-      }
-    }
-    """;
+        }
+        """;
 
     // Build dependency tree with all packages
     var packageRef1 = new PackageRef("pkg:maven/io.quarkus/quarkus-core@2.13.5.Final?type=jar");
@@ -1122,70 +1122,70 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithInvalidSeverity() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 0.0,
-              "severity": "none"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                    "name": "Red Hat Product Security"
-                  }
+                "identifier": "CVE-2024-1597",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 0.0,
+                  "severity": "none"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
+              }
+            ],
+            "warnings": []
+          },
+          "pkg:maven/com.other/package@2.0.0": {
+            "details": [
+              {
+                "identifier": "CVE-2024-1234",
+                "title": "Test CVE",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 7.5,
+                  "severity": "high"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a2",
+                      "identifier": "advisory-2",
+                      "document_id": "advisory-2",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
             ]
           }
-        ],
-        "warnings": []
-      },
-      "pkg:maven/com.other/package@2.0.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1234",
-            "title": "Test CVE",
-            "base_score": {
-              "type": "3.1",
-              "score": 7.5,
-              "severity": "high"
-            },
-            "purl_statuses": [
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:a2",
-                  "identifier": "advisory-2",
-                  "document_id": "advisory-2",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "aa42c1b1-0591-447c-b2bb-80888252c85f",
-                    "name": "Red Hat Product Security"
-                  }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              }
-            ]
-          }
-        ]
-      }
-    }
-    """;
+        }
+        """;
 
     // Build dependency tree with all packages
     var packageRef1 = new PackageRef("pkg:maven/org.postgresql/postgresql@42.5.0");
@@ -1237,32 +1237,32 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithEmptyScoresArray() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2025-24898",
-            "title": "Test CVE with empty scores",
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": null
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "identifier": "CVE-2025-24898",
+                "title": "Test CVE with empty scores",
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": null
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1282,39 +1282,39 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithFallbackToPurlStatusScores() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-9999",
-            "title": "CVE with scores only in purlStatus",
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Test Issuer"
+                "identifier": "CVE-2024-9999",
+                "title": "CVE with scores only in purlStatus",
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Test Issuer"
+                      }
+                    },
+                    "status": "affected",
+                    "scores": [
+                      { "value": 6.5, "severity": "medium" },
+                      { "value": 8.1, "severity": "high" }
+                    ],
+                    "version_range": null,
+                    "remediations": []
                   }
-                },
-                "status": "affected",
-                "scores": [
-                  { "value": 6.5, "severity": "medium" },
-                  { "value": 8.1, "severity": "high" }
-                ],
-                "version_range": null,
-                "remediations": []
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1332,46 +1332,46 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithVersionRangeAllFields() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-8888",
-            "title": "CVE with full version range",
-            "base_score": {
-              "type": "3.1",
-              "score": 7.0,
-              "severity": "high"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Test Issuer"
+                "identifier": "CVE-2024-8888",
+                "title": "CVE with full version range",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 7.0,
+                  "severity": "high"
+                },
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Test Issuer"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "42.0.0",
+                      "low_inclusive": true,
+                      "high_version": "42.5.5",
+                      "high_inclusive": false
+                    },
+                    "remediations": []
                   }
-                },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "42.0.0",
-                  "low_inclusive": true,
-                  "high_version": "42.5.5",
-                  "high_inclusive": false
-                },
-                "remediations": []
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1394,46 +1394,46 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithRemediationUrl() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-7777",
-            "title": "CVE with remediation URL",
-            "base_score": {
-              "type": "3.1",
-              "score": 5.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Test Issuer"
-                  }
+                "identifier": "CVE-2024-7777",
+                "title": "CVE with remediation URL",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 5.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [
+                "purl_statuses": [
                   {
-                    "category": "vendor_fix",
-                    "details": "Update to latest version",
-                    "url": "https://example.com/fix"
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Test Issuer"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [
+                      {
+                        "category": "vendor_fix",
+                        "details": "Update to latest version",
+                        "url": "https://example.com/fix"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1453,45 +1453,45 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithUnknownRemediationCategory() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-6666",
-            "title": "CVE with unknown remediation category",
-            "base_score": {
-              "type": "3.1",
-              "score": 5.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Test Issuer"
-                  }
+                "identifier": "CVE-2024-6666",
+                "title": "CVE with unknown remediation category",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 5.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [
+                "purl_statuses": [
                   {
-                    "category": "unknown_category",
-                    "details": "Some details"
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Test Issuer"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [
+                      {
+                        "category": "unknown_category",
+                        "details": "Some details"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1510,30 +1510,30 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithNoAdvisory() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-5555",
-            "title": "CVE with no advisory in purlStatus",
-            "base_score": {
-              "type": "3.1",
-              "score": 4.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "identifier": "CVE-2024-5555",
+                "title": "CVE with no advisory in purlStatus",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 4.0,
+                  "severity": "medium"
+                },
+                "purl_statuses": [
+                  {
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1550,40 +1550,40 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithBlankIssuerName() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-4444",
-            "title": "CVE with blank issuer name",
-            "base_score": {
-              "type": "3.1",
-              "score": 6.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "  "
-                  }
+                "identifier": "CVE-2024-4444",
+                "title": "CVE with blank issuer name",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 6.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "  "
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1601,43 +1601,43 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithImporterLabel() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-7777",
-            "title": "CVE with importer label",
-            "base_score": {
-              "type": "3.1",
-              "score": 5.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:999",
-                  "document_id": "RHSA-2024:999",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Red Hat Product Security"
-                  },
-                  "labels": {
-                    "importer": "redhat-csaf"
-                  }
+                "identifier": "CVE-2024-7777",
+                "title": "CVE with importer label",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 5.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:999",
+                      "document_id": "RHSA-2024:999",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Red Hat Product Security"
+                      },
+                      "labels": {
+                        "importer": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1657,41 +1657,41 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithImporterLabelFallsBackToIssuer() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-8888",
-            "title": "CVE with empty labels but valid issuer",
-            "base_score": {
-              "type": "3.1",
-              "score": 5.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:888",
-                  "document_id": "RHSA-2024:888",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Red Hat Product Security"
-                  },
-                  "labels": {}
+                "identifier": "CVE-2024-8888",
+                "title": "CVE with empty labels but valid issuer",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 5.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:888",
+                      "document_id": "RHSA-2024:888",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Red Hat Product Security"
+                      },
+                      "labels": {}
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1711,39 +1711,39 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithNoSeverityButScorePresent() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-3333",
-            "title": "CVE with score but no severity",
-            "base_score": {
-              "type": "3.1",
-              "score": 9.1
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "advisory-1",
-                  "document_id": "advisory-1",
-                  "title": "Advisory",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Test Issuer"
-                  }
+                "identifier": "CVE-2024-3333",
+                "title": "CVE with score but no severity",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 9.1
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "advisory-1",
+                      "document_id": "advisory-1",
+                      "title": "Advisory",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Test Issuer"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1761,55 +1761,55 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesCveDeduplicationBySameSource() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-2222",
-            "title": "CVE appearing in multiple advisories from same source",
-            "base_score": {
-              "type": "3.1",
-              "score": 7.5,
-              "severity": "high"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:001",
-                  "document_id": "RHSA-2024:001",
-                  "title": "Advisory 1",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Red Hat Product Security"
-                  }
+                "identifier": "CVE-2024-2222",
+                "title": "CVE appearing in multiple advisories from same source",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 7.5,
+                  "severity": "high"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              },
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:a2",
-                  "identifier": "RHSA-2024:002",
-                  "document_id": "RHSA-2024:002",
-                  "title": "Advisory 2",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Red Hat Product Security"
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:001",
+                      "document_id": "RHSA-2024:001",
+                      "title": "Advisory 1",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a2",
+                      "identifier": "RHSA-2024:002",
+                      "document_id": "RHSA-2024:002",
+                      "title": "Advisory 2",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
                   }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1827,55 +1827,55 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesSameCveDifferentSources() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1111",
-            "title": "CVE from different sources",
-            "base_score": {
-              "type": "3.1",
-              "score": 6.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:a1",
-                  "identifier": "RHSA-2024:001",
-                  "document_id": "RHSA-2024:001",
-                  "title": "Advisory 1",
-                  "issuer": {
-                    "id": "id-1",
-                    "name": "Red Hat Product Security"
-                  }
+                "identifier": "CVE-2024-1111",
+                "title": "CVE from different sources",
+                "base_score": {
+                  "type": "3.1",
+                  "score": 6.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              },
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:a2",
-                  "identifier": "GHSA-xxxx",
-                  "document_id": "GHSA-xxxx",
-                  "title": "GHSA Advisory",
-                  "issuer": {
-                    "id": "id-2",
-                    "name": "GitHub"
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a1",
+                      "identifier": "RHSA-2024:001",
+                      "document_id": "RHSA-2024:001",
+                      "title": "Advisory 1",
+                      "issuer": {
+                        "id": "id-1",
+                        "name": "Red Hat Product Security"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:a2",
+                      "identifier": "GHSA-xxxx",
+                      "document_id": "GHSA-xxxx",
+                      "title": "GHSA Advisory",
+                      "issuer": {
+                        "id": "id-2",
+                        "name": "GitHub"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
                   }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1893,81 +1893,81 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesMergesRemediationsAcrossAffected() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "SQL Injection in PostgreSQL JDBC",
-            "description": "SQL injection vulnerability",
-            "base_score": {
-              "score": 9.8,
-              "severity": "CRITICAL"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-1",
-                  "document_id": "RHSA-2024:1234",
-                  "title": "Red Hat Security Advisory",
-                  "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
+                "identifier": "CVE-2024-1597",
+                "title": "SQL Injection in PostgreSQL JDBC",
+                "description": "SQL injection vulnerability",
+                "base_score": {
+                  "score": 9.8,
+                  "severity": "CRITICAL"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.5.5",
-                  "high_inclusive": false
-                },
-                "remediations": [],
-                "scores": [
+                "purl_statuses": [
                   {
-                    "source": "cve",
-                    "value": 9.8,
-                    "severity": "critical"
-                  }
-                ]
-              },
-              {
-                "advisory": {
-                  "id": "adv-2",
-                  "document_id": "RHSA-2024:5678",
-                  "title": "Red Hat Security Advisory 2",
-                  "identifier": "https://access.redhat.com/errata/RHSA-2024:5678",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
-                },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.6.1",
-                  "high_inclusive": false
-                },
-                "remediations": [],
-                "scores": [
+                    "advisory": {
+                      "id": "adv-1",
+                      "document_id": "RHSA-2024:1234",
+                      "title": "Red Hat Security Advisory",
+                      "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.5.5",
+                      "high_inclusive": false
+                    },
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 9.8,
+                        "severity": "critical"
+                      }
+                    ]
+                  },
                   {
-                    "source": "cve",
-                    "value": 9.8,
-                    "severity": "critical"
+                    "advisory": {
+                      "id": "adv-2",
+                      "document_id": "RHSA-2024:5678",
+                      "title": "Red Hat Security Advisory 2",
+                      "identifier": "https://access.redhat.com/errata/RHSA-2024:5678",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.6.1",
+                      "high_inclusive": false
+                    },
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 9.8,
+                        "severity": "critical"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -1996,75 +1996,75 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesWithAdvisoryInfoAttribution() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "SQL Injection in PostgreSQL JDBC",
-            "description": "SQL injection vulnerability",
-            "base_score": {
-              "score": 9.8,
-              "severity": "CRITICAL"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-1",
-                  "document_id": "RHSA-2024:1234",
-                  "title": "Red Hat Security Advisory",
-                  "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
+                "identifier": "CVE-2024-1597",
+                "title": "SQL Injection in PostgreSQL JDBC",
+                "description": "SQL injection vulnerability",
+                "base_score": {
+                  "score": 9.8,
+                  "severity": "CRITICAL"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.5.5",
-                  "high_inclusive": false
-                },
-                "remediations": [],
-                "scores": [
+                "purl_statuses": [
                   {
-                    "source": "cve",
-                    "value": 9.8,
-                    "severity": "critical"
-                  }
-                ]
-              },
-              {
-                "advisory": {
-                  "id": "adv-2",
-                  "document_id": "GHSA-2024-5678",
-                  "title": "GitHub Security Advisory",
-                  "identifier": "GHSA-xxxx-yyyy-zzzz",
-                  "issuer": {
-                    "id": "issuer-2",
-                    "name": "redhat-csaf"
-                  }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [],
-                "scores": [
+                    "advisory": {
+                      "id": "adv-1",
+                      "document_id": "RHSA-2024:1234",
+                      "title": "Red Hat Security Advisory",
+                      "identifier": "https://access.redhat.com/errata/RHSA-2024:1234",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.5.5",
+                      "high_inclusive": false
+                    },
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 9.8,
+                        "severity": "critical"
+                      }
+                    ]
+                  },
                   {
-                    "source": "cve",
-                    "value": 9.8,
-                    "severity": "critical"
+                    "advisory": {
+                      "id": "adv-2",
+                      "document_id": "GHSA-2024-5678",
+                      "title": "GitHub Security Advisory",
+                      "identifier": "GHSA-xxxx-yyyy-zzzz",
+                      "issuer": {
+                        "id": "issuer-2",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 9.8,
+                        "severity": "critical"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2105,40 +2105,40 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesGhsaDocumentIdFallback() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-9999",
-            "title": "Test vulnerability",
-            "base_score": {
-              "score": 7.5,
-              "severity": "high"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-ghsa-doc",
-                  "document_id": "GHSA-abcd-efgh-ijkl",
-                  "title": "GHSA via document_id",
-                  "identifier": "urn:example:advisory:12345",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "github"
-                  }
+                "identifier": "CVE-2024-9999",
+                "title": "Test vulnerability",
+                "base_score": {
+                  "score": 7.5,
+                  "severity": "high"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [],
-                "scores": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "id": "adv-ghsa-doc",
+                      "document_id": "GHSA-abcd-efgh-ijkl",
+                      "title": "GHSA via document_id",
+                      "identifier": "urn:example:advisory:12345",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "github"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [],
+                    "scores": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2168,66 +2168,66 @@ public class TrustifyResponseHandlerTest {
   void testResponseToIssuesMergeKeepsHigherCvss() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-1597",
-            "title": "SQL Injection in PostgreSQL JDBC",
-            "description": "SQL injection vulnerability",
-            "base_score": null,
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-high",
-                  "document_id": "ADV-HIGH",
-                  "title": "High Score Advisory",
-                  "identifier": "https://example.com/adv-high",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [],
-                "scores": [
+                "identifier": "CVE-2024-1597",
+                "title": "SQL Injection in PostgreSQL JDBC",
+                "description": "SQL injection vulnerability",
+                "base_score": null,
+                "purl_statuses": [
                   {
-                    "source": "cve",
-                    "value": 9.8,
-                    "severity": "critical"
-                  }
-                ]
-              },
-              {
-                "advisory": {
-                  "id": "adv-low",
-                  "document_id": "ADV-LOW",
-                  "title": "Low Score Advisory",
-                  "identifier": "https://example.com/adv-low",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [],
-                "scores": [
+                    "advisory": {
+                      "id": "adv-high",
+                      "document_id": "ADV-HIGH",
+                      "title": "High Score Advisory",
+                      "identifier": "https://example.com/adv-high",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 9.8,
+                        "severity": "critical"
+                      }
+                    ]
+                  },
                   {
-                    "source": "cve",
-                    "value": 5.0,
-                    "severity": "medium"
+                    "advisory": {
+                      "id": "adv-low",
+                      "document_id": "ADV-LOW",
+                      "title": "Low Score Advisory",
+                      "identifier": "https://example.com/adv-low",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 5.0,
+                        "severity": "medium"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2248,99 +2248,99 @@ public class TrustifyResponseHandlerTest {
       throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2023-2454",
-            "title": "postgresql: schema_element defeats protective search_path changes",
-            "description": "A schema_element vulnerability",
-            "base_score": {
-              "score": 7.2,
-              "severity": "HIGH"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-a",
-                  "document_id": "CVE-2023-2454",
-                  "title": "postgresql: schema_element defeats protective search_path changes",
-                  "identifier": "https://www.redhat.com/#CVE-2023-2454",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
+                "identifier": "CVE-2023-2454",
+                "title": "postgresql: schema_element defeats protective search_path changes",
+                "description": "A schema_element vulnerability",
+                "base_score": {
+                  "score": 7.2,
+                  "severity": "HIGH"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.5.5",
-                  "high_inclusive": false
-                },
-                "remediations": [
+                "purl_statuses": [
                   {
-                    "category": "WORKAROUND",
-                    "details": "Use a workaround"
+                    "advisory": {
+                      "id": "adv-a",
+                      "document_id": "CVE-2023-2454",
+                      "title": "postgresql: schema_element defeats protective search_path changes",
+                      "identifier": "https://www.redhat.com/#CVE-2023-2454",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.5.5",
+                      "high_inclusive": false
+                    },
+                    "remediations": [
+                      {
+                        "category": "WORKAROUND",
+                        "details": "Use a workaround"
+                      },
+                      {
+                        "category": "NO_FIX_PLANNED",
+                        "details": "No fix is planned"
+                      }
+                    ],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 7.2,
+                        "severity": "high"
+                      }
+                    ]
                   },
                   {
-                    "category": "NO_FIX_PLANNED",
-                    "details": "No fix is planned"
-                  }
-                ],
-                "scores": [
-                  {
-                    "source": "cve",
-                    "value": 7.2,
-                    "severity": "high"
-                  }
-                ]
-              },
-              {
-                "advisory": {
-                  "id": "adv-b",
-                  "document_id": "CVE-2023-2454",
-                  "title": "postgresql: schema_element defeats protective search_path changes",
-                  "identifier": "https://www.redhat.com/#CVE-2023-2454",
-                  "issuer": {
-                    "id": "issuer-1",
-                    "name": "redhat-csaf"
-                  }
-                },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.6.1",
-                  "high_inclusive": false
-                },
-                "remediations": [
-                  {
-                    "category": "WORKAROUND",
-                    "details": "Use a workaround"
-                  },
-                  {
-                    "category": "NO_FIX_PLANNED",
-                    "details": "No fix is planned"
-                  }
-                ],
-                "scores": [
-                  {
-                    "source": "cve",
-                    "value": 7.2,
-                    "severity": "high"
+                    "advisory": {
+                      "id": "adv-b",
+                      "document_id": "CVE-2023-2454",
+                      "title": "postgresql: schema_element defeats protective search_path changes",
+                      "identifier": "https://www.redhat.com/#CVE-2023-2454",
+                      "issuer": {
+                        "id": "issuer-1",
+                        "name": "redhat-csaf"
+                      }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.6.1",
+                      "high_inclusive": false
+                    },
+                    "remediations": [
+                      {
+                        "category": "WORKAROUND",
+                        "details": "Use a workaround"
+                      },
+                      {
+                        "category": "NO_FIX_PLANNED",
+                        "details": "No fix is planned"
+                      }
+                    ],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 7.2,
+                        "severity": "high"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2388,41 +2388,41 @@ public class TrustifyResponseHandlerTest {
   void testAdvisoryWithNoRemediationsButFixedInSetsVendorFix() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-9999",
-            "title": "CVE with advisory but no remediations",
-            "base_score": {
-              "score": 5.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:x1",
-                  "identifier": "https://example.com/adv-x1",
-                  "document_id": "ADV-FIX-1",
-                  "title": "Advisory with fix"
+                "identifier": "CVE-2024-9999",
+                "title": "CVE with advisory but no remediations",
+                "base_score": {
+                  "score": 5.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.6.0",
-                  "high_inclusive": false
-                },
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:x1",
+                      "identifier": "https://example.com/adv-x1",
+                      "document_id": "ADV-FIX-1",
+                      "title": "Advisory with fix"
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.6.0",
+                      "high_inclusive": false
+                    },
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2445,35 +2445,35 @@ public class TrustifyResponseHandlerTest {
   void testAdvisoryWithNoRemediationsAndNoFixedIn() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-8888",
-            "title": "CVE with advisory but no remediations and no version range",
-            "base_score": {
-              "score": 3.5,
-              "severity": "low"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:x2",
-                  "identifier": "https://example.com/adv-x2",
-                  "document_id": "ADV-NOFIX-1",
-                  "title": "Advisory without fix"
+                "identifier": "CVE-2024-8888",
+                "title": "CVE with advisory but no remediations and no version range",
+                "base_score": {
+                  "score": 3.5,
+                  "severity": "low"
                 },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:x2",
+                      "identifier": "https://example.com/adv-x2",
+                      "document_id": "ADV-NOFIX-1",
+                      "title": "Advisory without fix"
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2499,46 +2499,46 @@ public class TrustifyResponseHandlerTest {
   void testMergeAdvisoryRemediationWithNullExistingAdvisories() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-7777",
-            "title": "CVE where first purlStatus has no advisory",
-            "base_score": {
-              "score": 6.0,
-              "severity": "medium"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              },
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:m1",
-                  "identifier": "https://example.com/adv-m1",
-                  "document_id": "ADV-MERGE-1",
-                  "title": "Second advisory"
+                "identifier": "CVE-2024-7777",
+                "title": "CVE where first purlStatus has no advisory",
+                "base_score": {
+                  "score": 6.0,
+                  "severity": "medium"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.7.0",
-                  "high_inclusive": false
-                },
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:m1",
+                      "identifier": "https://example.com/adv-m1",
+                      "document_id": "ADV-MERGE-1",
+                      "title": "Second advisory"
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.7.0",
+                      "high_inclusive": false
+                    },
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2561,49 +2561,49 @@ public class TrustifyResponseHandlerTest {
   void testMergeIssueDataScoreFallbackSeverity() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-6666",
-            "title": "CVE where first status has no score, second has score without severity",
-            "base_score": null,
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "uuid": "urn:uuid:s1",
-                  "identifier": "https://example.com/adv-s1",
-                  "document_id": "ADV-SCORE-1",
-                  "title": "First advisory"
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": []
-              },
-              {
-                "advisory": {
-                  "uuid": "urn:uuid:s2",
-                  "identifier": "https://example.com/adv-s2",
-                  "document_id": "ADV-SCORE-2",
-                  "title": "Second advisory"
-                },
-                "status": "affected",
-                "version_range": null,
-                "remediations": [],
-                "scores": [
+                "identifier": "CVE-2024-6666",
+                "title": "CVE where first status has no score, second has score without severity",
+                "base_score": null,
+                "purl_statuses": [
                   {
-                    "source": "cve",
-                    "value": 8.5
+                    "advisory": {
+                      "uuid": "urn:uuid:s1",
+                      "identifier": "https://example.com/adv-s1",
+                      "document_id": "ADV-SCORE-1",
+                      "title": "First advisory"
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
+                      "uuid": "urn:uuid:s2",
+                      "identifier": "https://example.com/adv-s2",
+                      "document_id": "ADV-SCORE-2",
+                      "title": "Second advisory"
+                    },
+                    "status": "affected",
+                    "version_range": null,
+                    "remediations": [],
+                    "scores": [
+                      {
+                        "source": "cve",
+                        "value": 8.5
+                      }
+                    ]
                   }
                 ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =
@@ -2622,60 +2622,60 @@ public class TrustifyResponseHandlerTest {
   void testFixedInVersionsSorted() throws IOException {
     String jsonResponse =
         """
-    {
-      "pkg:maven/org.postgresql/postgresql@42.5.0": {
-        "details": [
-          {
-            "identifier": "CVE-2024-5555",
-            "title": "CVE with multiple fixed versions",
-            "base_score": {
-              "score": 7.0,
-              "severity": "high"
-            },
-            "purl_statuses": [
+        {
+          "pkg:maven/org.postgresql/postgresql@42.5.0": {
+            "details": [
               {
-                "advisory": {
-                  "id": "adv-sort",
-                  "document_id": "ADV-SORT-1",
-                  "title": "First advisory",
-                  "identifier": "https://example.com/adv-sort-1",
-                  "issuer": { "id": "i1", "name": "source-1" }
+                "identifier": "CVE-2024-5555",
+                "title": "CVE with multiple fixed versions",
+                "base_score": {
+                  "score": 7.0,
+                  "severity": "high"
                 },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.10.0",
-                  "high_inclusive": false
-                },
-                "remediations": []
-              },
-              {
-                "advisory": {
-                  "id": "adv-sort-2",
-                  "document_id": "ADV-SORT-2",
-                  "title": "Second advisory",
-                  "identifier": "https://example.com/adv-sort-2",
-                  "issuer": { "id": "i1", "name": "source-1" }
-                },
-                "status": "affected",
-                "version_range": {
-                  "version_scheme_id": "semver",
-                  "low_version": "0",
-                  "low_inclusive": true,
-                  "high_version": "42.2.0",
-                  "high_inclusive": false
-                },
-                "remediations": []
+                "purl_statuses": [
+                  {
+                    "advisory": {
+                      "id": "adv-sort",
+                      "document_id": "ADV-SORT-1",
+                      "title": "First advisory",
+                      "identifier": "https://example.com/adv-sort-1",
+                      "issuer": { "id": "i1", "name": "source-1" }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.10.0",
+                      "high_inclusive": false
+                    },
+                    "remediations": []
+                  },
+                  {
+                    "advisory": {
+                      "id": "adv-sort-2",
+                      "document_id": "ADV-SORT-2",
+                      "title": "Second advisory",
+                      "identifier": "https://example.com/adv-sort-2",
+                      "issuer": { "id": "i1", "name": "source-1" }
+                    },
+                    "status": "affected",
+                    "version_range": {
+                      "version_scheme_id": "semver",
+                      "low_version": "0",
+                      "low_inclusive": true,
+                      "high_version": "42.2.0",
+                      "high_inclusive": false
+                    },
+                    "remediations": []
+                  }
+                ]
               }
-            ]
+            ],
+            "warnings": []
           }
-        ],
-        "warnings": []
-      }
-    }
-    """;
+        }
+        """;
 
     byte[] responseBytes = jsonResponse.getBytes();
     ProviderResponse result =

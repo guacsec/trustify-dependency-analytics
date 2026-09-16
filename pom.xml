@@ -34,28 +34,27 @@
     <!-- Plugins -->
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.31.3</quarkus.platform.version>
-    <resources-plugin.version>3.3.1</resources-plugin.version>
-    <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
-    <compiler-plugin.version>3.11.0</compiler-plugin.version>
-    <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
-    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
-    <google-java-format.version>1.17.0</google-java-format.version>
-    <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
-    <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
-    <spotless-maven-plugin.version>2.37.0</spotless-maven-plugin.version>
-    <surefire-plugin.version>3.0.0</surefire-plugin.version>
-    <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-    <deploy-plugin.version>3.1.1</deploy-plugin.version>
+    <quarkus.platform.version>3.39.3</quarkus.platform.version>
+    <resources-plugin.version>3.5.0</resources-plugin.version>
+    <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
+    <compiler-plugin.version>3.16.0</compiler-plugin.version>
+    <flatten-maven-plugin.version>1.8.0</flatten-maven-plugin.version>
+    <frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
+    <google-java-format.version>1.36.1</google-java-format.version>
+    <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+    <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
+    <spotless-maven-plugin.version>3.10.2</spotless-maven-plugin.version>
+    <surefire-plugin.version>3.6.0</surefire-plugin.version>
+    <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
+    <deploy-plugin.version>3.1.4</deploy-plugin.version>
 
     <!-- Dependencies -->
     <trustify-da-api.version>2.0.12</trustify-da-api.version>
-    <cyclonedx.version>11.0.1</cyclonedx.version>
     <sentry.version>7.8.0</sentry.version>
-    <spdx.version>2.0.2</spdx.version>
-    <htmlunit.version>4.11.1</htmlunit.version>
-    <wiremock.version>3.4.2</wiremock.version>
-    <cvss-calculator.version>1.4.2</cvss-calculator.version>
+    <spdx.version>2.0.4</spdx.version>
+    <htmlunit.version>4.21.0</htmlunit.version>
+    <wiremock.version>3.13.2</wiremock.version>
+    <cvss-calculator.version>1.5.1</cvss-calculator.version>
 
     <!-- Node and Yarn -->
     <node.version>v24.12.0</node.version>
@@ -177,7 +176,6 @@
     <dependency>
       <groupId>org.cyclonedx</groupId>
       <artifactId>cyclonedx-core-java</artifactId>
-      <version>${cyclonedx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.spdx</groupId>
