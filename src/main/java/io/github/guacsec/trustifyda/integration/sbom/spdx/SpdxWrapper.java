@@ -201,12 +201,10 @@ public class SpdxWrapper {
                     startFrom.add(pkgRef);
                   }
                   switch (RelationshipDirection.fromRelationshipType(rType)) {
-                    case FORWARD -> result
-                        .computeIfAbsent(pkgRef, k -> new HashSet<>())
-                        .add(relatedRef);
-                    case BACKWARDS -> result
-                        .computeIfAbsent(relatedRef, k -> new HashSet<>())
-                        .add(pkgRef);
+                    case FORWARD ->
+                        result.computeIfAbsent(pkgRef, k -> new HashSet<>()).add(relatedRef);
+                    case BACKWARDS ->
+                        result.computeIfAbsent(relatedRef, k -> new HashSet<>()).add(pkgRef);
                     default -> {}
                   }
                 }
@@ -307,7 +305,8 @@ public class SpdxWrapper {
             TEST_DEPENDENCY_OF,
             RUNTIME_DEPENDENCY_OF,
             DEV_DEPENDENCY_OF,
-            ANCESTOR_OF -> FORWARD;
+            ANCESTOR_OF ->
+            FORWARD;
         case DESCRIBED_BY, DEPENDENCY_OF, DESCENDANT_OF, PACKAGE_OF, CONTAINS -> BACKWARDS;
         default -> IGNORED;
       };

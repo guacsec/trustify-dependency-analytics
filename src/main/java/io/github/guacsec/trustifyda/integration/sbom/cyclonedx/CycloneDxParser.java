@@ -40,7 +40,6 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.ValidationMessage;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.config.ObjectMapperProducer;
@@ -214,11 +213,10 @@ public class CycloneDxParser extends SbomParser {
       JsonNode node = MAPPER.readTree(inputBytes);
       var bom = MAPPER.treeToValue(node, Bom.class);
       var version = parseSchemaVersion(bom.getSpecVersion());
-      var schema = JSON_PARSER.getJsonSchema(version, MAPPER);
-      var errors = schema.validate(node);
+      var errors = JSON_PARSER.validate(node, version);
       if (errors != null && !errors.isEmpty()) {
         throw new ParseException(
-            errors.stream().map(ValidationMessage::getMessage).toList().toString());
+            errors.stream().map(ParseException::getMessage).toList().toString());
       }
       return bom;
     } catch (ParseException e) {

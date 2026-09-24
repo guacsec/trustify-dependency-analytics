@@ -30,8 +30,10 @@ public class SbomParserFactory {
     return switch (mediaType) {
       case Constants.CYCLONEDX_MEDIATYPE_JSON -> new CycloneDxParser();
       case Constants.SPDX_MEDIATYPE_JSON -> new SpdxParser();
-      default -> throw new ClientErrorException(
-          "Unsupported Content-Type header: " + mediaType, Response.Status.UNSUPPORTED_MEDIA_TYPE);
+      default ->
+          throw new ClientErrorException(
+              "Unsupported Content-Type header: " + mediaType,
+              Response.Status.UNSUPPORTED_MEDIA_TYPE);
     };
   }
 }

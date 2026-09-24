@@ -37,6 +37,7 @@ import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicense;
 import org.spdx.library.model.v3_0_1.expandedlicensing.ListedLicenseException;
 import org.spdx.library.model.v3_0_1.expandedlicensing.WithAdditionOperator;
 import org.spdx.library.model.v3_0_1.simplelicensing.AnyLicenseInfo;
+import org.spdx.library.model.v3_0_1.simplelicensing.InvalidLicenseExpression;
 import org.spdx.storage.simple.InMemSpdxStore;
 import org.spdx.utility.compare.LicenseCompareHelper;
 import org.spdx.utility.compare.SpdxCompareException;
@@ -206,6 +207,25 @@ public class SpdxLicenseService {
             .expression(trimmed);
       }
       throw new NotFoundException("Invalid license expression: " + expression, e);
+    }
+    if (root instanceof InvalidLicenseExpression) {
+      if (!trimmed.contains(" AND ") && !trimmed.contains(" OR ") && !trimmed.contains(" WITH ")) {
+        String displayName =
+            (originalName != null && !originalName.isBlank()) ? originalName : trimmed;
+        return new LicenseInfo()
+            .identifiers(
+                List.of(
+                    new LicenseIdentifier()
+                        .id(trimmed)
+                        .name(displayName)
+                        .category(LicenseCategory.UNKNOWN)))
+            .category(LicenseCategory.UNKNOWN)
+            .name(displayName)
+            .source(sourceId == null ? SPDX_SOURCE : sourceId)
+            .sourceUrl(sourceUrl == null ? SPDX_SOURCE_URL : sourceUrl)
+            .expression(trimmed);
+      }
+      throw new NotFoundException("Invalid license expression: " + expression);
     }
     String normalizedExpression = root.toString();
     String humanReadableName = toHumanReadableName(root);
