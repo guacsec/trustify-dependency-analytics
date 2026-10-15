@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Body;
@@ -277,13 +278,19 @@ public abstract class ProviderResponseHandler {
         .recommendations(recommendations);
   }
 
-  public ProviderResponse filterCves(Exchange exchange) {
+  /**
+   * Filters issues in a ProviderResponse by composing all active query parameter filters (cves,
+   * sources) into a single predicate applied in one pass. When no filters are active, the response
+   * is returned unchanged.
+   */
+  @SuppressWarnings("unchecked")
+  public ProviderResponse filterIssues(Exchange exchange) {
     var response = exchange.getIn().getBody(ProviderResponse.class);
-    var cvesFilter = (List<String>) exchange.getProperty(Constants.CVES_PARAM, List.class);
     if (response == null || response.pkgItems() == null) {
       return response;
     }
-    if (cvesFilter == null || cvesFilter.isEmpty()) {
+    var filter = buildIssueFilter(exchange);
+    if (filter == null) {
       return response;
     }
     Map<String, PackageItem> filteredItems =
@@ -296,9 +303,7 @@ public abstract class ProviderResponseHandler {
                       var issues =
                           item.issues() == null ? Collections.<Issue>emptyList() : item.issues();
                       var filteredIssues =
-                          issues.stream()
-                              .filter(i -> cvesFilter.contains(i.getId()))
-                              .collect(Collectors.toList());
+                          issues.stream().filter(filter).collect(Collectors.toList());
                       return new PackageItem(
                           entry.getKey(),
                           item.recommendation(),
@@ -308,6 +313,23 @@ public abstract class ProviderResponseHandler {
                           item.recommendationSource());
                     }));
     return new ProviderResponse(filteredItems, response.status());
+  }
+
+  @SuppressWarnings("unchecked")
+  private Predicate<Issue> buildIssueFilter(Exchange exchange) {
+    List<Predicate<Issue>> predicates = new ArrayList<>();
+    var cvesFilter = (List<String>) exchange.getProperty(Constants.CVES_PARAM, List.class);
+    if (cvesFilter != null && !cvesFilter.isEmpty()) {
+      predicates.add(issue -> cvesFilter.contains(issue.getId()));
+    }
+    var sourcesFilter = (List<String>) exchange.getProperty(Constants.SOURCES_PARAM, List.class);
+    if (sourcesFilter != null && !sourcesFilter.isEmpty()) {
+      predicates.add(issue -> sourcesFilter.contains(issue.getSource()));
+    }
+    if (predicates.isEmpty()) {
+      return null;
+    }
+    return predicates.stream().reduce(Predicate::and).orElse(null);
   }
 
   private Map<String, List<String>> getWarnings(Map<String, PackageItem> pkgItems) {

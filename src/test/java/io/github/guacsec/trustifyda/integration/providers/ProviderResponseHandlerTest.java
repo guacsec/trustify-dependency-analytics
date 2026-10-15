@@ -587,6 +587,175 @@ public class ProviderResponseHandlerTest {
     assertNotNull(source.getDependencies().get(0).getRecommendation());
   }
 
+  // Verifies that filterIssues with a single source keeps only issues from that source.
+  @Test
+  public void testFilterIssuesBySingleSource() {
+    // Given issues from two sources
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-b");
+    var data = buildPackageItems(List.of(issue1, issue2));
+
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class)).thenReturn(List.of("source-a"));
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class)).thenReturn(null);
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertEquals(1, issues.size());
+    assertEquals("source-a", issues.get(0).getSource());
+  }
+
+  // Verifies that filterIssues with multiple sources keeps only matching issues.
+  @Test
+  public void testFilterIssuesByMultipleSources() {
+    // Given issues from three sources
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-b");
+    var issue3 = buildIssue(3, 3f);
+    issue3.setSource("source-c");
+    var data = buildPackageItems(List.of(issue1, issue2, issue3));
+
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class))
+        .thenReturn(List.of("source-a", "source-c"));
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class)).thenReturn(null);
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertEquals(2, issues.size());
+    assertEquals("source-a", issues.get(0).getSource());
+    assertEquals("source-c", issues.get(1).getSource());
+  }
+
+  // Verifies that filterIssues by CVE ID keeps only matching issues.
+  @Test
+  public void testFilterIssuesByCve() {
+    // Given issues with different CVE IDs
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-a");
+    var data = buildPackageItems(List.of(issue1, issue2));
+
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class))
+        .thenReturn(List.of(issue1.getId()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class)).thenReturn(null);
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertEquals(1, issues.size());
+    assertEquals(issue1.getId(), issues.get(0).getId());
+  }
+
+  // Verifies that filterIssues composes CVE and source filters together.
+  @Test
+  public void testFilterIssuesCombinedCveAndSource() {
+    // Given issues from different sources with different CVE IDs
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-b");
+    var issue3 = buildIssue(3, 3f);
+    issue3.setSource("source-a");
+    var data = buildPackageItems(List.of(issue1, issue2, issue3));
+
+    // When filtering by source-a AND a specific CVE
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class)).thenReturn(List.of("source-a"));
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class))
+        .thenReturn(List.of(issue1.getId()));
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    // Then only issue1 matches both filters
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertEquals(1, issues.size());
+    assertEquals(issue1.getId(), issues.get(0).getId());
+    assertEquals("source-a", issues.get(0).getSource());
+  }
+
+  // Verifies that filterIssues with no active filters preserves all issues.
+  @Test
+  public void testFilterIssuesNoFiltersPreservesAll() {
+    // Given issues from two sources
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var issue2 = buildIssue(2, 7f);
+    issue2.setSource("source-b");
+    var data = buildPackageItems(List.of(issue1, issue2));
+
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class)).thenReturn(null);
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class)).thenReturn(null);
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertEquals(2, issues.size());
+  }
+
+  // Verifies that filterIssues with unknown source produces empty issue list.
+  @Test
+  public void testFilterIssuesUnknownSourceProducesEmpty() {
+    // Given issues from one source
+    var issue1 = buildIssue(1, 5f);
+    issue1.setSource("source-a");
+    var data = buildPackageItems(List.of(issue1));
+
+    var exchange = mock(Exchange.class);
+    when(exchange.getIn()).thenReturn(mock(Message.class));
+    when(exchange.getIn().getBody(ProviderResponse.class))
+        .thenReturn(new ProviderResponse(data, new ProviderStatus()));
+    when(exchange.getProperty(Constants.SOURCES_PARAM, List.class))
+        .thenReturn(List.of("non-existent"));
+    when(exchange.getProperty(Constants.CVES_PARAM, List.class)).thenReturn(null);
+
+    ProviderResponseHandler handler = new TestResponseHandler();
+    ProviderResponse filtered = handler.filterIssues(exchange);
+
+    var issues = filtered.pkgItems().get("pkg:npm/aa@1").issues();
+    assertTrue(issues.isEmpty());
+  }
+
+  private Map<String, PackageItem> buildPackageItems(List<Issue> issues) {
+    return Map.of(
+        "pkg:npm/aa@1",
+        new PackageItem(
+            "pkg:npm/aa@1",
+            buildRecommendation("pkg:npm/aa@2", Collections.emptyMap()),
+            issues,
+            Collections.emptyList(),
+            "trusted-content"));
+  }
+
   private Source getValidSource(ProviderReport report, String sourceName) {
     assertNotNull(report);
     assertNotNull(report.getSources());
