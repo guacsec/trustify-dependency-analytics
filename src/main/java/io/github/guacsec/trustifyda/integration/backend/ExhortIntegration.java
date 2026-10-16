@@ -21,6 +21,7 @@ import static io.github.guacsec.trustifyda.integration.Constants.CVES_PARAM;
 import static io.github.guacsec.trustifyda.integration.Constants.PROVIDERS_PARAM;
 import static io.github.guacsec.trustifyda.integration.Constants.RECOMMEND_PARAM;
 import static io.github.guacsec.trustifyda.integration.Constants.REQUEST_CONTENT_PROPERTY;
+import static io.github.guacsec.trustifyda.integration.Constants.SOURCES_PARAM;
 import static io.github.guacsec.trustifyda.integration.Constants.VERBOSE_MODE_HEADER;
 
 import java.io.ByteArrayInputStream;
@@ -262,6 +263,7 @@ public class ExhortIntegration extends EndpointRouteBuilder {
       .end()
       .setProperty(PROVIDERS_PARAM, method(vulnerabilityProvider, "getProvidersFromQueryParam"))
       .setProperty(CVES_PARAM, method(vulnerabilityProvider, "getCvesFromQueryParam"))
+      .setProperty(SOURCES_PARAM, method(vulnerabilityProvider, "getSourcesFromQueryParam"))
       .setProperty(RECOMMEND_PARAM, header(RECOMMEND_PARAM))
       .setProperty(REQUEST_CONTENT_PROPERTY, method(BackendUtils.class, "getResponseMediaType"))
       .setProperty(VERBOSE_MODE_HEADER, header(VERBOSE_MODE_HEADER));
