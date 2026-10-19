@@ -43,6 +43,7 @@ public final class Constants {
 
   public static final String ACCEPT_HEADER = "Accept";
   public static final String ACCEPT_ENCODING_HEADER = "Accept-Encoding";
+  public static final String ACCEPT_ENCODING_IDENTITY = "identity";
   public static final String AUTHORIZATION_HEADER = "Authorization";
   public static final String TRUSTIFY_TOKEN_HEADER = "ex-trustify-token";
 
