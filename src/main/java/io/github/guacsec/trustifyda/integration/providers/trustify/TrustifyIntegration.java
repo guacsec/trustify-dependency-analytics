@@ -176,7 +176,6 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
       .toD("${exchangeProperty.trustifyUrl}")
       .transform(method(responseHandler, "responseToIssues"))
       .onFallback()
-        // Mark fallback so null exception (FT timeout) is mapped to 504; other failures keep their status
         .setProperty(Constants.CIRCUIT_BREAKER_FALLBACK_WITH_TIMEOUT, constant(true))
         .process(responseHandler::processResponseError)
       .end();
@@ -232,6 +231,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.HTTP_QUERY);
     message.removeHeader(Exchange.HTTP_URI);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+    message.setHeader(Constants.ACCEPT_ENCODING_HEADER, Constants.ACCEPT_ENCODING_IDENTITY);
 
     message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
@@ -244,6 +244,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.HTTP_QUERY);
     message.removeHeader(Exchange.HTTP_URI);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+    message.setHeader(Constants.ACCEPT_ENCODING_HEADER, Constants.ACCEPT_ENCODING_IDENTITY);
 
     message.setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.POST);
@@ -256,6 +257,7 @@ public class TrustifyIntegration extends EndpointRouteBuilder {
     message.removeHeader(Exchange.HTTP_URI);
     message.removeHeader(Exchange.HTTP_HOST);
     message.removeHeader(Constants.ACCEPT_ENCODING_HEADER);
+    message.setHeader(Constants.ACCEPT_ENCODING_HEADER, Constants.ACCEPT_ENCODING_IDENTITY);
     message.removeHeader(Exchange.CONTENT_TYPE);
     message.setHeader(Exchange.HTTP_METHOD, HttpMethod.GET);
     var config = exchange.getIn().getBody(ProviderConfig.class);
