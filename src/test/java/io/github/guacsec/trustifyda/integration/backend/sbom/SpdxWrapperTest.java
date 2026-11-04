@@ -17,25 +17,313 @@
 
 package io.github.guacsec.trustifyda.integration.backend.sbom;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
+import org.spdx.library.model.v2.SpdxDocument;
+import org.spdx.library.model.v2.SpdxPackage;
 import org.spdx.library.model.v2.Version;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.config.exception.SpdxValidationException;
 import io.github.guacsec.trustifyda.integration.sbom.spdx.SpdxWrapper;
 
 public class SpdxWrapperTest {
 
   private static final String VALIDATION_ERRORS_BASE = "spdx/validation-errors/";
+  private static final String CASE_ONLY_LICENSE_REFS =
+      VALIDATION_ERRORS_BASE + "spdx-2.3-case-insensitive-license-refs.json";
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  /**
+   * Verifies that merging case-only license references preserves packages, graph edges, and hashes.
+   */
+  @Test
+  void testCaseOnlyLicenseReferencesPreservePackageGraph() {
+    // Given a document whose two dependencies use different case variants of one license
+    var root = new PackageRef("pkg:maven/org/root@1.0");
+    var direct = new PackageRef("pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final");
+    var transitive =
+        new PackageRef("pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2");
+
+    // When parsing the reproducer through the real SPDX store
+    var wrapper = new SpdxWrapper(stream(CASE_ONLY_LICENSE_REFS));
+
+    // Then both distinct packages and the original dependency chain and checksum survive
+    assertEquals(Set.of(direct), wrapper.getStartFromPackages());
+    assertEquals(
+        Map.of(root, Set.of(direct), direct, Set.of(transitive)), wrapper.getRelationships());
+    assertEquals(
+        Map.of(
+            "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+            Map.of("SHA256", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")),
+        wrapper.getComponentHashes());
+  }
+
+  /**
+   * Verifies one canonical definition and consistent package declarations without losing metadata.
+   */
+  @Test
+  void testCaseOnlyLicenseReferencesUseCanonicalDefinition() throws Exception {
+    // Given equivalent definitions with additional matching metadata
+    var sbom = caseOnlyLicenseRefs();
+    for (var definition : sbom.withArray("hasExtractedLicensingInfos")) {
+      ((ObjectNode) definition).put("comment", "shared metadata");
+      ((ObjectNode) definition).putArray("seeAlsos").add("https://example.com/license");
+    }
+
+    // When parsing through the actual library
+    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+
+    // Then both declarations point to the retained definition, including its original metadata
+    var definitions = document.getExtractedLicenseInfos();
+    assertEquals(1, definitions.size());
+    var license = definitions.iterator().next();
+    assertEquals("LicenseRef-MIT-License", license.getLicenseId());
+    assertEquals("MIT License", license.getName());
+    assertEquals("NOASSERTION", license.getExtractedText());
+    assertEquals("shared metadata", license.getComment());
+    assertEquals(List.of("https://example.com/license"), List.copyOf(license.getSeeAlso()));
+    for (var id : List.of("SPDXRef-Direct", "SPDXRef-Transitive")) {
+      var pkg =
+          new SpdxPackage(document.getModelStore(), document.getDocumentUri(), id, null, false);
+      assertEquals("LicenseRef-MIT-License", pkg.getLicenseDeclared().toString());
+      assertEquals("LicenseRef-MIT-License", pkg.getLicenseConcluded().toString());
+    }
+  }
+
+  /**
+   * Verifies that materially different text or metadata is never discarded in a case-only merge.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"extractedText", "name", "comment", "seeAlsos", "missingName"})
+  void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String difference) throws Exception {
+    // Given case-colliding definitions with one material difference
+    var sbom = caseOnlyLicenseRefs();
+    var second = (ObjectNode) sbom.withArray("hasExtractedLicensingInfos").get(1);
+    switch (difference) {
+      case "extractedText" -> second.put("extractedText", "Different license terms");
+      case "name" -> second.put("name", "A different license");
+      case "comment" -> second.put("comment", "Additional terms apply");
+      case "seeAlsos" -> second.putArray("seeAlsos").add("https://example.com/other-license");
+      case "missingName" -> second.remove("name");
+      default -> throw new IllegalArgumentException(difference);
+    }
+
+    // When attempting to parse the conflicting definitions
+    var error =
+        assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(jsonStream(sbom)));
+
+    // Then the validation error identifies the conflicting pair rather than a duplicate URI
+    assertTrue(error.getDetails().contains("Conflicting SPDX LicenseRef definitions"));
+    assertTrue(error.getDetails().contains("LicenseRef-MIT-License"));
+    assertTrue(error.getDetails().contains("LicenseRef-MIT-license"));
+  }
+
+  /**
+   * Verifies complete-token rewriting in scalar expressions and package, file, and snippet arrays.
+   */
+  @Test
+  void testLocalLicenseReferencesAreRewrittenInExpressions() throws Exception {
+    // Given local references in every SPDX 2.3 licensing field, including compound expressions
+    var sbom = caseOnlyLicenseRefs();
+    var direct = (ObjectNode) sbom.withArray("packages").get(1);
+    direct.put("licenseDeclared", "(LicenseRef-MIT-license OR MIT) AND Apache-2.0");
+    direct.putArray("licenseInfoFromFiles").add("LicenseRef-MIT-license");
+    var file = sbom.putArray("files").addObject();
+    file.put("SPDXID", "SPDXRef-File");
+    file.put("fileName", "example.txt");
+    file.put("licenseConcluded", "LicenseRef-MIT-license");
+    file.putArray("licenseInfoInFiles").add("LicenseRef-MIT-license");
+    var snippet = sbom.putArray("snippets").addObject();
+    snippet.put("SPDXID", "SPDXRef-Snippet");
+    snippet.put("snippetFromFile", "SPDXRef-File");
+    snippet.put("licenseConcluded", "LicenseRef-MIT-license");
+    snippet.putArray("licenseInfoInSnippets").add("LicenseRef-MIT-license");
+    var range = snippet.putArray("ranges").addObject();
+    range.putObject("startPointer").put("reference", "SPDXRef-File").put("offset", 0);
+    range.putObject("endPointer").put("reference", "SPDXRef-File").put("offset", 1);
+
+    // When normalizing and deserializing the document
+    var normalized = normalizedJson(sbom);
+
+    // Then all uses point to the surviving definition, without changing expression syntax
+    assertEquals(
+        "(LicenseRef-MIT-License OR MIT) AND Apache-2.0",
+        normalized.at("/packages/1/licenseDeclared").asText());
+    for (var pointer :
+        List.of(
+            "/packages/1/licenseInfoFromFiles/0",
+            "/packages/2/licenseDeclared",
+            "/packages/2/licenseConcluded",
+            "/files/0/licenseConcluded",
+            "/files/0/licenseInfoInFiles/0",
+            "/snippets/0/licenseConcluded",
+            "/snippets/0/licenseInfoInSnippets/0")) {
+      assertEquals("LicenseRef-MIT-License", normalized.at(pointer).asText(), pointer);
+    }
+  }
+
+  /**
+   * Verifies that longer IDs, external references, and literal text keep their original meaning.
+   */
+  @Test
+  void testNonLocalAndUnrelatedValuesAreNotRewritten() throws Exception {
+    // Given a longer independent license ID, an external license, and literal occurrences
+    var sbom = caseOnlyLicenseRefs();
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    for (var definition : definitions) {
+      ((ObjectNode) definition).put("extractedText", "Literal LicenseRef-MIT-license");
+    }
+    definitions
+        .addObject()
+        .put("licenseId", "LicenseRef-MIT-license-extra")
+        .put("extractedText", "Independent license");
+    sbom.put("comment", "Literal LicenseRef-MIT-license");
+    var external = sbom.putArray("externalDocumentRefs").addObject();
+    external.put("externalDocumentId", "DocumentRef-other");
+    external.put("spdxDocument", "https://example.com/other-document");
+    external
+        .putObject("checksum")
+        .put("algorithm", "SHA1")
+        .put("checksumValue", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    var direct = (ObjectNode) sbom.withArray("packages").get(1);
+    direct.put("name", "Literal LicenseRef-MIT-license");
+    direct.put(
+        "licenseDeclared",
+        "LicenseRef-MIT-license AND LicenseRef-MIT-license-extra OR"
+            + " DocumentRef-other:LicenseRef-MIT-license");
+
+    // When normalizing and parsing the document
+    var normalized = normalizedJson(sbom);
+
+    // Then only the complete local reference belonging to the collision group changes
+    assertEquals(
+        "LicenseRef-MIT-License AND LicenseRef-MIT-license-extra OR"
+            + " DocumentRef-other:LicenseRef-MIT-license",
+        normalized.at("/packages/1/licenseDeclared").asText());
+    assertEquals("Literal LicenseRef-MIT-license", normalized.path("comment").asText());
+    assertEquals("Literal LicenseRef-MIT-license", normalized.at("/packages/1/name").asText());
+    assertEquals(
+        "Literal LicenseRef-MIT-license",
+        normalized.at("/hasExtractedLicensingInfos/0/extractedText").asText());
+    assertEquals(
+        "LicenseRef-MIT-license-extra",
+        normalized.at("/hasExtractedLicensingInfos/1/licenseId").asText());
+  }
+
+  /** Verifies that locale-specific case folding cannot split an otherwise equivalent ID pair. */
+  @Test
+  void testCaseOnlyLicenseReferencesAreLocaleIndependent() throws Exception {
+    // Given a lowercase variant and a Turkish default locale
+    var original = Locale.getDefault();
+    var sbom = caseOnlyLicenseRefs();
+    ((ObjectNode) sbom.withArray("hasExtractedLicensingInfos").get(1))
+        .put("licenseId", "LicenseRef-mit-license");
+    ((ObjectNode) sbom.withArray("packages").get(2))
+        .put("licenseDeclared", "LicenseRef-mit-license")
+        .put("licenseConcluded", "LicenseRef-mit-license");
+    try {
+      Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+      // When parsing and normalizing under that locale
+      var normalized = normalizedJson(sbom);
+      // Then the canonical spelling is still the first definition's ID
+      assertEquals(1, normalized.withArray("hasExtractedLicensingInfos").size());
+      assertEquals("LicenseRef-MIT-License", normalized.at("/packages/2/licenseDeclared").asText());
+    } finally {
+      Locale.setDefault(original);
+    }
+  }
+
+  /**
+   * Verifies that absent licensing data and non-colliding definitions still parse without merging.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"missing", "empty", "single", "distinct"})
+  void testMissingAndNonCollidingLicenseDefinitionsRemainSupported(String variant)
+      throws Exception {
+    // Given a document without a collision
+    var sbom = caseOnlyLicenseRefs();
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    switch (variant) {
+      case "missing" -> sbom.remove("hasExtractedLicensingInfos");
+      case "empty" -> definitions.removeAll();
+      case "single" -> definitions.remove(1);
+      case "distinct" -> ((ObjectNode) definitions.get(1)).put("licenseId", "LicenseRef-Other");
+      default -> throw new IllegalArgumentException(variant);
+    }
+    for (var pkg : sbom.withArray("packages")) {
+      ((ObjectNode) pkg)
+          .put("licenseDeclared", "NOASSERTION")
+          .put("licenseConcluded", "NOASSERTION");
+    }
+
+    // When parsing the document
+    var wrapper = new SpdxWrapper(jsonStream(sbom));
+
+    // Then package discovery is unchanged and unrelated definitions are not removed
+    assertEquals(
+        Set.of(new PackageRef("pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final")),
+        wrapper.getStartFromPackages());
+    assertEquals(
+        variant.equals("distinct") ? 2 : variant.equals("single") ? 1 : 0,
+        parsedDocument(wrapper).getExtractedLicenseInfos().size());
+  }
+
+  /** Verifies malformed JSON still produces an SPDX validation exception. */
+  @Test
+  void testMalformedJsonIsRejected() {
+    assertThrows(
+        SpdxValidationException.class,
+        () -> new SpdxWrapper(new ByteArrayInputStream("{".getBytes(StandardCharsets.UTF_8))));
+  }
+
+  private static ObjectNode caseOnlyLicenseRefs() throws IOException {
+    try (var input = stream(CASE_ONLY_LICENSE_REFS)) {
+      return (ObjectNode) MAPPER.readTree(input);
+    }
+  }
+
+  private static InputStream jsonStream(ObjectNode sbom) throws IOException {
+    return new ByteArrayInputStream(MAPPER.writeValueAsBytes(sbom));
+  }
+
+  private static SpdxDocument parsedDocument(SpdxWrapper wrapper)
+      throws ReflectiveOperationException {
+    var field = SpdxWrapper.class.getDeclaredField("doc");
+    field.setAccessible(true);
+    return (SpdxDocument) field.get(wrapper);
+  }
+
+  // Inspect the compatibility boundary as well as parsing: the library can otherwise mask stale
+  // reference spellings through its own case-insensitive lookups. Keep this access test-only.
+  private static ObjectNode normalizedJson(ObjectNode sbom) throws Exception {
+    new SpdxWrapper(jsonStream(sbom));
+    var normalizer =
+        SpdxWrapper.class.getDeclaredMethod("normalizeLicenseReferences", InputStream.class);
+    normalizer.setAccessible(true);
+    try (var input = (InputStream) normalizer.invoke(null, jsonStream(sbom))) {
+      return (ObjectNode) MAPPER.readTree(input);
+    }
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {Version.TWO_POINT_THREE_VERSION, Version.TWO_POINT_TWO_VERSION})

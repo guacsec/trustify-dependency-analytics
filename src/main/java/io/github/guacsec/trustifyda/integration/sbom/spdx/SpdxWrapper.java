@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.sbom.spdx;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,9 +25,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.core.TypedValue;
@@ -40,13 +44,31 @@ import org.spdx.library.model.v2.SpdxPackage;
 import org.spdx.library.model.v2.enumerations.RelationshipType;
 import org.spdx.storage.simple.InMemSpdxStore;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
 import io.github.guacsec.trustifyda.api.PackageRef;
+import io.github.guacsec.trustifyda.config.ObjectMapperProducer;
 import io.github.guacsec.trustifyda.config.exception.DetailedException;
 import io.github.guacsec.trustifyda.config.exception.SpdxValidationException;
 
 public class SpdxWrapper {
 
   private static final String PURL_REFERENCE = "http://spdx.org/rdf/references/purl";
+  private static final ObjectMapper MAPPER = ObjectMapperProducer.newInstance();
+  private static final Pattern LICENSE_REFERENCE = Pattern.compile("LicenseRef-[A-Za-z0-9.-]+");
+  private static final Pattern LOCAL_LICENSE_REFERENCE =
+      Pattern.compile("(?<![A-Za-z0-9.:-])LicenseRef-[A-Za-z0-9.-]+");
+  private static final Set<String> LICENSE_EXPRESSION_FIELDS =
+      Set.of(
+          "licenseDeclared",
+          "licenseConcluded",
+          "licenseInfoFromFiles",
+          "licenseInfoInFiles",
+          "licenseInfoInSnippets");
 
   private MultiFormatStore inputStore;
   private SpdxDocument doc;
@@ -63,7 +85,7 @@ public class SpdxWrapper {
     this.inputStore =
         new MultiFormatStore(new InMemSpdxStore(), MultiFormatStore.Format.JSON_PRETTY);
     try {
-      this.inputStore.deSerialize(input, false);
+      this.inputStore.deSerialize(normalizeLicenseReferences(input), false);
       var uris = inputStore.getDocumentUris();
       if (uris == null || uris.isEmpty()) {
         throw new SpdxValidationException(
@@ -76,6 +98,108 @@ public class SpdxWrapper {
     } catch (InvalidSPDXAnalysisException | IOException e) {
       throw new SpdxValidationException("Unable to parse SPDX SBOM", e);
     }
+  }
+
+  /**
+   * The SPDX store rejects some case-only URI collisions before building the graph. Merge only
+   * equivalent SPDX 2.3 definitions and redirect their local uses before entering that store.
+   */
+  private static InputStream normalizeLicenseReferences(InputStream input) throws IOException {
+    byte[] content = input.readAllBytes();
+    JsonNode document = MAPPER.readTree(content);
+    if (document == null
+        || !"SPDX-2.3".equals(document.path("spdxVersion").asText())
+        || !(document.get("hasExtractedLicensingInfos") instanceof ArrayNode definitions)) {
+      return new ByteArrayInputStream(content);
+    }
+
+    Map<String, ObjectNode> firstDefinitions = new HashMap<>();
+    Map<String, String> canonicalIds = new HashMap<>();
+    ArrayNode retained = MAPPER.createArrayNode();
+    for (JsonNode definition : definitions) {
+      JsonNode id = definition.path("licenseId");
+      if (!(definition instanceof ObjectNode object)
+          || !id.isTextual()
+          || !LICENSE_REFERENCE.matcher(id.asText()).matches()) {
+        retained.add(definition);
+        continue;
+      }
+      String key = id.asText().toLowerCase(Locale.ROOT);
+      ObjectNode first = firstDefinitions.putIfAbsent(key, object);
+      if (first == null) {
+        retained.add(definition);
+      } else {
+        if (!equivalentLicenseDefinitions(first, object)) {
+          throw new SpdxValidationException(
+              "Conflicting SPDX LicenseRef definitions: "
+                  + first.path("licenseId").asText()
+                  + " and "
+                  + id.asText());
+        }
+        canonicalIds.put(key, first.path("licenseId").asText());
+      }
+    }
+
+    if (canonicalIds.isEmpty()) {
+      return new ByteArrayInputStream(content);
+    }
+    ((ObjectNode) document).set("hasExtractedLicensingInfos", retained);
+    rewriteLicenseReferences(document, canonicalIds);
+    return new ByteArrayInputStream(MAPPER.writeValueAsBytes(document));
+  }
+
+  private static boolean equivalentLicenseDefinitions(JsonNode first, JsonNode other) {
+    ObjectNode firstMetadata = ((ObjectNode) first).deepCopy();
+    ObjectNode otherMetadata = ((ObjectNode) other).deepCopy();
+    firstMetadata.remove("licenseId");
+    otherMetadata.remove("licenseId");
+    JsonNode firstName = firstMetadata.path("name");
+    JsonNode otherName = otherMetadata.path("name");
+    if (firstName.isTextual()
+        && otherName.isTextual()
+        && firstName.asText().equalsIgnoreCase(otherName.asText())) {
+      otherMetadata.set("name", firstName);
+    }
+    return firstMetadata.equals(otherMetadata);
+  }
+
+  private static void rewriteLicenseReferences(JsonNode node, Map<String, String> canonicalIds) {
+    if (node instanceof ObjectNode object) {
+      var fields = object.properties().iterator();
+      while (fields.hasNext()) {
+        var field = fields.next();
+        JsonNode value = field.getValue();
+        if (LICENSE_EXPRESSION_FIELDS.contains(field.getKey())) {
+          if (value.isTextual()) {
+            object.put(field.getKey(), rewriteLicenseExpression(value.asText(), canonicalIds));
+          } else if (value instanceof ArrayNode expressions) {
+            for (int i = 0; i < expressions.size(); i++) {
+              if (expressions.get(i).isTextual()) {
+                expressions.set(
+                    i,
+                    TextNode.valueOf(
+                        rewriteLicenseExpression(expressions.get(i).asText(), canonicalIds)));
+              }
+            }
+          }
+        } else {
+          rewriteLicenseReferences(value, canonicalIds);
+        }
+      }
+    } else if (node.isArray()) {
+      node.forEach(child -> rewriteLicenseReferences(child, canonicalIds));
+    }
+  }
+
+  private static String rewriteLicenseExpression(
+      String expression, Map<String, String> canonicalIds) {
+    return LOCAL_LICENSE_REFERENCE
+        .matcher(expression)
+        .replaceAll(
+            match ->
+                Matcher.quoteReplacement(
+                    canonicalIds.getOrDefault(
+                        match.group().toLowerCase(Locale.ROOT), match.group())));
   }
 
   private PackageRef toPackageRef(SpdxPackage spdxPackage) {
