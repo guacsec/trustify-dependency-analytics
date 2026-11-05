@@ -113,6 +113,34 @@ public class SpdxWrapperTest {
     }
   }
 
+  // Verifies case-only definitions with reordered seeAlsos share one canonical definition.
+  @Test
+  void testCaseOnlyLicenseReferencesMergeReorderedSeeAlsos() throws Exception {
+    // Given equivalent definitions with the same seeAlsos entries in a different order
+    var sbom = caseOnlyLicenseRefs();
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    ((ObjectNode) definitions.get(0))
+        .putArray("seeAlsos")
+        .add("https://example.com/license-a")
+        .add("https://example.com/license-b");
+    ((ObjectNode) definitions.get(1))
+        .putArray("seeAlsos")
+        .add("https://example.com/license-b")
+        .add("https://example.com/license-a");
+
+    // When parsing the document through the actual SPDX library
+    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+
+    // Then one canonical definition retains both seeAlsos entries
+    var licenses = document.getExtractedLicenseInfos();
+    assertEquals(1, licenses.size());
+    var license = licenses.iterator().next();
+    assertEquals("LicenseRef-MIT-License", license.getLicenseId());
+    assertEquals(
+        Set.of("https://example.com/license-a", "https://example.com/license-b"),
+        Set.copyOf(license.getSeeAlso()));
+  }
+
   /**
    * Verifies that materially different text or metadata is never discarded in a case-only merge.
    */

@@ -209,6 +209,8 @@ public class SpdxWrapper {
     ObjectNode otherMetadata = ((ObjectNode) other).deepCopy();
     firstMetadata.remove("licenseId");
     otherMetadata.remove("licenseId");
+    JsonNode firstSeeAlsos = firstMetadata.remove("seeAlsos");
+    JsonNode otherSeeAlsos = otherMetadata.remove("seeAlsos");
     JsonNode firstName = firstMetadata.path("name");
     JsonNode otherName = otherMetadata.path("name");
     if (firstName.isTextual()
@@ -216,7 +218,18 @@ public class SpdxWrapper {
         && firstName.asText().equalsIgnoreCase(otherName.asText())) {
       otherMetadata.set("name", firstName);
     }
-    return firstMetadata.equals(otherMetadata);
+    return firstMetadata.equals(otherMetadata) && equivalentSeeAlsos(firstSeeAlsos, otherSeeAlsos);
+  }
+
+  private static boolean equivalentSeeAlsos(JsonNode first, JsonNode other) {
+    if (first instanceof ArrayNode firstArray && other instanceof ArrayNode otherArray) {
+      Set<JsonNode> firstValues = new HashSet<>();
+      firstArray.forEach(firstValues::add);
+      Set<JsonNode> otherValues = new HashSet<>();
+      otherArray.forEach(otherValues::add);
+      return firstValues.equals(otherValues);
+    }
+    return first == null ? other == null : first.equals(other);
   }
 
   private static void rewriteLicenseReferences(JsonNode node, Map<String, String> canonicalIds) {
