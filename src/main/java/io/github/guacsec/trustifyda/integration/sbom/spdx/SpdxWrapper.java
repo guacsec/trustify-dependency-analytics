@@ -44,6 +44,8 @@ import org.spdx.library.model.v2.SpdxPackage;
 import org.spdx.library.model.v2.enumerations.RelationshipType;
 import org.spdx.storage.simple.InMemSpdxStore;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -103,20 +105,78 @@ public class SpdxWrapper {
   /**
    * The SPDX store rejects some case-only URI collisions before building the graph. Merge only
    * equivalent SPDX 2.3 definitions and redirect their local uses before entering that store.
+   * Non-colliding documents retain their original bytes without allocating a second JSON tree.
    */
   private static InputStream normalizeLicenseReferences(InputStream input) throws IOException {
     byte[] content = input.readAllBytes();
-    JsonNode document = MAPPER.readTree(content);
-    if (document == null
-        || !"SPDX-2.3".equals(document.path("spdxVersion").asText())
-        || !(document.get("hasExtractedLicensingInfos") instanceof ArrayNode definitions)) {
+    if (!hasLicenseReferenceCollisions(content)) {
       return new ByteArrayInputStream(content);
     }
 
+    var document = (ObjectNode) MAPPER.readTree(content);
+    var canonicalIds = mergeLicenseDefinitions(document);
+    rewriteLicenseReferences(document, canonicalIds);
+    return new ByteArrayInputStream(MAPPER.writeValueAsBytes(document));
+  }
+
+  private static boolean hasLicenseReferenceCollisions(byte[] content) throws IOException {
+    try (var parser = MAPPER.createParser(content)) {
+      if (parser.nextToken() != JsonToken.START_OBJECT) {
+        return false;
+      }
+      boolean spdx23 = false;
+      boolean collisions = false;
+      while (parser.nextToken() == JsonToken.FIELD_NAME) {
+        String field = parser.currentName();
+        JsonToken value = parser.nextToken();
+        if ("spdxVersion".equals(field)) {
+          spdx23 = value == JsonToken.VALUE_STRING && "SPDX-2.3".equals(parser.getText());
+        } else if ("hasExtractedLicensingInfos".equals(field)) {
+          collisions = value == JsonToken.START_ARRAY && hasDuplicateLicenseIds(parser);
+        }
+        parser.skipChildren();
+      }
+      // The version may follow the definitions, so inspect all root fields before deciding.
+      return spdx23 && collisions;
+    }
+  }
+
+  private static boolean hasDuplicateLicenseIds(JsonParser parser) throws IOException {
+    Set<String> ids = new HashSet<>();
+    boolean collisions = false;
+    while (parser.nextToken() != JsonToken.END_ARRAY) {
+      if (parser.currentToken() != JsonToken.START_OBJECT) {
+        parser.skipChildren();
+        continue;
+      }
+      String id = readLicenseId(parser);
+      if (id != null
+          && LICENSE_REFERENCE.matcher(id).matches()
+          && !ids.add(id.toLowerCase(Locale.ROOT))) {
+        collisions = true;
+      }
+    }
+    return collisions;
+  }
+
+  private static String readLicenseId(JsonParser parser) throws IOException {
+    String id = null;
+    while (parser.nextToken() == JsonToken.FIELD_NAME) {
+      String field = parser.currentName();
+      JsonToken value = parser.nextToken();
+      if ("licenseId".equals(field)) {
+        id = value == JsonToken.VALUE_STRING ? parser.getText() : null;
+      }
+      parser.skipChildren();
+    }
+    return id;
+  }
+
+  private static Map<String, String> mergeLicenseDefinitions(ObjectNode document) {
     Map<String, ObjectNode> firstDefinitions = new HashMap<>();
     Map<String, String> canonicalIds = new HashMap<>();
     ArrayNode retained = MAPPER.createArrayNode();
-    for (JsonNode definition : definitions) {
+    for (JsonNode definition : document.withArray("hasExtractedLicensingInfos")) {
       JsonNode id = definition.path("licenseId");
       if (!(definition instanceof ObjectNode object)
           || !id.isTextual()
@@ -140,12 +200,8 @@ public class SpdxWrapper {
       }
     }
 
-    if (canonicalIds.isEmpty()) {
-      return new ByteArrayInputStream(content);
-    }
-    ((ObjectNode) document).set("hasExtractedLicensingInfos", retained);
-    rewriteLicenseReferences(document, canonicalIds);
-    return new ByteArrayInputStream(MAPPER.writeValueAsBytes(document));
+    document.set("hasExtractedLicensingInfos", retained);
+    return canonicalIds;
   }
 
   private static boolean equivalentLicenseDefinitions(JsonNode first, JsonNode other) {

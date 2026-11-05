@@ -17,6 +17,7 @@
 
 package io.github.guacsec.trustifyda.integration.backend.sbom;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,6 +42,7 @@ import org.spdx.library.model.v2.SpdxPackage;
 import org.spdx.library.model.v2.Version;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
@@ -253,28 +256,13 @@ public class SpdxWrapperTest {
     }
   }
 
-  /**
-   * Verifies that absent licensing data and non-colliding definitions still parse without merging.
-   */
+  // Verifies that absent licensing data and non-colliding definitions still parse without merging.
   @ParameterizedTest
   @ValueSource(strings = {"missing", "empty", "single", "distinct"})
   void testMissingAndNonCollidingLicenseDefinitionsRemainSupported(String variant)
       throws Exception {
     // Given a document without a collision
-    var sbom = caseOnlyLicenseRefs();
-    var definitions = sbom.withArray("hasExtractedLicensingInfos");
-    switch (variant) {
-      case "missing" -> sbom.remove("hasExtractedLicensingInfos");
-      case "empty" -> definitions.removeAll();
-      case "single" -> definitions.remove(1);
-      case "distinct" -> ((ObjectNode) definitions.get(1)).put("licenseId", "LicenseRef-Other");
-      default -> throw new IllegalArgumentException(variant);
-    }
-    for (var pkg : sbom.withArray("packages")) {
-      ((ObjectNode) pkg)
-          .put("licenseDeclared", "NOASSERTION")
-          .put("licenseConcluded", "NOASSERTION");
-    }
+    var sbom = nonCollidingLicenseRefs(variant);
 
     // When parsing the document
     var wrapper = new SpdxWrapper(jsonStream(sbom));
@@ -286,6 +274,75 @@ public class SpdxWrapperTest {
     assertEquals(
         variant.equals("distinct") ? 2 : variant.equals("single") ? 1 : 0,
         parsedDocument(wrapper).getExtractedLicenseInfos().size());
+  }
+
+  // Verifies the common path preserves the original bytes without allocating a JSON object tree.
+  @ParameterizedTest
+  @ValueSource(strings = {"missing", "empty", "single", "distinct"})
+  void testNonCollidingDocumentIsReturnedUnchangedWithoutJsonTree(String variant) throws Exception {
+    // Given a non-colliding document with whitespace that serialization would change
+    byte[] content =
+        (" \n" + MAPPER.writeValueAsString(nonCollidingLicenseRefs(variant)) + "\n ")
+            .getBytes(StandardCharsets.UTF_8);
+    var field = SpdxWrapper.class.getDeclaredField("MAPPER");
+    field.setAccessible(true);
+    var mapper = (ObjectMapper) field.get(null);
+    var originalFactory = mapper.getNodeFactory();
+    var objectNodes = new AtomicInteger();
+    mapper.setNodeFactory(
+        new JsonNodeFactory() {
+          @Override
+          public ObjectNode objectNode() {
+            objectNodes.incrementAndGet();
+            return super.objectNode();
+          }
+        });
+
+    // When normalizing through the production boundary with allocation tracking
+    try (var normalized = normalize(new ByteArrayInputStream(content))) {
+      // Then both the original encoding and the tree-free memory contract are preserved
+      assertArrayEquals(content, normalized.readAllBytes());
+      assertEquals(0, objectNodes.get(), "Non-colliding documents must not allocate a JSON tree");
+    } finally {
+      mapper.setNodeFactory(originalFactory);
+    }
+  }
+
+  // Verifies that definitions preceding the SPDX 2.3 version still merge.
+  @Test
+  void testLicenseReferenceNormalizationWithVersionLast() throws Exception {
+    // Given colliding definitions before the root version field
+    var sbom = caseOnlyLicenseRefs();
+    sbom.remove("spdxVersion");
+    sbom.put("spdxVersion", "SPDX-2.3");
+    var expected = sbom.deepCopy();
+    expected.withArray("hasExtractedLicensingInfos").remove(1);
+    ((ObjectNode) expected.withArray("packages").get(2))
+        .put("licenseDeclared", "LicenseRef-MIT-License")
+        .put("licenseConcluded", "LicenseRef-MIT-License");
+
+    // When normalizing the reordered document
+    try (var normalized = normalize(jsonStream(sbom))) {
+      // Then the definitions and local references use the first spelling
+      assertEquals(expected, MAPPER.readTree(normalized));
+    }
+  }
+
+  // Verifies that a later version field prevents normalization outside SPDX 2.3.
+  @ParameterizedTest
+  @ValueSource(strings = {"SPDX-2.2", "SPDX-3.0"})
+  void testOtherVersionsAreReturnedUnchanged(String version) throws Exception {
+    // Given collisions followed by a version outside the normalizer's scope
+    var sbom = caseOnlyLicenseRefs();
+    sbom.remove("spdxVersion");
+    sbom.put("spdxVersion", version);
+    byte[] content = MAPPER.writeValueAsBytes(sbom);
+
+    // When normalizing the document
+    try (var normalized = normalize(new ByteArrayInputStream(content))) {
+      // Then neither the definitions nor their references nor formatting change
+      assertArrayEquals(content, normalized.readAllBytes());
+    }
   }
 
   /** Verifies malformed JSON still produces an SPDX validation exception. */
@@ -300,6 +357,24 @@ public class SpdxWrapperTest {
     try (var input = stream(CASE_ONLY_LICENSE_REFS)) {
       return (ObjectNode) MAPPER.readTree(input);
     }
+  }
+
+  private static ObjectNode nonCollidingLicenseRefs(String variant) throws IOException {
+    var sbom = caseOnlyLicenseRefs();
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    switch (variant) {
+      case "missing" -> sbom.remove("hasExtractedLicensingInfos");
+      case "empty" -> definitions.removeAll();
+      case "single" -> definitions.remove(1);
+      case "distinct" -> ((ObjectNode) definitions.get(1)).put("licenseId", "LicenseRef-Other");
+      default -> throw new IllegalArgumentException(variant);
+    }
+    for (var pkg : sbom.withArray("packages")) {
+      ((ObjectNode) pkg)
+          .put("licenseDeclared", "NOASSERTION")
+          .put("licenseConcluded", "NOASSERTION");
+    }
+    return sbom;
   }
 
   private static InputStream jsonStream(ObjectNode sbom) throws IOException {
@@ -317,12 +392,16 @@ public class SpdxWrapperTest {
   // reference spellings through its own case-insensitive lookups. Keep this access test-only.
   private static ObjectNode normalizedJson(ObjectNode sbom) throws Exception {
     new SpdxWrapper(jsonStream(sbom));
+    try (var input = normalize(jsonStream(sbom))) {
+      return (ObjectNode) MAPPER.readTree(input);
+    }
+  }
+
+  private static InputStream normalize(InputStream input) throws ReflectiveOperationException {
     var normalizer =
         SpdxWrapper.class.getDeclaredMethod("normalizeLicenseReferences", InputStream.class);
     normalizer.setAccessible(true);
-    try (var input = (InputStream) normalizer.invoke(null, jsonStream(sbom))) {
-      return (ObjectNode) MAPPER.readTree(input);
-    }
+    return (InputStream) normalizer.invoke(null, input);
   }
 
   @ParameterizedTest
