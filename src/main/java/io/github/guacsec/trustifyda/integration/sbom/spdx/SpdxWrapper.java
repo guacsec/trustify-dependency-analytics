@@ -43,6 +43,7 @@ import org.spdx.library.model.v2.ExternalRef;
 import org.spdx.library.model.v2.SpdxConstantsCompatV2;
 import org.spdx.library.model.v2.SpdxDocument;
 import org.spdx.library.model.v2.SpdxPackage;
+import org.spdx.library.model.v2.SpdxVerificationHelper;
 import org.spdx.library.model.v2.enumerations.RelationshipType;
 import org.spdx.storage.simple.InMemSpdxStore;
 
@@ -106,7 +107,7 @@ public class SpdxWrapper {
 
   /**
    * The SPDX store rejects some case-only URI collisions before building the graph. Merge only
-   * equivalent SPDX 2.3 definitions and redirect their local uses before entering that store.
+   * equivalent SPDX 2.x definitions and redirect their local uses before entering that store.
    * Non-colliding documents retain their original bytes without allocating a second JSON tree.
    */
   private static InputStream normalizeLicenseReferences(InputStream input) throws IOException {
@@ -126,21 +127,31 @@ public class SpdxWrapper {
       if (parser.nextToken() != JsonToken.START_OBJECT) {
         return false;
       }
-      boolean spdx23 = false;
+      boolean supportedVersion = false;
       boolean collisions = false;
       while (parser.nextToken() == JsonToken.FIELD_NAME) {
         String field = parser.currentName();
         JsonToken value = parser.nextToken();
         if ("spdxVersion".equals(field)) {
-          spdx23 = value == JsonToken.VALUE_STRING && "SPDX-2.3".equals(parser.getText());
+          supportedVersion =
+              value == JsonToken.VALUE_STRING && isSupportedSpdx2Version(parser.getText());
         } else if ("hasExtractedLicensingInfos".equals(field)) {
           collisions = value == JsonToken.START_ARRAY && hasDuplicateLicenseIds(parser);
         }
         parser.skipChildren();
       }
       // The version may follow the definitions, so inspect all root fields before deciding.
-      return spdx23 && collisions;
+      return supportedVersion && collisions;
     }
+  }
+
+  /**
+   * Returns whether the version belongs to the set of SPDX 2.x versions the SPDX parser accepts.
+   * Reusing the parser's own validation policy keeps compatibility handling aligned with what RHDA
+   * can actually parse and excludes arbitrary future version strings such as SPDX-2.4.
+   */
+  private static boolean isSupportedSpdx2Version(String version) {
+    return SpdxVerificationHelper.SUPPORTED_SPDX_VERSIONS.contains(version);
   }
 
   private static boolean hasDuplicateLicenseIds(JsonParser parser) throws IOException {

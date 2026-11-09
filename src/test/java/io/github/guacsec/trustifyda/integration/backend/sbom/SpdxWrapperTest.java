@@ -32,9 +32,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.library.model.v2.SpdxDocument;
@@ -56,19 +59,24 @@ public class SpdxWrapperTest {
       VALIDATION_ERRORS_BASE + "spdx-2.3-case-insensitive-license-refs.json";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  /**
-   * Verifies that merging case-only license references preserves packages, graph edges, and hashes.
-   */
-  @Test
-  void testCaseOnlyLicenseReferencesPreservePackageGraph() {
-    // Given a document whose two dependencies use different case variants of one license
+  // Verifies that merging case-only license references preserves packages, graph edges, and hashes.
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        Version.TWO_POINT_ZERO_VERSION,
+        Version.TWO_POINT_ONE_VERSION,
+        Version.TWO_POINT_TWO_VERSION,
+        Version.TWO_POINT_THREE_VERSION
+      })
+  void testCaseOnlyLicenseReferencesPreservePackageGraph(String version) throws Exception {
+    // Given an SPDX 2.x document whose two dependencies use different case variants of one license
     var root = new PackageRef("pkg:maven/org/root@1.0");
     var direct = new PackageRef("pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final");
     var transitive =
         new PackageRef("pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2");
 
     // When parsing the reproducer through the real SPDX store
-    var wrapper = new SpdxWrapper(stream(CASE_ONLY_LICENSE_REFS));
+    var wrapper = new SpdxWrapper(jsonStream(caseOnlyLicenseRefs(version)));
 
     // Then both distinct packages and the original dependency chain and checksum survive
     assertEquals(Set.of(direct), wrapper.getStartFromPackages());
@@ -81,13 +89,18 @@ public class SpdxWrapperTest {
         wrapper.getComponentHashes());
   }
 
-  /**
-   * Verifies one canonical definition and consistent package declarations without losing metadata.
-   */
-  @Test
-  void testCaseOnlyLicenseReferencesUseCanonicalDefinition() throws Exception {
-    // Given equivalent definitions with additional matching metadata
-    var sbom = caseOnlyLicenseRefs();
+  // Verifies one canonical definition and consistent package declarations without losing metadata.
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        Version.TWO_POINT_ZERO_VERSION,
+        Version.TWO_POINT_ONE_VERSION,
+        Version.TWO_POINT_TWO_VERSION,
+        Version.TWO_POINT_THREE_VERSION
+      })
+  void testCaseOnlyLicenseReferencesUseCanonicalDefinition(String version) throws Exception {
+    // Given SPDX 2.x equivalent definitions with additional matching metadata
+    var sbom = caseOnlyLicenseRefs(version);
     for (var definition : sbom.withArray("hasExtractedLicensingInfos")) {
       ((ObjectNode) definition).put("comment", "shared metadata");
       ((ObjectNode) definition).putArray("seeAlsos").add("https://example.com/license");
@@ -191,23 +204,13 @@ public class SpdxWrapperTest {
     }
   }
 
-  /**
-   * Verifies that materially different text or metadata is never discarded in a case-only merge.
-   */
+  // Verifies that materially different text or metadata is never discarded in a case-only merge.
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "extractedText",
-        "name",
-        "comment",
-        "seeAlsos",
-        "missingName",
-        "noAssertionName",
-        "emptySeeAlsos"
-      })
-  void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String difference) throws Exception {
-    // Given case-colliding definitions with one material difference
-    var sbom = caseOnlyLicenseRefs();
+  @MethodSource("conflictingDefinitionsAcrossVersions")
+  void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String version, String difference)
+      throws Exception {
+    // Given SPDX 2.x case-colliding definitions with one material difference
+    var sbom = caseOnlyLicenseRefs(version);
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     var first = (ObjectNode) definitions.get(0);
     var second = (ObjectNode) definitions.get(1);
@@ -402,13 +405,20 @@ public class SpdxWrapperTest {
     }
   }
 
-  // Verifies that definitions preceding the SPDX 2.3 version still merge.
-  @Test
-  void testLicenseReferenceNormalizationWithVersionLast() throws Exception {
+  // Verifies that definitions preceding a supported SPDX 2.x version still merge.
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        Version.TWO_POINT_ZERO_VERSION,
+        Version.TWO_POINT_ONE_VERSION,
+        Version.TWO_POINT_TWO_VERSION,
+        Version.TWO_POINT_THREE_VERSION
+      })
+  void testLicenseReferenceNormalizationWithVersionLast(String version) throws Exception {
     // Given colliding definitions before the root version field
     var sbom = caseOnlyLicenseRefs();
     sbom.remove("spdxVersion");
-    sbom.put("spdxVersion", "SPDX-2.3");
+    sbom.put("spdxVersion", version);
     var expected = sbom.deepCopy();
     expected.withArray("hasExtractedLicensingInfos").remove(1);
     ((ObjectNode) expected.withArray("packages").get(2))
@@ -422,9 +432,9 @@ public class SpdxWrapperTest {
     }
   }
 
-  // Verifies that a later version field prevents normalization outside SPDX 2.3.
+  // Verifies that versions outside supported SPDX 2.x are returned unchanged.
   @ParameterizedTest
-  @ValueSource(strings = {"SPDX-2.2", "SPDX-3.0"})
+  @ValueSource(strings = {"SPDX-3.0", "SPDX-2.4"})
   void testOtherVersionsAreReturnedUnchanged(String version) throws Exception {
     // Given collisions followed by a version outside the normalizer's scope
     var sbom = caseOnlyLicenseRefs();
@@ -439,6 +449,18 @@ public class SpdxWrapperTest {
     }
   }
 
+  // Verifies that the parser still rejects unsupported future SPDX versions.
+  @ParameterizedTest
+  @ValueSource(strings = {"SPDX-2.4"})
+  void testUnsupportedVersionIsRejected(String version) throws Exception {
+    // Given a document declaring a version the SPDX parser does not support
+    var sbom = caseOnlyLicenseRefs(version);
+
+    // When parsing the document
+    // Then the existing version-validation policy still rejects it
+    assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(jsonStream(sbom)));
+  }
+
   /** Verifies malformed JSON still produces an SPDX validation exception. */
   @Test
   void testMalformedJsonIsRejected() {
@@ -447,10 +469,37 @@ public class SpdxWrapperTest {
         () -> new SpdxWrapper(new ByteArrayInputStream("{".getBytes(StandardCharsets.UTF_8))));
   }
 
+  // Supplies every conflict variant for each supported SPDX 2.x version.
+  private static Stream<Arguments> conflictingDefinitionsAcrossVersions() {
+    return Stream.of(
+            Version.TWO_POINT_ZERO_VERSION,
+            Version.TWO_POINT_ONE_VERSION,
+            Version.TWO_POINT_TWO_VERSION,
+            Version.TWO_POINT_THREE_VERSION)
+        .flatMap(
+            version ->
+                Stream.of(
+                        "extractedText",
+                        "name",
+                        "comment",
+                        "seeAlsos",
+                        "missingName",
+                        "noAssertionName",
+                        "emptySeeAlsos")
+                    .map(difference -> Arguments.of(version, difference)));
+  }
+
   private static ObjectNode caseOnlyLicenseRefs() throws IOException {
     try (var input = stream(CASE_ONLY_LICENSE_REFS)) {
       return (ObjectNode) MAPPER.readTree(input);
     }
+  }
+
+  // Loads the reproducer with the requested SPDX 2.x document version.
+  private static ObjectNode caseOnlyLicenseRefs(String version) throws IOException {
+    var sbom = caseOnlyLicenseRefs();
+    sbom.put("spdxVersion", version);
+    return sbom;
   }
 
   private static ObjectNode nonCollidingLicenseRefs(String variant) throws IOException {
