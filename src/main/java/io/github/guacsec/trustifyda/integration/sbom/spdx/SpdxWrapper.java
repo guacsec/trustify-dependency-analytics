@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -204,32 +206,69 @@ public class SpdxWrapper {
     return canonicalIds;
   }
 
+  /**
+   * Compares two case-colliding definitions by their normalized metadata, so that optional fields
+   * using equivalent SPDX representations are not reported as a material conflict.
+   */
   private static boolean equivalentLicenseDefinitions(JsonNode first, JsonNode other) {
-    ObjectNode firstMetadata = ((ObjectNode) first).deepCopy();
-    ObjectNode otherMetadata = ((ObjectNode) other).deepCopy();
-    firstMetadata.remove("licenseId");
-    otherMetadata.remove("licenseId");
-    JsonNode firstSeeAlsos = firstMetadata.remove("seeAlsos");
-    JsonNode otherSeeAlsos = otherMetadata.remove("seeAlsos");
-    JsonNode firstName = firstMetadata.path("name");
-    JsonNode otherName = otherMetadata.path("name");
-    if (firstName.isTextual()
-        && otherName.isTextual()
-        && firstName.asText().equalsIgnoreCase(otherName.asText())) {
-      otherMetadata.set("name", firstName);
-    }
-    return firstMetadata.equals(otherMetadata) && equivalentSeeAlsos(firstSeeAlsos, otherSeeAlsos);
+    return normalizeLicenseMetadata(first).equals(normalizeLicenseMetadata(other));
   }
 
-  private static boolean equivalentSeeAlsos(JsonNode first, JsonNode other) {
-    if (first instanceof ArrayNode firstArray && other instanceof ArrayNode otherArray) {
-      Set<JsonNode> firstValues = new HashSet<>();
-      firstArray.forEach(firstValues::add);
-      Set<JsonNode> otherValues = new HashSet<>();
-      otherArray.forEach(otherValues::add);
-      return firstValues.equals(otherValues);
+  /**
+   * Copies a LicenseRef definition into the canonical form used for equivalence checks. The license
+   * ID is excluded because it is the case-variant being merged away. Optional fields are reduced to
+   * the representation SPDX 2.3 assigns them: an absent name means NOASSERTION (section 10.3.1), an
+   * empty cross-reference list contains no references, and neither name casing nor cross-reference
+   * order changes a definition's meaning.
+   */
+  private static ObjectNode normalizeLicenseMetadata(JsonNode definition) {
+    ObjectNode metadata = ((ObjectNode) definition).deepCopy();
+    metadata.remove("licenseId");
+    normalizeLicenseName(metadata);
+    normalizeSeeAlsos(metadata);
+    return metadata;
+  }
+
+  /**
+   * Treats a NOASSERTION license name as an absent one and folds casing, so that equivalent names
+   * compare equal.
+   */
+  private static void normalizeLicenseName(ObjectNode metadata) {
+    JsonNode name = metadata.path("name");
+    if (!name.isTextual()) {
+      return;
     }
-    return first == null ? other == null : first.equals(other);
+    String value = name.asText();
+    if (SpdxConstantsCompatV2.NOASSERTION_VALUE.equalsIgnoreCase(value)) {
+      metadata.remove("name");
+    } else {
+      metadata.put("name", value.toLowerCase(Locale.ROOT));
+    }
+  }
+
+  /**
+   * Drops an empty cross-reference list and orders the remaining unique entries, so that list
+   * absence, emptiness, order, and duplicates do not affect the comparison.
+   */
+  private static void normalizeSeeAlsos(ObjectNode metadata) {
+    JsonNode seeAlsos = metadata.remove("seeAlsos");
+    if (!(seeAlsos instanceof ArrayNode array)) {
+      // Keep unexpected non-array values so they still participate in the comparison.
+      if (seeAlsos != null) {
+        metadata.set("seeAlsos", seeAlsos);
+      }
+      return;
+    }
+    Set<JsonNode> distinct = new HashSet<>();
+    array.forEach(distinct::add);
+    if (distinct.isEmpty()) {
+      return;
+    }
+    List<JsonNode> sorted = new ArrayList<>(distinct);
+    sorted.sort(Comparator.comparing(JsonNode::toString));
+    ArrayNode normalized = MAPPER.createArrayNode();
+    sorted.forEach(normalized::add);
+    metadata.set("seeAlsos", normalized);
   }
 
   private static void rewriteLicenseReferences(JsonNode node, Map<String, String> canonicalIds) {

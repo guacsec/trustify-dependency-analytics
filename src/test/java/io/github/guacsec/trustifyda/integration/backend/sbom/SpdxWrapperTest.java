@@ -141,21 +141,87 @@ public class SpdxWrapperTest {
         Set.copyOf(license.getSeeAlso()));
   }
 
+  // Verifies that equivalent absent/default optional metadata merges into one canonical definition.
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "nameNoAssertionOnFirst",
+        "nameNoAssertionOnSecond",
+        "emptySeeAlsosOnFirst",
+        "emptySeeAlsosOnSecond"
+      })
+  void testEquivalentLicenseDefaultsMerge(String variant) throws Exception {
+    // Given definitions differing only in how SPDX represents an absent optional value
+    var sbom = caseOnlyLicenseRefs();
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    var first = (ObjectNode) definitions.get(0);
+    var second = (ObjectNode) definitions.get(1);
+    switch (variant) {
+      case "nameNoAssertionOnFirst" -> {
+        first.put("name", "NOASSERTION");
+        second.remove("name");
+      }
+      case "nameNoAssertionOnSecond" -> {
+        first.remove("name");
+        second.put("name", "NOASSERTION");
+      }
+      case "emptySeeAlsosOnFirst" -> {
+        first.putArray("seeAlsos");
+        second.remove("seeAlsos");
+      }
+      case "emptySeeAlsosOnSecond" -> {
+        first.remove("seeAlsos");
+        second.putArray("seeAlsos");
+      }
+      default -> throw new IllegalArgumentException(variant);
+    }
+
+    // When parsing the document through the actual SPDX library
+    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+
+    // Then one canonical definition survives and both package references use its spelling
+    var licenses = document.getExtractedLicenseInfos();
+    assertEquals(1, licenses.size());
+    assertEquals("LicenseRef-MIT-License", licenses.iterator().next().getLicenseId());
+    for (var id : List.of("SPDXRef-Direct", "SPDXRef-Transitive")) {
+      var pkg =
+          new SpdxPackage(document.getModelStore(), document.getDocumentUri(), id, null, false);
+      assertEquals("LicenseRef-MIT-License", pkg.getLicenseDeclared().toString());
+      assertEquals("LicenseRef-MIT-License", pkg.getLicenseConcluded().toString());
+    }
+  }
+
   /**
    * Verifies that materially different text or metadata is never discarded in a case-only merge.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"extractedText", "name", "comment", "seeAlsos", "missingName"})
+  @ValueSource(
+      strings = {
+        "extractedText",
+        "name",
+        "comment",
+        "seeAlsos",
+        "missingName",
+        "noAssertionName",
+        "emptySeeAlsos"
+      })
   void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String difference) throws Exception {
     // Given case-colliding definitions with one material difference
     var sbom = caseOnlyLicenseRefs();
-    var second = (ObjectNode) sbom.withArray("hasExtractedLicensingInfos").get(1);
+    var definitions = sbom.withArray("hasExtractedLicensingInfos");
+    var first = (ObjectNode) definitions.get(0);
+    var second = (ObjectNode) definitions.get(1);
     switch (difference) {
       case "extractedText" -> second.put("extractedText", "Different license terms");
       case "name" -> second.put("name", "A different license");
       case "comment" -> second.put("comment", "Additional terms apply");
       case "seeAlsos" -> second.putArray("seeAlsos").add("https://example.com/other-license");
       case "missingName" -> second.remove("name");
+      case "noAssertionName" -> second.put("name", "NOASSERTION");
+      case "emptySeeAlsos" -> {
+        first.putArray("seeAlsos").add("https://example.com/license");
+        second.putArray("seeAlsos");
+      }
       default -> throw new IllegalArgumentException(difference);
     }
 
