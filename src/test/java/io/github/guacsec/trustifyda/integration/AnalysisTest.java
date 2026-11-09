@@ -95,24 +95,13 @@ public class AnalysisTest extends AbstractAnalysisTest {
   // Verifies case-only references allow analysis to reach license and vulnerability enrichment.
   @Test
   public void testAnalysisWithCaseOnlyLicenseReferences() throws IOException {
-    // Given the reproducer and existing mocked enrichment providers
+    // Given the reproducer and a license provider scoped to the expected dependencies
     stubAllProviders();
     var expectedPurls =
         Set.of(
             "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
             "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2");
-    var licenseResponse = MAPPER.readTree(loadFileAsString("__files/depsdev/maven_response.json"));
-    ((ArrayNode) licenseResponse.path("responses"))
-        .removeIf(
-            response -> !expectedPurls.contains(response.path("request").path("purl").asText()));
-    server.stubFor(
-        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
-            .atPriority(1)
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                    .withBody(MAPPER.writeValueAsString(licenseResponse))));
+    stubCaseOnlyLicenseProviderResponses(expectedPurls);
 
     // When analyzing the SPDX document
     var report =
@@ -147,29 +136,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .asText());
     verifyTrustifyRequest(TRUSTIFY_TOKEN);
     verifyLicensesRequest(1);
-    server.verify(
-        1,
-        postRequestedFor(urlEqualTo(Constants.TRUSTIFY_ANALYZE_PATH))
-            .withRequestBody(
-                equalToJson(
-                    """
-                    {"purls": ["pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
-                      "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"]}
-                    """,
-                    true,
-                    false)));
-    server.verify(
-        1,
-        postRequestedFor(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
-            .withRequestBody(
-                equalToJson(
-                    """
-                    {"requests": [
-                      {"purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final"},
-                      {"purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"}]}
-                    """,
-                    true,
-                    false)));
+    verifyCaseOnlyLicenseEnrichmentRequests();
   }
 
   // Verifies conflicts are reported as validation errors before any enrichment request is sent.
@@ -1038,6 +1005,54 @@ public class AnalysisTest extends AbstractAnalysisTest {
         .filter(l -> l.getStatus().getName().equals(name))
         .findFirst()
         .orElse(null);
+  }
+
+  /**
+   * Stubs the deps.dev license endpoint with only the responses for the given purls.
+   *
+   * <p>Registers the stub at priority 1 so it wins over the catch-all license stub installed by
+   * {@code stubAllProviders()}.
+   */
+  private void stubCaseOnlyLicenseProviderResponses(Set<String> expectedPurls) throws IOException {
+    var licenseResponse = MAPPER.readTree(loadFileAsString("__files/depsdev/maven_response.json"));
+    ((ArrayNode) licenseResponse.path("responses"))
+        .removeIf(
+            response -> !expectedPurls.contains(response.path("request").path("purl").asText()));
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .atPriority(1)
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBody(MAPPER.writeValueAsString(licenseResponse))));
+  }
+
+  /** Verifies the outbound Trustify and deps.dev requests sent for the case-only fixture. */
+  private void verifyCaseOnlyLicenseEnrichmentRequests() {
+    server.verify(
+        1,
+        postRequestedFor(urlEqualTo(Constants.TRUSTIFY_ANALYZE_PATH))
+            .withRequestBody(
+                equalToJson(
+                    """
+                    {"purls": ["pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+                      "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"]}
+                    """,
+                    true,
+                    false)));
+    server.verify(
+        1,
+        postRequestedFor(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withRequestBody(
+                equalToJson(
+                    """
+                    {"requests": [
+                      {"purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final"},
+                      {"purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"}]}
+                    """,
+                    true,
+                    false)));
   }
 
   @Test
