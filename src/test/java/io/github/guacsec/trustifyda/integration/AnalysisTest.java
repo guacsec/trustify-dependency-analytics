@@ -92,7 +92,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
   private static final String CASE_ONLY_LICENSE_REFS =
       "spdx/validation-errors/spdx-2.3-case-insensitive-license-refs.json";
 
-  /** Verifies case-only references allow analysis to reach license and vulnerability enrichment. */
+  // Verifies case-only references allow analysis to reach license and vulnerability enrichment.
   @Test
   public void testAnalysisWithCaseOnlyLicenseReferences() throws IOException {
     // Given the reproducer and existing mocked enrichment providers
@@ -172,7 +172,7 @@ public class AnalysisTest extends AbstractAnalysisTest {
                     false)));
   }
 
-  /** Verifies conflicts are reported as validation errors before any enrichment request is sent. */
+  // Verifies conflicts are reported as validation errors before any enrichment request is sent.
   @Test
   public void testAnalysisRejectsConflictingCaseOnlyLicenseDefinitions() throws IOException {
     // Given colliding identifiers with genuinely different license text

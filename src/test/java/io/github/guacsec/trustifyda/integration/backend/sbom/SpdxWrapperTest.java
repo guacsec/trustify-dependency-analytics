@@ -238,9 +238,7 @@ public class SpdxWrapperTest {
     assertTrue(error.getDetails().contains("LicenseRef-MIT-license"));
   }
 
-  /**
-   * Verifies complete-token rewriting in scalar expressions and package, file, and snippet arrays.
-   */
+  // Verifies complete-token rewriting in scalar expressions and package, file, and snippet arrays.
   @Test
   void testLocalLicenseReferencesAreRewrittenInExpressions() throws Exception {
     // Given local references in every SPDX 2.3 licensing field, including compound expressions
@@ -282,9 +280,7 @@ public class SpdxWrapperTest {
     }
   }
 
-  /**
-   * Verifies that longer IDs, external references, and literal text keep their original meaning.
-   */
+  // Verifies that longer IDs, external references, and literal text keep their original meaning.
   @Test
   void testNonLocalAndUnrelatedValuesAreNotRewritten() throws Exception {
     // Given a longer independent license ID, an external license, and literal occurrences
@@ -330,7 +326,7 @@ public class SpdxWrapperTest {
         normalized.at("/hasExtractedLicensingInfos/1/licenseId").asText());
   }
 
-  /** Verifies that locale-specific case folding cannot split an otherwise equivalent ID pair. */
+  // Verifies that locale-specific case folding cannot split an otherwise equivalent ID pair.
   @Test
   void testCaseOnlyLicenseReferencesAreLocaleIndependent() throws Exception {
     // Given a lowercase variant and a Turkish default locale
@@ -461,7 +457,7 @@ public class SpdxWrapperTest {
     assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(jsonStream(sbom)));
   }
 
-  /** Verifies malformed JSON still produces an SPDX validation exception. */
+  // Verifies malformed JSON still produces an SPDX validation exception.
   @Test
   void testMalformedJsonIsRejected() {
     assertThrows(
