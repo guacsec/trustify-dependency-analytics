@@ -76,7 +76,7 @@ public class SpdxWrapperTest {
         new PackageRef("pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2");
 
     // When parsing the reproducer through the real SPDX store
-    var wrapper = new SpdxWrapper(jsonStream(caseOnlyLicenseRefs(version)));
+    var wrapper = new SpdxWrapper(createJsonStream(loadCaseOnlyLicenseRefs(version)));
 
     // Then both distinct packages and the original dependency chain and checksum survive
     assertEquals(Set.of(direct), wrapper.getStartFromPackages());
@@ -100,14 +100,14 @@ public class SpdxWrapperTest {
       })
   void testCaseOnlyLicenseReferencesUseCanonicalDefinition(String version) throws Exception {
     // Given SPDX 2.x equivalent definitions with additional matching metadata
-    var sbom = caseOnlyLicenseRefs(version);
+    var sbom = loadCaseOnlyLicenseRefs(version);
     for (var definition : sbom.withArray("hasExtractedLicensingInfos")) {
       ((ObjectNode) definition).put("comment", "shared metadata");
       ((ObjectNode) definition).putArray("seeAlsos").add("https://example.com/license");
     }
 
     // When parsing through the actual library
-    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+    var document = getParsedDocument(new SpdxWrapper(createJsonStream(sbom)));
 
     // Then both declarations point to the retained definition, including its original metadata
     var definitions = document.getExtractedLicenseInfos();
@@ -130,7 +130,7 @@ public class SpdxWrapperTest {
   @Test
   void testCaseOnlyLicenseReferencesMergeReorderedSeeAlsos() throws Exception {
     // Given equivalent definitions with the same seeAlsos entries in a different order
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     ((ObjectNode) definitions.get(0))
         .putArray("seeAlsos")
@@ -142,7 +142,7 @@ public class SpdxWrapperTest {
         .add("https://example.com/license-a");
 
     // When parsing the document through the actual SPDX library
-    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+    var document = getParsedDocument(new SpdxWrapper(createJsonStream(sbom)));
 
     // Then one canonical definition retains both seeAlsos entries
     var licenses = document.getExtractedLicenseInfos();
@@ -165,7 +165,7 @@ public class SpdxWrapperTest {
       })
   void testEquivalentLicenseDefaultsMerge(String variant) throws Exception {
     // Given definitions differing only in how SPDX represents an absent optional value
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     var first = (ObjectNode) definitions.get(0);
     var second = (ObjectNode) definitions.get(1);
@@ -190,7 +190,7 @@ public class SpdxWrapperTest {
     }
 
     // When parsing the document through the actual SPDX library
-    var document = parsedDocument(new SpdxWrapper(jsonStream(sbom)));
+    var document = getParsedDocument(new SpdxWrapper(createJsonStream(sbom)));
 
     // Then one canonical definition survives and both package references use its spelling
     var licenses = document.getExtractedLicenseInfos();
@@ -210,7 +210,7 @@ public class SpdxWrapperTest {
   void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String version, String difference)
       throws Exception {
     // Given SPDX 2.x case-colliding definitions with one material difference
-    var sbom = caseOnlyLicenseRefs(version);
+    var sbom = loadCaseOnlyLicenseRefs(version);
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     var first = (ObjectNode) definitions.get(0);
     var second = (ObjectNode) definitions.get(1);
@@ -230,7 +230,7 @@ public class SpdxWrapperTest {
 
     // When attempting to parse the conflicting definitions
     var error =
-        assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(jsonStream(sbom)));
+        assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(createJsonStream(sbom)));
 
     // Then the validation error identifies the conflicting pair rather than a duplicate URI
     assertTrue(error.getDetails().contains("Conflicting SPDX LicenseRef definitions"));
@@ -242,7 +242,7 @@ public class SpdxWrapperTest {
   @Test
   void testLocalLicenseReferencesAreRewrittenInExpressions() throws Exception {
     // Given local references in every SPDX 2.3 licensing field, including compound expressions
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     var direct = (ObjectNode) sbom.withArray("packages").get(1);
     direct.put("licenseDeclared", "(LicenseRef-MIT-license OR MIT) AND Apache-2.0");
     direct.putArray("licenseInfoFromFiles").add("LicenseRef-MIT-license");
@@ -261,7 +261,7 @@ public class SpdxWrapperTest {
     range.putObject("endPointer").put("reference", "SPDXRef-File").put("offset", 1);
 
     // When normalizing and deserializing the document
-    var normalized = normalizedJson(sbom);
+    var normalized = normalizeJson(sbom);
 
     // Then all uses point to the surviving definition, without changing expression syntax
     assertEquals(
@@ -284,7 +284,7 @@ public class SpdxWrapperTest {
   @Test
   void testNonLocalAndUnrelatedValuesAreNotRewritten() throws Exception {
     // Given a longer independent license ID, an external license, and literal occurrences
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     for (var definition : definitions) {
       ((ObjectNode) definition).put("extractedText", "Literal LicenseRef-MIT-license");
@@ -309,7 +309,7 @@ public class SpdxWrapperTest {
             + " DocumentRef-other:LicenseRef-MIT-license");
 
     // When normalizing and parsing the document
-    var normalized = normalizedJson(sbom);
+    var normalized = normalizeJson(sbom);
 
     // Then only the complete local reference belonging to the collision group changes
     assertEquals(
@@ -331,7 +331,7 @@ public class SpdxWrapperTest {
   void testCaseOnlyLicenseReferencesAreLocaleIndependent() throws Exception {
     // Given a lowercase variant and a Turkish default locale
     var original = Locale.getDefault();
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     ((ObjectNode) sbom.withArray("hasExtractedLicensingInfos").get(1))
         .put("licenseId", "LicenseRef-mit-license");
     ((ObjectNode) sbom.withArray("packages").get(2))
@@ -340,7 +340,7 @@ public class SpdxWrapperTest {
     try {
       Locale.setDefault(Locale.forLanguageTag("tr-TR"));
       // When parsing and normalizing under that locale
-      var normalized = normalizedJson(sbom);
+      var normalized = normalizeJson(sbom);
       // Then the canonical spelling is still the first definition's ID
       assertEquals(1, normalized.withArray("hasExtractedLicensingInfos").size());
       assertEquals("LicenseRef-MIT-License", normalized.at("/packages/2/licenseDeclared").asText());
@@ -355,10 +355,10 @@ public class SpdxWrapperTest {
   void testMissingAndNonCollidingLicenseDefinitionsRemainSupported(String variant)
       throws Exception {
     // Given a document without a collision
-    var sbom = nonCollidingLicenseRefs(variant);
+    var sbom = createNonCollidingLicenseRefs(variant);
 
     // When parsing the document
-    var wrapper = new SpdxWrapper(jsonStream(sbom));
+    var wrapper = new SpdxWrapper(createJsonStream(sbom));
 
     // Then package discovery is unchanged and unrelated definitions are not removed
     assertEquals(
@@ -366,7 +366,7 @@ public class SpdxWrapperTest {
         wrapper.getStartFromPackages());
     assertEquals(
         variant.equals("distinct") ? 2 : variant.equals("single") ? 1 : 0,
-        parsedDocument(wrapper).getExtractedLicenseInfos().size());
+        getParsedDocument(wrapper).getExtractedLicenseInfos().size());
   }
 
   // Verifies the common path preserves the original bytes without allocating a JSON object tree.
@@ -375,7 +375,7 @@ public class SpdxWrapperTest {
   void testNonCollidingDocumentIsReturnedUnchangedWithoutJsonTree(String variant) throws Exception {
     // Given a non-colliding document with whitespace that serialization would change
     byte[] content =
-        (" \n" + MAPPER.writeValueAsString(nonCollidingLicenseRefs(variant)) + "\n ")
+        (" \n" + MAPPER.writeValueAsString(createNonCollidingLicenseRefs(variant)) + "\n ")
             .getBytes(StandardCharsets.UTF_8);
     var field = SpdxWrapper.class.getDeclaredField("MAPPER");
     field.setAccessible(true);
@@ -412,7 +412,7 @@ public class SpdxWrapperTest {
       })
   void testLicenseReferenceNormalizationWithVersionLast(String version) throws Exception {
     // Given colliding definitions before the root version field
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     sbom.remove("spdxVersion");
     sbom.put("spdxVersion", version);
     var expected = sbom.deepCopy();
@@ -422,7 +422,7 @@ public class SpdxWrapperTest {
         .put("licenseConcluded", "LicenseRef-MIT-License");
 
     // When normalizing the reordered document
-    try (var normalized = normalize(jsonStream(sbom))) {
+    try (var normalized = normalize(createJsonStream(sbom))) {
       // Then the definitions and local references use the first spelling
       assertEquals(expected, MAPPER.readTree(normalized));
     }
@@ -433,7 +433,7 @@ public class SpdxWrapperTest {
   @ValueSource(strings = {"SPDX-3.0", "SPDX-2.4"})
   void testOtherVersionsAreReturnedUnchanged(String version) throws Exception {
     // Given collisions followed by a version outside the normalizer's scope
-    var sbom = caseOnlyLicenseRefs();
+    var sbom = loadCaseOnlyLicenseRefs();
     sbom.remove("spdxVersion");
     sbom.put("spdxVersion", version);
     byte[] content = MAPPER.writeValueAsBytes(sbom);
@@ -450,11 +450,11 @@ public class SpdxWrapperTest {
   @ValueSource(strings = {"SPDX-2.4"})
   void testUnsupportedVersionIsRejected(String version) throws Exception {
     // Given a document declaring a version the SPDX parser does not support
-    var sbom = caseOnlyLicenseRefs(version);
+    var sbom = loadCaseOnlyLicenseRefs(version);
 
     // When parsing the document
     // Then the existing version-validation policy still rejects it
-    assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(jsonStream(sbom)));
+    assertThrows(SpdxValidationException.class, () -> new SpdxWrapper(createJsonStream(sbom)));
   }
 
   // Verifies malformed JSON still produces an SPDX validation exception.
@@ -485,21 +485,21 @@ public class SpdxWrapperTest {
                     .map(difference -> Arguments.of(version, difference)));
   }
 
-  private static ObjectNode caseOnlyLicenseRefs() throws IOException {
+  private static ObjectNode loadCaseOnlyLicenseRefs() throws IOException {
     try (var input = stream(CASE_ONLY_LICENSE_REFS)) {
       return (ObjectNode) MAPPER.readTree(input);
     }
   }
 
   // Loads the reproducer with the requested SPDX 2.x document version.
-  private static ObjectNode caseOnlyLicenseRefs(String version) throws IOException {
-    var sbom = caseOnlyLicenseRefs();
+  private static ObjectNode loadCaseOnlyLicenseRefs(String version) throws IOException {
+    var sbom = loadCaseOnlyLicenseRefs();
     sbom.put("spdxVersion", version);
     return sbom;
   }
 
-  private static ObjectNode nonCollidingLicenseRefs(String variant) throws IOException {
-    var sbom = caseOnlyLicenseRefs();
+  private static ObjectNode createNonCollidingLicenseRefs(String variant) throws IOException {
+    var sbom = loadCaseOnlyLicenseRefs();
     var definitions = sbom.withArray("hasExtractedLicensingInfos");
     switch (variant) {
       case "missing" -> sbom.remove("hasExtractedLicensingInfos");
@@ -516,11 +516,11 @@ public class SpdxWrapperTest {
     return sbom;
   }
 
-  private static InputStream jsonStream(ObjectNode sbom) throws IOException {
+  private static InputStream createJsonStream(ObjectNode sbom) throws IOException {
     return new ByteArrayInputStream(MAPPER.writeValueAsBytes(sbom));
   }
 
-  private static SpdxDocument parsedDocument(SpdxWrapper wrapper)
+  private static SpdxDocument getParsedDocument(SpdxWrapper wrapper)
       throws ReflectiveOperationException {
     var field = SpdxWrapper.class.getDeclaredField("doc");
     field.setAccessible(true);
@@ -529,9 +529,9 @@ public class SpdxWrapperTest {
 
   // Inspect the compatibility boundary as well as parsing: the library can otherwise mask stale
   // reference spellings through its own case-insensitive lookups. Keep this access test-only.
-  private static ObjectNode normalizedJson(ObjectNode sbom) throws Exception {
-    new SpdxWrapper(jsonStream(sbom));
-    try (var input = normalize(jsonStream(sbom))) {
+  private static ObjectNode normalizeJson(ObjectNode sbom) throws Exception {
+    new SpdxWrapper(createJsonStream(sbom));
+    try (var input = normalize(createJsonStream(sbom))) {
       return (ObjectNode) MAPPER.readTree(input);
     }
   }

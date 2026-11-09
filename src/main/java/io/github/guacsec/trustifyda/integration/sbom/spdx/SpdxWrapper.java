@@ -202,7 +202,7 @@ public class SpdxWrapper {
       if (first == null) {
         retained.add(definition);
       } else {
-        if (!equivalentLicenseDefinitions(first, object)) {
+        if (!areLicenseDefinitionsEquivalent(first, object)) {
           throw new SpdxValidationException(
               "Conflicting SPDX LicenseRef definitions: "
                   + first.path("licenseId").asText()
@@ -221,7 +221,7 @@ public class SpdxWrapper {
    * Compares two case-colliding definitions by their normalized metadata, so that optional fields
    * using equivalent SPDX representations are not reported as a material conflict.
    */
-  private static boolean equivalentLicenseDefinitions(JsonNode first, JsonNode other) {
+  private static boolean areLicenseDefinitionsEquivalent(JsonNode first, JsonNode other) {
     return normalizeLicenseMetadata(first).equals(normalizeLicenseMetadata(other));
   }
 
