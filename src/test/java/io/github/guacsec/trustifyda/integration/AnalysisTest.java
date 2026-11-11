@@ -17,6 +17,11 @@
 
 package io.github.guacsec.trustifyda.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static io.github.guacsec.trustifyda.extensions.WiremockExtension.TRUSTIFY_TOKEN;
 import static io.restassured.RestAssured.given;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
@@ -41,6 +46,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -56,6 +62,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.AnalysisReport;
@@ -81,6 +89,86 @@ public class AnalysisTest extends AbstractAnalysisTest {
   private static final String DEFAULT_TRUST_DA_TOKEN = "example-trust-da-token";
   private static final String OSV_SOURCE = "osv-github";
   private static final String CSAF_SOURCE = "redhat-csaf";
+  private static final String CASE_ONLY_LICENSE_REFS =
+      "spdx/validation-errors/spdx-2.3-case-insensitive-license-refs.json";
+
+  // Verifies case-only references allow analysis to reach license and vulnerability enrichment.
+  @Test
+  public void testAnalysisWithCaseOnlyLicenseReferences() throws IOException {
+    // Given the reproducer and a license provider scoped to the expected dependencies
+    stubAllProviders();
+    var expectedPurls =
+        Set.of(
+            "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+            "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2");
+    stubCaseOnlyLicenseProviderResponses(expectedPurls);
+
+    // When analyzing the SPDX document
+    var report =
+        given()
+            .header(CONTENT_TYPE, Constants.SPDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(loadFileAsString(CASE_ONLY_LICENSE_REFS))
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .as(AnalysisReport.class);
+
+    // Then both dependencies are analyzed once and license enrichment returns real report values
+    assertEquals(1, report.getScanned().getDirect());
+    assertEquals(1, report.getScanned().getTransitive());
+    assertTrue(report.getProviders().get(TRUSTIFY_PROVIDER).getStatus().getOk());
+    var licenses = getLicenseResultByName(report, "deps.dev");
+    assertNotNull(licenses);
+    assertTrue(licenses.getStatus().getOk());
+    assertEquals(expectedPurls, licenses.getPackages().keySet());
+    assertEquals(
+        "Apache-2.0",
+        MAPPER
+            .valueToTree(licenses)
+            .path("packages")
+            .path("pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final")
+            .path("concluded")
+            .path("expression")
+            .asText());
+    verifyTrustifyRequest(TRUSTIFY_TOKEN);
+    verifyLicensesRequest(1);
+    verifyCaseOnlyLicenseEnrichmentRequests();
+  }
+
+  // Verifies conflicts are reported as validation errors before any enrichment request is sent.
+  @Test
+  public void testAnalysisRejectsConflictingCaseOnlyLicenseDefinitions() throws IOException {
+    // Given colliding identifiers with genuinely different license text
+    stubAllProviders();
+    var sbom = (ObjectNode) MAPPER.readTree(loadFileAsString(CASE_ONLY_LICENSE_REFS));
+    ((ObjectNode) sbom.withArray("hasExtractedLicensingInfos").get(1))
+        .put("extractedText", "Different license terms");
+
+    // When analyzing the conflicting document
+    var response =
+        given()
+            .header(CONTENT_TYPE, Constants.SPDX_MEDIATYPE_JSON)
+            .header("Accept", MediaType.APPLICATION_JSON)
+            .body(sbom.toString())
+            .when()
+            .post("/api/v5/analysis")
+            .then()
+            .statusCode(400)
+            .extract()
+            .asString();
+
+    // Then the error identifies both definitions and enrichment has not started
+    assertTrue(response.contains("Conflicting SPDX LicenseRef definitions"));
+    assertTrue(response.contains("LicenseRef-MIT-License"));
+    assertTrue(response.contains("LicenseRef-MIT-license"));
+    verifyNoInteractionsWithTrustify();
+    verifyNoInteractionsWithRecommend();
+    verifyLicensesRequest(0);
+  }
 
   /** First CycloneDX entry in {@code cyclonedx/batch-sbom.json} — same Maven tree as maven-sbom. */
   private static final String BATCH_CYCLONEDX_MAVEN_SBOM_ID =
@@ -917,6 +1005,54 @@ public class AnalysisTest extends AbstractAnalysisTest {
         .filter(l -> l.getStatus().getName().equals(name))
         .findFirst()
         .orElse(null);
+  }
+
+  /**
+   * Stubs the deps.dev license endpoint with only the responses for the given purls.
+   *
+   * <p>Registers the stub at priority 1 so it wins over the catch-all license stub installed by
+   * {@code stubAllProviders()}.
+   */
+  private void stubCaseOnlyLicenseProviderResponses(Set<String> expectedPurls) throws IOException {
+    var licenseResponse = MAPPER.readTree(loadFileAsString("__files/depsdev/maven_response.json"));
+    ((ArrayNode) licenseResponse.path("responses"))
+        .removeIf(
+            response -> !expectedPurls.contains(response.path("request").path("purl").asText()));
+    server.stubFor(
+        post(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .atPriority(1)
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .withBody(MAPPER.writeValueAsString(licenseResponse))));
+  }
+
+  /** Verifies the outbound Trustify and deps.dev requests sent for the case-only fixture. */
+  private void verifyCaseOnlyLicenseEnrichmentRequests() {
+    server.verify(
+        1,
+        postRequestedFor(urlEqualTo(Constants.TRUSTIFY_ANALYZE_PATH))
+            .withRequestBody(
+                equalToJson(
+                    """
+                    {"purls": ["pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+                      "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"]}
+                    """,
+                    true,
+                    false)));
+    server.verify(
+        1,
+        postRequestedFor(urlEqualTo(Constants.DEPS_DEV_LICENSES_PATH))
+            .withRequestBody(
+                equalToJson(
+                    """
+                    {"requests": [
+                      {"purl": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final"},
+                      {"purl": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2"}]}
+                    """,
+                    true,
+                    false)));
   }
 
   @Test

@@ -1,0 +1,99 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-01-01T00:00:00Z",
+    "creators": ["Tool: TC-7363-regression"]
+  },
+  "name": "case-only-license-refs",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://test.example.com/case-only-license-refs",
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-MIT-License",
+      "name": "MIT License",
+      "extractedText": "NOASSERTION"
+    },
+    {
+      "licenseId": "LicenseRef-MIT-license",
+      "name": "MIT license",
+      "extractedText": "NOASSERTION"
+    }
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Root",
+      "name": "root-package",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org/root@1.0",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Direct",
+      "name": "quarkus-jdbc-h2",
+      "versionInfo": "2.13.5.Final",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "LicenseRef-MIT-License",
+      "licenseDeclared": "LicenseRef-MIT-License",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.quarkus/quarkus-jdbc-h2@2.13.5.Final",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Transitive",
+      "name": "jakarta.enterprise.cdi-api",
+      "versionInfo": "2.0.2",
+      "downloadLocation": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "LicenseRef-MIT-license",
+      "licenseDeclared": "LicenseRef-MIT-license",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/jakarta.enterprise/jakarta.enterprise.cdi-api@2.0.2",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Root"
+    },
+    {
+      "spdxElementId": "SPDXRef-Root",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Direct"
+    },
+    {
+      "spdxElementId": "SPDXRef-Direct",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Transitive"
+    }
+  ]
+}
