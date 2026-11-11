@@ -57,6 +57,8 @@ public class SpdxWrapperTest {
   private static final String VALIDATION_ERRORS_BASE = "spdx/validation-errors/";
   private static final String CASE_ONLY_LICENSE_REFS =
       VALIDATION_ERRORS_BASE + "spdx-2.3-case-insensitive-license-refs.json";
+  private static final List<String> LICENSE_REF_PACKAGE_IDS =
+      List.of("SPDXRef-Direct", "SPDXRef-Transitive");
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   // Verifies that merging case-only license references preserves packages, graph edges, and hashes.
@@ -118,12 +120,7 @@ public class SpdxWrapperTest {
     assertEquals("NOASSERTION", license.getExtractedText());
     assertEquals("shared metadata", license.getComment());
     assertEquals(List.of("https://example.com/license"), List.copyOf(license.getSeeAlso()));
-    for (var id : List.of("SPDXRef-Direct", "SPDXRef-Transitive")) {
-      var pkg =
-          new SpdxPackage(document.getModelStore(), document.getDocumentUri(), id, null, false);
-      assertEquals("LicenseRef-MIT-License", pkg.getLicenseDeclared().toString());
-      assertEquals("LicenseRef-MIT-License", pkg.getLicenseConcluded().toString());
-    }
+    assertPackagesUseLicense(document, "LicenseRef-MIT-License");
   }
 
   // Verifies case-only definitions with reordered seeAlsos share one canonical definition.
@@ -196,17 +193,12 @@ public class SpdxWrapperTest {
     var licenses = document.getExtractedLicenseInfos();
     assertEquals(1, licenses.size());
     assertEquals("LicenseRef-MIT-License", licenses.iterator().next().getLicenseId());
-    for (var id : List.of("SPDXRef-Direct", "SPDXRef-Transitive")) {
-      var pkg =
-          new SpdxPackage(document.getModelStore(), document.getDocumentUri(), id, null, false);
-      assertEquals("LicenseRef-MIT-License", pkg.getLicenseDeclared().toString());
-      assertEquals("LicenseRef-MIT-License", pkg.getLicenseConcluded().toString());
-    }
+    assertPackagesUseLicense(document, "LicenseRef-MIT-License");
   }
 
   // Verifies that materially different text or metadata is never discarded in a case-only merge.
   @ParameterizedTest
-  @MethodSource("conflictingDefinitionsAcrossVersions")
+  @MethodSource("supplyConflictingDefinitionsAcrossVersions")
   void testConflictingCaseOnlyLicenseDefinitionsAreRejected(String version, String difference)
       throws Exception {
     // Given SPDX 2.x case-colliding definitions with one material difference
@@ -466,7 +458,7 @@ public class SpdxWrapperTest {
   }
 
   // Supplies every conflict variant for each supported SPDX 2.x version.
-  private static Stream<Arguments> conflictingDefinitionsAcrossVersions() {
+  private static Stream<Arguments> supplyConflictingDefinitionsAcrossVersions() {
     return Stream.of(
             Version.TWO_POINT_ZERO_VERSION,
             Version.TWO_POINT_ONE_VERSION,
@@ -525,6 +517,17 @@ public class SpdxWrapperTest {
     var field = SpdxWrapper.class.getDeclaredField("doc");
     field.setAccessible(true);
     return (SpdxDocument) field.get(wrapper);
+  }
+
+  // Asserts every package declaring the case-only reference points at the canonical definition.
+  private static void assertPackagesUseLicense(SpdxDocument document, String licenseId)
+      throws InvalidSPDXAnalysisException {
+    for (var id : LICENSE_REF_PACKAGE_IDS) {
+      var pkg =
+          new SpdxPackage(document.getModelStore(), document.getDocumentUri(), id, null, false);
+      assertEquals(licenseId, pkg.getLicenseDeclared().toString(), id);
+      assertEquals(licenseId, pkg.getLicenseConcluded().toString(), id);
+    }
   }
 
   // Inspect the compatibility boundary as well as parsing: the library can otherwise mask stale
