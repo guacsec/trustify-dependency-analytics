@@ -230,16 +230,16 @@ public class SpdxLicenseService {
     String normalizedExpression = root.toString();
     String humanReadableName = toHumanReadableName(root);
     List<LicenseIdentifier> identifiers;
+    LicenseCategory category;
     try {
       identifiers = parseExpressionToIdentifiers(normalizedExpression);
+      category = resolveCategory(root);
     } catch (InvalidSPDXAnalysisException e) {
       throw new NotFoundException("Invalid license expression: " + expression, e);
     }
     if (identifiers.isEmpty()) {
       throw new NotFoundException("License category not found for expression: " + expression);
     }
-    boolean isOr = normalizedExpression.contains(" OR ");
-    LicenseCategory category = resolveCategoryFromIdentifiers(identifiers, isOr);
     if (category == null) {
       throw new NotFoundException("License category not found for expression: " + expression);
     }
@@ -400,11 +400,26 @@ public class SpdxLicenseService {
     out.add(toUnknownLicenseIdentifier(node.toString()));
   }
 
-  private LicenseCategory resolveCategoryFromIdentifiers(
-      List<LicenseIdentifier> identifiers, boolean isOrExpression) {
+  /** Resolves each tree node without flattening nested AND/OR groups into one operator. */
+  private LicenseCategory resolveCategory(AnyLicenseInfo node) throws InvalidSPDXAnalysisException {
+    if (node instanceof ConjunctiveLicenseSet set) {
+      return resolveCategoryFromMembers(set.getMembers(), false);
+    }
+    if (node instanceof DisjunctiveLicenseSet set) {
+      return resolveCategoryFromMembers(set.getMembers(), true);
+    }
+    // Reuse leaf enrichment so WITH exceptions and unsupported nodes follow the same rules.
+    List<LicenseIdentifier> identifiers = new ArrayList<>();
+    collectIdentifiers(node, identifiers);
+    return identifiers.getFirst().getCategory();
+  }
+
+  private LicenseCategory resolveCategoryFromMembers(
+      Iterable<AnyLicenseInfo> members, boolean isOrExpression)
+      throws InvalidSPDXAnalysisException {
     LicenseCategory category = null;
-    for (LicenseIdentifier id : identifiers) {
-      LicenseCategory next = id.getCategory();
+    for (AnyLicenseInfo member : members) {
+      LicenseCategory next = resolveCategory(member);
       if (category == null) {
         category = next;
       } else {

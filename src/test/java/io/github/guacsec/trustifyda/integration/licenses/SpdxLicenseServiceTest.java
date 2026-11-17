@@ -18,19 +18,26 @@
 package io.github.guacsec.trustifyda.integration.licenses;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.library.LicenseInfoFactory;
@@ -533,6 +540,7 @@ public class SpdxLicenseServiceTest {
     // And the SPDX metadata is preserved unchanged
     LicenseIdentifier identifier = info.getIdentifiers().get(0);
     assertEquals(licenseId, identifier.getId());
+    assertEquals(LicenseCategory.PERMISSIVE, identifier.getCategory());
     assertEquals(expectedName, identifier.getName());
     assertEquals(Boolean.FALSE, identifier.getIsDeprecated());
     assertEquals(Boolean.valueOf(expectedOsiApproved), identifier.getIsOsiApproved());
@@ -552,6 +560,197 @@ public class SpdxLicenseServiceTest {
     assertEquals(2, info.getIdentifiers().size());
     assertEquals(LicenseCategory.PERMISSIVE, findIdentifier(info, licenseId).getCategory());
     assertEquals(LicenseCategory.PERMISSIVE, findIdentifier(info, "MIT").getCategory());
+  }
+
+  /** Verifies each AND/OR group is evaluated independently without reclassifying its leaves. */
+  @ParameterizedTest(name = "{0} -> {1}")
+  @MethodSource("mixedExpressions")
+  void testFromLicenseId_mixedExpression(
+      String expression,
+      LicenseCategory expectedCategory,
+      Map<String, LicenseCategory> expectedLeaves) {
+    // Given a mixed expression with independently specified aggregate and leaf categories
+
+    // When resolving the expression with provider provenance
+    LicenseInfo info = service.fromLicenseId(expression, "deps.dev", "https://api.deps.dev");
+
+    // Then the complete leaf set and categories are preserved regardless of traversal order
+    assertEquals(
+        expectedLeaves,
+        info.getIdentifiers().stream()
+            .collect(Collectors.toMap(LicenseIdentifier::getId, LicenseIdentifier::getCategory)));
+    assertEquals("deps.dev", info.getSource());
+    assertEquals("https://api.deps.dev", info.getSourceUrl());
+    assertNotNull(info.getName());
+    assertTrue(info.getExpression().contains(" AND "));
+    assertTrue(info.getExpression().contains(" OR "));
+    for (String id : expectedLeaves.keySet()) {
+      assertTrue(info.getExpression().contains(id), "Expression must retain " + id);
+      assertNotNull(findIdentifier(info, id).getName());
+    }
+
+    // And the aggregate respects nesting rather than a global OR across all leaves
+    assertEquals(expectedCategory, info.getCategory());
+  }
+
+  private static Stream<Arguments> mixedExpressions() {
+    return Stream.of(
+        Arguments.of(
+            "GPL-3.0 AND (MIT OR Apache-2.0)",
+            LicenseCategory.STRONG_COPYLEFT,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "(Apache-2.0 OR MIT) AND GPL-3.0",
+            LicenseCategory.STRONG_COPYLEFT,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "(GPL-3.0 AND MIT) OR Apache-2.0",
+            LicenseCategory.PERMISSIVE,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "(MIT OR Apache-2.0) AND (GPL-3.0 OR LGPL-2.1)",
+            LicenseCategory.WEAK_COPYLEFT,
+            Map.of(
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE,
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "LGPL-2.1",
+                LicenseCategory.WEAK_COPYLEFT)),
+        Arguments.of(
+            "GPL-3.0 AND (Unicode-DFS-2016 OR LGPL-2.1)",
+            LicenseCategory.STRONG_COPYLEFT,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "Unicode-DFS-2016",
+                LicenseCategory.PERMISSIVE,
+                "LGPL-2.1",
+                LicenseCategory.WEAK_COPYLEFT)),
+        Arguments.of(
+            "(GPL-2.0-only WITH Classpath-exception-2.0) AND (MIT OR Apache-2.0)",
+            LicenseCategory.WEAK_COPYLEFT,
+            Map.of(
+                "GPL-2.0-only WITH Classpath-exception-2.0",
+                LicenseCategory.WEAK_COPYLEFT,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "LicenseRef-MIT-License AND (MIT OR Apache-2.0)",
+            LicenseCategory.UNKNOWN,
+            Map.of(
+                "LicenseRef-MIT-License",
+                LicenseCategory.UNKNOWN,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "GPL-3.0 AND (LicenseRef-MIT-License OR MIT)",
+            LicenseCategory.STRONG_COPYLEFT,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "LicenseRef-MIT-License",
+                LicenseCategory.UNKNOWN,
+                "MIT",
+                LicenseCategory.PERMISSIVE)),
+        Arguments.of(
+            "(LicenseRef-MIT-License AND MIT) OR LGPL-2.1",
+            LicenseCategory.WEAK_COPYLEFT,
+            Map.of(
+                "LicenseRef-MIT-License",
+                LicenseCategory.UNKNOWN,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "LGPL-2.1",
+                LicenseCategory.WEAK_COPYLEFT)),
+        Arguments.of(
+            "(GPL-3.0 AND MIT) OR (LGPL-2.1 AND Apache-2.0)",
+            LicenseCategory.WEAK_COPYLEFT,
+            Map.of(
+                "GPL-3.0",
+                LicenseCategory.STRONG_COPYLEFT,
+                "MIT",
+                LicenseCategory.PERMISSIVE,
+                "LGPL-2.1",
+                LicenseCategory.WEAK_COPYLEFT,
+                "Apache-2.0",
+                LicenseCategory.PERMISSIVE)));
+  }
+
+  /** Verifies a mixed-expression aggregate leaves listed-license metadata intact. */
+  @Test
+  void testFromLicenseId_mixedExpression_preservesMetadata() {
+    // Given a newly mapped permissive license nested under a required GPL term
+    String expression = "GPL-3.0 AND (Unicode-DFS-2016 OR LGPL-2.1)";
+
+    // When resolving the expression
+    LicenseInfo info = service.fromLicenseId(expression, null, null);
+
+    // Then the Unicode leaf keeps its own category and bundled SPDX metadata
+    LicenseIdentifier identifier = findIdentifier(info, "Unicode-DFS-2016");
+    assertEquals(LicenseCategory.PERMISSIVE, identifier.getCategory());
+    assertEquals(
+        "Unicode License Agreement - Data Files and Software (2016)", identifier.getName());
+    assertEquals(Boolean.FALSE, identifier.getIsDeprecated());
+    assertEquals(Boolean.TRUE, identifier.getIsOsiApproved());
+    assertNull(identifier.getIsFsfLibre());
+    assertEquals(LicenseCategory.STRONG_COPYLEFT, info.getCategory());
+  }
+
+  /** Verifies the returned normalized expression retains the nested OR under the required AND. */
+  @Test
+  void testFromLicenseId_mixedExpression_preservesGrouping() throws InvalidSPDXAnalysisException {
+    // Given an OR group nested under a required GPL term
+    String expression = "GPL-3.0 AND (MIT OR Apache-2.0)";
+
+    // When parsing the expression returned to callers
+    LicenseInfo info = service.fromLicenseId(expression, null, null);
+    AnyLicenseInfo returnedRoot =
+        LicenseInfoFactory.parseSPDXLicenseString(
+            info.getExpression(), new InMemSpdxStore(), null, null, null);
+
+    // Then the returned tree preserves grouping without depending on member order
+    var conjunction = assertInstanceOf(ConjunctiveLicenseSet.class, returnedRoot);
+    assertEquals(2, conjunction.getMembers().size());
+    assertEquals(
+        Set.of("GPL-3.0"),
+        conjunction.getMembers().stream()
+            .filter(ListedLicense.class::isInstance)
+            .map(Object::toString)
+            .collect(Collectors.toSet()));
+    var alternative =
+        conjunction.getMembers().stream()
+            .filter(DisjunctiveLicenseSet.class::isInstance)
+            .map(DisjunctiveLicenseSet.class::cast)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Missing nested OR group"));
+    assertEquals(
+        Set.of("MIT", "Apache-2.0"),
+        alternative.getMembers().stream().map(Object::toString).collect(Collectors.toSet()));
   }
 
   /** Finds an identifier by SPDX id so compound-expression assertions stay order-independent. */

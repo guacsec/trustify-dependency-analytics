@@ -76,10 +76,10 @@ compatibility.
 #### License cache and rollout
 
 License results for packages are cached in Redis under `licenses:<package coordinates>` with the configured
-`licenses.cache.ttl` (default `1d`). Reads do not renew the TTL, so package results cached before a category mapping
+`licenses.cache.ttl` (default `1d`). Reads do not renew the TTL, so package results cached before a category mapping or classifier
 change can keep reporting the previous category, including `UNKNOWN`, until their actual configured TTL expires. Direct
 license lookup (`GET /api/v5/licenses/{licenseId}`) bypasses this package cache and reflects the current mapping
-immediately. If immediate freshness is required after a rollout, use operator-approved targeted invalidation of the
+immediately. Classifier changes can alter results even when the mapping YAML is unchanged. If immediate freshness is required after a rollout, use operator-approved targeted invalidation of the
 affected keys; do not run a broad Redis flush. No database migration is needed.
 
 ### License evidences and concluded license.
@@ -89,10 +89,19 @@ using the following category-based heuristic, not a legal compatibility analysis
 
 - If multiple licenses are found, the backend doesn't decide which source is more reliable or if one should invalidate another. It just takes
 **the more permissive** license.
-- For an SPDX `OR` expression, the system selects the **most permissive category** among its identifiers.
-- For an SPDX `AND` expression, the system selects the **most restrictive category** among its identifiers.
+- Within an SPDX expression, each `OR` group selects the **most permissive category** among its child expressions;
+each `AND` group selects the **most restrictive category** among its child expressions. Evaluation is recursive,
+respecting parentheses and the parsed SPDX tree, not a flattened list of identifiers.
+- The category ordering is `PERMISSIVE > WEAK_COPYLEFT > STRONG_COPYLEFT > UNKNOWN`. Thus an `UNKNOWN` child makes
+an `AND` group `UNKNOWN`, but an `OR` group can select a known alternative. This is a classification heuristic, not
+a legal compatibility rule.
 - If a `STRONG_COPYLEFT` license has an exception listed in `weak-copyleft-exceptions`, the system changes its category to
 `WEAK_COPYLEFT`. For example, `GPL-2.0-only WITH Classpath-exception-2.0`.
+
+For example, `GPL-3.0 AND (MIT OR Apache-2.0)` is `STRONG_COPYLEFT`, while
+`(GPL-3.0 AND MIT) OR Apache-2.0` is `PERMISSIVE`. The aggregate does not replace leaf categories:
+MIT and Apache-2.0 remain `PERMISSIVE` identifiers in both expressions, with their SPDX metadata unchanged.
+`(MIT OR Apache-2.0) AND (GPL-3.0 OR LGPL-2.1)` is `WEAK_COPYLEFT`.
 
 The report will also provide a summary of the different licenses found.
 

@@ -285,8 +285,44 @@ public class LicensesEndpointTest extends AbstractAnalysisTest {
     // And the SPDX metadata is preserved unchanged
     LicenseIdentifier identifier = info.getIdentifiers().get(0);
     assertEquals(licenseId, identifier.getId());
+    assertEquals(LicenseCategory.PERMISSIVE, identifier.getCategory());
     assertEquals(expectedName, identifier.getName());
     assertEquals(Boolean.FALSE, identifier.getIsDeprecated());
     assertEquals(Boolean.valueOf(expectedOsiApproved), identifier.getIsOsiApproved());
+  }
+
+  /** Verifies direct lookup respects mixed-expression grouping while preserving leaf categories. */
+  @Test
+  public void getLicense_mixedExpression_returnsRestrictiveAggregate() throws Exception {
+    // Given an OR group nested under a required GPL term
+    String expression = "GPL-3.0 AND (MIT OR Apache-2.0)";
+
+    // When requesting the expression through the direct lookup endpoint
+    String json =
+        given()
+            .when()
+            .get("/api/v5/licenses/{licenseId}", expression)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asString();
+
+    // Then leaf categories remain distinct from the aggregate
+    LicenseInfo info = MAPPER.readValue(json, LicenseInfo.class);
+    assertEquals(
+        Map.of(
+            "GPL-3.0",
+            LicenseCategory.STRONG_COPYLEFT,
+            "MIT",
+            LicenseCategory.PERMISSIVE,
+            "Apache-2.0",
+            LicenseCategory.PERMISSIVE),
+        info.getIdentifiers().stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    LicenseIdentifier::getId, LicenseIdentifier::getCategory)));
+    assertEquals(LicenseCategory.STRONG_COPYLEFT, info.getCategory());
   }
 }
