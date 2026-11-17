@@ -30,11 +30,15 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.guacsec.trustifyda.api.v5.LicenseCategory;
+import io.github.guacsec.trustifyda.api.v5.LicenseIdentifier;
+import io.github.guacsec.trustifyda.api.v5.LicenseInfo;
 import io.github.guacsec.trustifyda.api.v5.LicenseProviderResult;
 import io.github.guacsec.trustifyda.extensions.OidcWiremockExtension;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -244,5 +248,45 @@ public class LicensesEndpointTest extends AbstractAnalysisTest {
 
     assertEquals(LICENSES_POST_INVALID_BODY_MESSAGE, body);
     verifyLicensesRequest(0);
+  }
+
+  /**
+   * Direct license lookup returns HTTP 200 with PERMISSIVE for Unicode-DFS-2016, Unlicense, and
+   * CC0-1.0 while preserving their SPDX metadata.
+   */
+  @ParameterizedTest(name = "GET /api/v5/licenses/{0} -> PERMISSIVE")
+  @CsvSource({
+    "Unicode-DFS-2016, Unicode License Agreement - Data Files and Software (2016), true",
+    "Unlicense, The Unlicense, true",
+    "CC0-1.0, Creative Commons Zero v1.0 Universal, false"
+  })
+  public void getLicense_permissiveMapping_returnsPermissiveWithMetadata(
+      String licenseId, String expectedName, boolean expectedOsiApproved) throws Exception {
+    // Given a direct license lookup for a newly mapped SPDX identifier
+
+    // When requesting the license through the endpoint
+    String json =
+        given()
+            .when()
+            .get("/api/v5/licenses/{licenseId}", licenseId)
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(MediaType.APPLICATION_JSON)
+            .extract()
+            .body()
+            .asString();
+
+    // Then the aggregate and identifier categories are PERMISSIVE
+    LicenseInfo info = MAPPER.readValue(json, LicenseInfo.class);
+    assertEquals(LicenseCategory.PERMISSIVE, info.getCategory());
+    assertNotNull(info.getIdentifiers());
+    assertEquals(1, info.getIdentifiers().size());
+
+    // And the SPDX metadata is preserved unchanged
+    LicenseIdentifier identifier = info.getIdentifiers().get(0);
+    assertEquals(licenseId, identifier.getId());
+    assertEquals(expectedName, identifier.getName());
+    assertEquals(Boolean.FALSE, identifier.getIsDeprecated());
+    assertEquals(Boolean.valueOf(expectedOsiApproved), identifier.getIsOsiApproved());
   }
 }

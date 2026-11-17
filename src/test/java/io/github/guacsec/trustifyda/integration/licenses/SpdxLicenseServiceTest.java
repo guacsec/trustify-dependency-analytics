@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.spdx.core.InvalidSPDXAnalysisException;
 import org.spdx.library.LicenseInfoFactory;
 import org.spdx.library.SpdxModelFactory;
@@ -44,6 +45,7 @@ import org.spdx.storage.simple.InMemSpdxStore;
 import org.spdx.utility.license.LicenseExpressionParser;
 
 import io.github.guacsec.trustifyda.api.v5.LicenseCategory;
+import io.github.guacsec.trustifyda.api.v5.LicenseIdentifier;
 import io.github.guacsec.trustifyda.api.v5.LicenseInfo;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -503,5 +505,60 @@ public class SpdxLicenseServiceTest {
     LicenseInfo info = service.fromLicenseId("LGPL-3.0+", null, null);
     assertEquals(1, info.getIdentifiers().size());
     assertEquals(LicenseCategory.WEAK_COPYLEFT, info.getIdentifiers().get(0).getCategory());
+  }
+
+  /**
+   * Reproducer for TC-7583: Unicode-DFS-2016, Unlicense, and CC0-1.0 are SPDX-recognized but were
+   * missing from the explicit mapping, so they fell back to UNKNOWN. They must resolve to
+   * PERMISSIVE without altering their SPDX metadata.
+   */
+  @ParameterizedTest(name = "{0} -> PERMISSIVE (OSI approved: {2})")
+  @CsvSource({
+    "Unicode-DFS-2016, Unicode License Agreement - Data Files and Software (2016), true",
+    "Unlicense, The Unlicense, true",
+    "CC0-1.0, Creative Commons Zero v1.0 Universal, false"
+  })
+  void testFromLicenseId_permissiveMapping_standalone(
+      String licenseId, String expectedName, boolean expectedOsiApproved) {
+    // Given an SPDX identifier that was previously unmapped
+
+    // When resolving the license identifier directly
+    LicenseInfo info = service.fromLicenseId(licenseId, null, null);
+
+    // Then the aggregate and identifier categories are PERMISSIVE
+    assertEquals(LicenseCategory.PERMISSIVE, info.getCategory());
+    assertNotNull(info.getIdentifiers());
+    assertEquals(1, info.getIdentifiers().size());
+
+    // And the SPDX metadata is preserved unchanged
+    LicenseIdentifier identifier = info.getIdentifiers().get(0);
+    assertEquals(licenseId, identifier.getId());
+    assertEquals(expectedName, identifier.getName());
+    assertEquals(Boolean.FALSE, identifier.getIsDeprecated());
+    assertEquals(Boolean.valueOf(expectedOsiApproved), identifier.getIsOsiApproved());
+  }
+
+  /** Verifies the newly mapped identifiers stay PERMISSIVE inside an AND expression with MIT. */
+  @ParameterizedTest(name = "{0} AND MIT -> PERMISSIVE")
+  @ValueSource(strings = {"Unicode-DFS-2016", "Unlicense", "CC0-1.0"})
+  void testFromLicenseId_permissiveMapping_andExpression(String licenseId) {
+    // Given a compound AND expression mixing a newly mapped identifier with MIT
+
+    // When resolving the expression
+    LicenseInfo info = service.fromLicenseId(licenseId + " AND MIT", null, null);
+
+    // Then both the aggregate and every identifier resolve to PERMISSIVE
+    assertEquals(LicenseCategory.PERMISSIVE, info.getCategory());
+    assertEquals(2, info.getIdentifiers().size());
+    assertEquals(LicenseCategory.PERMISSIVE, findIdentifier(info, licenseId).getCategory());
+    assertEquals(LicenseCategory.PERMISSIVE, findIdentifier(info, "MIT").getCategory());
+  }
+
+  /** Finds an identifier by SPDX id so compound-expression assertions stay order-independent. */
+  private static LicenseIdentifier findIdentifier(LicenseInfo info, String licenseId) {
+    return info.getIdentifiers().stream()
+        .filter(identifier -> identifier.getId().equals(licenseId))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Missing license identifier: " + licenseId));
   }
 }

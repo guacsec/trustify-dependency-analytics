@@ -34,7 +34,7 @@ You can use the following configuration properties:
 
 - `api.licenses.depsdev.host`: DepsDev API endpoint (https://api.deps.dev)
 - `api.licenses.depsdev.timeout`: Connection timeout (60s)
-- `licenses.file`: Relative or absolute path to the licenses configuration file.
+- `categories.file`: Classpath resource or relative/absolute path to the license category configuration file (default: `license-categories.yaml`).
 
 ## OpenAPI and SwaggerUI
 
@@ -53,31 +53,46 @@ the Java and Javascript generated data model.
 
 ## License Analysis `/api/v5/licenses`
 
-The endpoint can be use to only retrieve information about licenses found in the given package urls. It will return a dictionary with the
-licenses found in the different License providers (evidences) and then conclude which is the most permissive license that can be used.
+The endpoint retrieves information about licenses found in the given package URLs. It returns a dictionary with the
+licenses found by the license providers (evidence) and a concluded license based on the category ordering described below.
 
 ### Categories
 
-The system will use the `licenses.file` configuration file to categorized the retrieved licenses into:
+The system uses the configuration file selected by `categories.file` to categorize the retrieved licenses into:
 
-- PERMISSIVE
-- WEAK_COPYLEFT
-- STRONG_COPYLEFT
-- UNKNOWN
+- `PERMISSIVE`
+- `WEAK_COPYLEFT`
+- `STRONG_COPYLEFT`
+- `UNKNOWN`
 
-It will also use the `exception-suffixes` to decide if a `STRONG_COPYLEFT` license can be categorized as `WEAK_COPYLEFT`. The other
-suffixes will be ignored and the category will not be changed. Example `GPL-3.0-only`.
+The `weak-copyleft-exceptions` list defines which SPDX exceptions change a `STRONG_COPYLEFT` license to `WEAK_COPYLEFT`.
+For example, `GPL-2.0-only WITH Classpath-exception-2.0` is categorized as `WEAK_COPYLEFT`. An unlisted exception leaves
+the base license category unchanged; the `-only` suffix is not an exception.
+
+See the [Licenses glossary](GLOSSARY.md#licenses) for the four-category definitions, examples, mapping evidence and
+inclusion criteria. Categories summarize copyright/copyleft obligations; they are not legal clearance or proof of
+compatibility.
+
+#### License cache and rollout
+
+License results for packages are cached in Redis under `licenses:<package coordinates>` with the configured
+`licenses.cache.ttl` (default `1d`). Reads do not renew the TTL, so package results cached before a category mapping
+change can keep reporting the previous category, including `UNKNOWN`, until their actual configured TTL expires. Direct
+license lookup (`GET /api/v5/licenses/{licenseId}`) bypasses this package cache and reflects the current mapping
+immediately. If immediate freshness is required after a rollout, use operator-approved targeted invalidation of the
+affected keys; do not run a broad Redis flush. No database migration is needed.
 
 ### License evidences and concluded license.
 
-All licenses found in the license provider response will be considered as evidences. Then the system will conclude which is the most suitable
-license that can be used. It will be the more permissive license that is allowed. Some exceptions must be declared for multi-license declaration.
+All licenses found in the license provider response are considered evidence. The system selects a concluded license
+using the following category-based heuristic, not a legal compatibility analysis:
 
 - If multiple licenses are found, the backend doesn't decide which source is more reliable or if one should invalidate another. It just takes
 **the more permissive** license.
-- If the SPDX expression defines an `OR` clause, the system will conclude that the **more permissive can be used**.
-- If the SPDX expression defines an `AND` clause, the system will conclude that the **more restrictive must be used**.
-- If the SPDX license is categorized as `STRONG_COPYLEFT` but defines an exception that makes it less restrictive, the system will adapt the category to `WEAK_COPYLEFT`. Example `GPL-3.0 with classpath Exception`.
+- For an SPDX `OR` expression, the system selects the **most permissive category** among its identifiers.
+- For an SPDX `AND` expression, the system selects the **most restrictive category** among its identifiers.
+- If a `STRONG_COPYLEFT` license has an exception listed in `weak-copyleft-exceptions`, the system changes its category to
+`WEAK_COPYLEFT`. For example, `GPL-2.0-only WITH Classpath-exception-2.0`.
 
 The report will also provide a summary of the different licenses found.
 

@@ -8,6 +8,9 @@ permissive:
   - Artistic-2.0
   - 0BSD
   - BSL-1.0
+  - Unicode-DFS-2016
+  - Unlicense
+  - CC0-1.0
 
 weak-copyleft:
   - LGPL-2.0
