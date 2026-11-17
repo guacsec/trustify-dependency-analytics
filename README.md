@@ -75,12 +75,39 @@ compatibility.
 
 #### License cache and rollout
 
-License results for packages are cached in Redis under `licenses:<package coordinates>` with the configured
-`licenses.cache.ttl` (default `1d`). Reads do not renew the TTL, so package results cached before a category mapping or classifier
-change can keep reporting the previous category, including `UNKNOWN`, until their actual configured TTL expires. Direct
-license lookup (`GET /api/v5/licenses/{licenseId}`) bypasses this package cache and reflects the current mapping
-immediately. Classifier changes can alter results even when the mapping YAML is unchanged. If immediate freshness is required after a rollout, use operator-approved targeted invalidation of the
-affected keys; do not run a broad Redis flush. No database migration is needed.
+License results for packages are cached in Redis under
+`licenses:v1:<classifier revision>:<mapping fingerprint>:<package coordinates>`.
+The fingerprint is SHA-256 of the effective categorization configuration loaded through `categories.file`, including
+the exception rules, rather than the filename or raw YAML text. Ordering, duplicate entries, comments, and exception-ID
+letter case do not change compatibility. Both cache reads and writes use this identity, and package coordinates still
+exclude qualifiers. The `v1` namespace identifies the cached-value format.
+
+The classifier revision is defined by `SpdxLicenseService.CLASSIFIER_COMPATIBILITY_REVISION`; `spdx-tree-v1` identifies
+recursive expression evaluation. Developers must change this revision whenever classifier semantics change in a way
+that can make cached results incompatible, even if the YAML is identical (for example, changing mixed `AND`/`OR`
+evaluation). Change the cache-format namespace in `RedisCacheService` when the stored representation is incompatible.
+Relevant mapping changes change the fingerprint automatically. These identities describe compatibility, not version age:
+hashes cannot establish which result is newer. No operator-managed revision setting is required.
+
+Current pods treat legacy `licenses:<package coordinates>` entries and entries for other compatibility identities as
+misses; they do not fall back to those classifications. An unchanged old pod can still write its own keys, even after
+a current write or targeted invalidation, but cannot overwrite the namespace consumed by current readers. This isolates
+both old `UNKNOWN` mapping results and old mixed-expression classifications such as the incorrectly flattened
+`PERMISSIVE` result for `GPL-3.0 AND (MIT OR Apache-2.0)`.
+
+`licenses.cache.ttl` still defaults to `1d`; writes set the configured TTL and reads do not renew it. Unused namespaces
+expire naturally. For an operator-approved targeted invalidation, delete only the affected package keys under the
+serving pods' actual compatibility namespace; deleting a legacy key does not invalidate a current entry. The startup log
+reports the compatibility identity as `<classifier revision>:<mapping fingerprint>`. After confirming the Redis instance
+and database, an exact-key deletion has the form `DEL "licenses:v1:<reported identity>:<package coordinates>"`. Compatible
+in-flight requests may repopulate current keys with compatible results. Do not run a broad Redis flush. No durable
+database migration is needed: license classification does not persist these categories to a durable database.
+
+During a rolling deployment, old pods may continue serving old results until drained. Any legacy entry's expiration is
+measured from its **last old write**, not from rollout start, so a rollout alone does not guarantee fleet-wide freshness
+within one TTL. Current readers are isolated immediately by their namespace. Direct license lookup
+(`GET /api/v5/licenses/{licenseId}`) bypasses the package cache but still uses the serving pod's application version and
+effective mapping; route to updated pods or drain old ones when current classification is required.
 
 ### License evidences and concluded license.
 

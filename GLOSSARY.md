@@ -153,18 +153,4 @@ remaining `UNKNOWN` licenses.
 
 ### Package cache and rollout
 
-License results computed for packages are cached in Redis. The relevant behavior is:
-
-- `RedisCacheService.cacheLicenses` stores the categorized `PackageLicenseResult`
-  under `licenses:<package coordinates>` using `psetex`.
-- `licenses.cache.ttl` defaults to `1d`. Reads do not renew the TTL.
-- After deploying a category mapping change, **previously cached package results can
-  continue to report the old category (`UNKNOWN`) until their actual configured TTL
-  expires**. The TTL in effect at write time, not a fixed value, determines when they
-  refresh.
-- Direct license-ID lookup (`GET /api/v5/licenses/{licenseId}`) bypasses the package
-  cache and reflects the current mapping immediately.
-- If immediate freshness is required, use operator-approved targeted invalidation of
-  the affected license keys. Do not run a broad Redis flush. No durable database
-  migration is needed for these mapping updates: license classification does not
-  write these categories to a durable database.
+See the canonical [license cache and rollout guidance](README.md#license-cache-and-rollout).

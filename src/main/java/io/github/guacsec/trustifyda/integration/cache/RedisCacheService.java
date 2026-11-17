@@ -32,6 +32,7 @@ import org.jboss.logging.Logger;
 
 import io.github.guacsec.trustifyda.api.PackageRef;
 import io.github.guacsec.trustifyda.api.v5.PackageLicenseResult;
+import io.github.guacsec.trustifyda.integration.licenses.SpdxLicenseService;
 import io.github.guacsec.trustifyda.model.PackageItem;
 import io.github.guacsec.trustifyda.model.ProviderResponse;
 import io.github.guacsec.trustifyda.model.licenses.LicenseSplitResult;
@@ -44,6 +45,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class RedisCacheService implements CacheService {
 
   private static final Logger LOGGER = Logger.getLogger(RedisCacheService.class);
+  // Bump when CachedLicense's stored representation is incompatible.
+  private static final String LICENSE_CACHE_FORMAT_REVISION = "v1";
 
   @ConfigProperty(name = "items.cache.ttl", defaultValue = "1d")
   Duration itemTtl;
@@ -53,10 +56,13 @@ public class RedisCacheService implements CacheService {
 
   private final ValueCommands<String, PackageItem> itemsCommands;
   private final ValueCommands<String, CachedLicense> licensesCommands;
+  private final SpdxLicenseService licenseService;
 
-  public RedisCacheService(RedisDataSource ds) {
+  /** Creates cache access using the serving classifier's effective compatibility identity. */
+  public RedisCacheService(RedisDataSource ds, SpdxLicenseService licenseService) {
     this.itemsCommands = ds.value(PackageItem.class);
     this.licensesCommands = ds.value(CachedLicense.class);
+    this.licenseService = licenseService;
   }
 
   @Override
@@ -124,7 +130,7 @@ public class RedisCacheService implements CacheService {
                 return;
               }
               licensesCommands.psetex(
-                  "licenses:" + ref,
+                  licenseCacheKey(ref),
                   licenseTtl.toMillis(),
                   new CachedLicense(missesCoordinates.get(ref), result));
               count.incrementAndGet();
@@ -139,12 +145,22 @@ public class RedisCacheService implements CacheService {
     }
     // Use coordinates (without qualifiers) as cache key
     String[] keys =
-        purls.stream().map(p -> "licenses:" + p.purl().getCoordinates()).toArray(String[]::new);
+        purls.stream().map(p -> licenseCacheKey(p.purl().getCoordinates())).toArray(String[]::new);
     var result = licensesCommands.mget(keys);
     LOGGER.debugf("Got %d cached licenses for %d purls", result.size(), purls.size());
     return result.values().stream()
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(CachedLicense::ref, CachedLicense::result));
+  }
+
+  private String licenseCacheKey(String coordinates) {
+    // Resolve after the classifier's startup observer has loaded the effective configuration.
+    return "licenses:"
+        + LICENSE_CACHE_FORMAT_REVISION
+        + ":"
+        + licenseService.getCacheCompatibilityIdentity()
+        + ":"
+        + coordinates;
   }
 
   private static record CachedLicense(PackageRef ref, PackageLicenseResult result) {}

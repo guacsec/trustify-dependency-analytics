@@ -1422,8 +1422,10 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertNull(filteredOsv);
   }
 
+  /** Verifies package-route hits preserve classifications despite a late unversioned old write. */
   @Test
   public void testLicensesCaching() {
+    // Given provider data and an initially empty cache
     stubAllProviders();
 
     // First request - cache should be empty, Deps.dev licenses should be called
@@ -1451,6 +1453,20 @@ public class AnalysisTest extends AbstractAnalysisTest {
     assertTrue(depsDevLicense.getStatus().getOk());
     verifyLicensesRequest(1);
 
+    // An unchanged old pod completes after the current write, using the legacy key/value shape.
+    depsDevLicense
+        .getPackages()
+        .forEach(
+            (coordinates, result) -> {
+              ObjectNode oldResult = MAPPER.valueToTree(result);
+              oldResult.withObject("/concluded").put("category", "UNKNOWN");
+              String oldValue =
+                  MAPPER
+                      .valueToTree(Map.of("ref", new PackageRef(coordinates), "result", oldResult))
+                      .toString();
+              redisDataSource.execute("PSETEX", "licenses:" + coordinates, "86400000", oldValue);
+            });
+
     // Reset WireMock request count but keep stubs
     server.resetRequests();
 
@@ -1471,6 +1487,11 @@ public class AnalysisTest extends AbstractAnalysisTest {
             .as(AnalysisReport.class);
 
     verifyLicensesRequest(0);
+
+    // Then actual compatible cache hits retain every package classification and SPDX field.
+    var cachedDepsDevLicense = getLicenseResultByName(secondResponse, "deps.dev");
+    assertNotNull(cachedDepsDevLicense);
+    assertEquals(depsDevLicense.getPackages(), cachedDepsDevLicense.getPackages());
 
     // Both responses should have the same licenses data
     assertEquals(
