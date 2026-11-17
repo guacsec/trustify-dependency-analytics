@@ -92,19 +92,10 @@ Builds a **LicenseInfo** from an SPDX expression:
 6. Category: recursively evaluate the existing parsed `root` with `resolveCategory`. Each AND node selects the least permissive child category; each OR node selects the most permissive child category. Leaves reuse `collectIdentifiers` and its existing category/exception rules. Unsupported leaves remain `UNKNOWN`.
 7. Return **LicenseInfo** (identifiers, category, name, source, sourceUrl, expression).
 
-## Categories (license-categories.yaml)
+## Category resolution
 
-Categories are resolved by **LicenseConfig** (YAML with optional aliases):
-
-- **permissive**, **weak-copyleft**, **strong-copyleft**: lists of base license IDs (e.g. after stripping `-only` / `-or-later`).
-- **weak-copyleft-exceptions**: exception IDs that, when applied to a strong copyleft license, downgrade it to weak copyleft.
-
-Expression normalization for category lookup:
-
-- Split on ` WITH ` or `-with-` to get base license and exception suffix.
-- Strip `-only` and `-or-later` from the base license.
-- Strip a remaining deprecated `+` suffix for category lookup.
-- Look up the base in permissive / weakCopyleft / strongCopyleft. A configured exception changes a strong-copyleft base to weak copyleft; an unlisted exception leaves the base category unchanged. Unmapped bases are `UNKNOWN`.
+**LicenseConfig** loads the category lists and optional YAML aliases. See the README's
+[category rules](../README.md#categories) for category-lookup normalization, mapping membership, and exception handling.
 
 ### Recursive expression categories
 
@@ -128,7 +119,8 @@ It is separate from `getConcluded(List<LicenseInfo>)`, which still selects the m
 object among package/provider results. Neither operation is legal compatibility analysis.
 
 Changing classifier semantics can change cached categories even with identical YAML. Cache compatibility
-must account for algorithm changes as well as mapping changes; see the README's cache/rollout guidance.
+must account for algorithm changes as well as mapping changes; see the README's
+[cache and rollout guidance](../README.md#license-cache-and-rollout).
 
 ## Helpers used from the library
 

@@ -8,9 +8,9 @@ permissive:
   - Artistic-2.0
   - 0BSD
   - BSL-1.0
-  - Unicode-DFS-2016
-  - Unlicense
-  - CC0-1.0
+  - Unicode-DFS-2016 # permissive text; ScanCode: Permissive; evidence: docs/adr/0001-public-domain-dedications-as-permissive.md
+  - Unlicense # reviewed public-domain dedication; rationale: docs/adr/0001-public-domain-dedications-as-permissive.md
+  - CC0-1.0 # reviewed public-domain dedication; rationale: docs/adr/0001-public-domain-dedications-as-permissive.md
 
 weak-copyleft:
   - LGPL-2.0

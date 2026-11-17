@@ -106,6 +106,28 @@ ui/                                 # React frontend for HTML report
   Check with `registryHost.isPresent() && !registryHost.get().isBlank()`.
 - **Timeout properties**: Use `String` type with a duration suffix (e.g., `"10s"`), passed to Camel fault tolerance configuration.
 
+## License category mappings
+
+[`src/main/resources/license-categories.yaml`](src/main/resources/license-categories.yaml) is hand-curated.
+Use the [domain language](GLOSSARY.md#language) when proposing an assignment; membership is independent of
+SPDX recognition and OSI approval. For every new or changed mapping, provide these inspectable artifacts:
+
+1. **Obligations reviewed** — in an ADR under `docs/adr/`, link the canonical SPDX identifier and license text,
+   and identify the grant and conditions that support the category. SPDX supplies the reference text, not a category.
+2. **Corroborating source** — in that ADR, link a second classification source, such as
+   [ScanCode LicenseDB](https://scancode-licensedb.aboutcode.org/), and compare it with the actual terms.
+   Record any disagreement or model difference; [ADR 0001](docs/adr/0001-public-domain-dedications-as-permissive.md)
+   explains ScanCode's Public Domain classification for Unlicense and CC0-1.0.
+3. **Rationale recorded in the repository** — attach a YAML provenance comment pointing to the ADR's decision
+   and evidence. A reviewer must be able to follow that path without the PR conversation.
+4. **SPDX metadata preserved** — include relevant regression assertions for the identifier and aggregate category,
+   while keeping the SPDX id, name, deprecation, OSI, and FSF fields unchanged. Inspect the assertions in
+   [`SpdxLicenseServiceTest`](src/test/java/io/github/guacsec/trustifyda/integration/licenses/SpdxLicenseServiceTest.java)
+   as the existing pattern; category membership must remain independent of those metadata flags.
+
+Review exceptions per license using the same evidence procedure. Consult the [runtime category rules](README.md#categories)
+for exception handling and the [cache and rollout guidance](README.md#license-cache-and-rollout) for operational consequences.
+
 ## CDI Extensibility Pattern
 
 When a feature needs to support multiple ecosystem implementations (e.g., registry lookups for pypi, maven, npm), use CDI `Instance<T>` discovery:

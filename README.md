@@ -58,20 +58,28 @@ licenses found by the license providers (evidence) and a concluded license based
 
 ### Categories
 
-The system uses the configuration file selected by `categories.file` to categorize the retrieved licenses into:
+The system uses the configuration file selected by `categories.file` (default: `license-categories.yaml`) to categorize
+the retrieved licenses into:
 
 - `PERMISSIVE`
 - `WEAK_COPYLEFT`
 - `STRONG_COPYLEFT`
 - `UNKNOWN`
 
-The `weak-copyleft-exceptions` list defines which SPDX exceptions change a `STRONG_COPYLEFT` license to `WEAK_COPYLEFT`.
+The bundled mapping is [`src/main/resources/license-categories.yaml`](src/main/resources/license-categories.yaml).
+For category lookup, the backend separates the base license and exception at ` WITH ` or the deprecated `-with-` form,
+then strips `-only`, `-or-later`, or a remaining legacy `+` suffix from the base identifier before checking list membership.
+For example, `GPL-3.0-only` uses the `GPL-3.0` entry. An unmapped base, unsupported SPDX leaf, or unrecognized single
+license ID receives `UNKNOWN`; category lookup leaves the returned SPDX metadata intact.
+
+The `weak-copyleft-exceptions` list defines which SPDX exceptions change a `STRONG_COPYLEFT` license to `WEAK_COPYLEFT`;
+exception IDs are matched case-insensitively.
 For example, `GPL-2.0-only WITH Classpath-exception-2.0` is categorized as `WEAK_COPYLEFT`. An unlisted exception leaves
 the base license category unchanged; the `-only` suffix is not an exception.
 
-See the [Licenses glossary](GLOSSARY.md#licenses) for the four-category definitions, examples, mapping evidence and
-inclusion criteria. Categories summarize copyright/copyleft obligations; they are not legal clearance or proof of
-compatibility.
+See the [license categories glossary](GLOSSARY.md#license-categories) for terminology,
+the [mapping procedure](CONVENTIONS.md#license-category-mappings) for evidence requirements, and
+[ADR 0001](docs/adr/0001-public-domain-dedications-as-permissive.md) for the reviewed public-domain categorization decision.
 
 #### License cache and rollout
 
@@ -82,10 +90,10 @@ the exception rules, rather than the filename or raw YAML text. Ordering, duplic
 letter case do not change compatibility. Both cache reads and writes use this identity, and package coordinates still
 exclude qualifiers. The `v1` namespace identifies the cached-value format.
 
-The classifier revision is defined by `SpdxLicenseService.CLASSIFIER_COMPATIBILITY_REVISION`; `spdx-tree-v1` identifies
-recursive expression evaluation. Developers must change this revision whenever classifier semantics change in a way
+The classifier revision `spdx-tree-v1` identifies recursive expression evaluation.
+Developers must change this code-defined revision whenever classifier semantics change in a way
 that can make cached results incompatible, even if the YAML is identical (for example, changing mixed `AND`/`OR`
-evaluation). Change the cache-format namespace in `RedisCacheService` when the stored representation is incompatible.
+evaluation). Change the cache-format namespace when the stored representation is incompatible.
 Relevant mapping changes change the fingerprint automatically. These identities describe compatibility, not version age:
 hashes cannot establish which result is newer. No operator-managed revision setting is required.
 
@@ -95,7 +103,7 @@ a current write or targeted invalidation, but cannot overwrite the namespace con
 both old `UNKNOWN` mapping results and old mixed-expression classifications such as the incorrectly flattened
 `PERMISSIVE` result for `GPL-3.0 AND (MIT OR Apache-2.0)`.
 
-`licenses.cache.ttl` still defaults to `1d`; writes set the configured TTL and reads do not renew it. Unused namespaces
+`licenses.cache.ttl` defaults to `1d`; writes set the configured TTL and reads do not renew it. Unused namespaces
 expire naturally. For an operator-approved targeted invalidation, delete only the affected package keys under the
 serving pods' actual compatibility namespace; deleting a legacy key does not invalidate a current entry. The startup log
 reports the compatibility identity as `<classifier revision>:<mapping fingerprint>`. After confirming the Redis instance
@@ -112,23 +120,29 @@ effective mapping; route to updated pods or drain old ones when current classifi
 ### License evidences and concluded license.
 
 All licenses found in the license provider response are considered evidence. The system selects a concluded license
-using the following category-based heuristic, not a legal compatibility analysis:
+using the following category-based heuristic; legal compatibility requires separate assessment:
 
 - If multiple licenses are found, the backend doesn't decide which source is more reliable or if one should invalidate another. It just takes
 **the more permissive** license.
+- An expression's category derives from its identifiers and parsed structure, rather than a lookup of the whole
+expression in the mapping. For example, `MIT AND Apache-2.0` is `PERMISSIVE` because both identifiers are permissive.
 - Within an SPDX expression, each `OR` group selects the **most permissive category** among its child expressions;
 each `AND` group selects the **most restrictive category** among its child expressions. Evaluation is recursive,
 respecting parentheses and the parsed SPDX tree, not a flattened list of identifiers.
 - The category ordering is `PERMISSIVE > WEAK_COPYLEFT > STRONG_COPYLEFT > UNKNOWN`. Thus an `UNKNOWN` child makes
-an `AND` group `UNKNOWN`, but an `OR` group can select a known alternative. This is a classification heuristic, not
-a legal compatibility rule.
-- If a `STRONG_COPYLEFT` license has an exception listed in `weak-copyleft-exceptions`, the system changes its category to
-`WEAK_COPYLEFT`. For example, `GPL-2.0-only WITH Classpath-exception-2.0`.
+an `AND` group `UNKNOWN`, but an `OR` group can select a known alternative. Leaves follow the [category lookup and
+exception rules](#categories).
 
 For example, `GPL-3.0 AND (MIT OR Apache-2.0)` is `STRONG_COPYLEFT`, while
 `(GPL-3.0 AND MIT) OR Apache-2.0` is `PERMISSIVE`. The aggregate does not replace leaf categories:
 MIT and Apache-2.0 remain `PERMISSIVE` identifiers in both expressions, with their SPDX metadata unchanged.
 `(MIT OR Apache-2.0) AND (GPL-3.0 OR LGPL-2.1)` is `WEAK_COPYLEFT`.
+
+The JavaScript client's `getCompatibility()` treats an `UNKNOWN` dependency as incompatible when the project category
+is known; `runLicenseCheck()` produces incompatible-dependency results, displayed as warnings by the VS Code extension.
+This [warning policy](https://github.com/guacsec/trustify-da-javascript-client/pull/548) applies to every remaining `UNKNOWN`
+result; mapping an identifier to `PERMISSIVE` removes its UNKNOWN-triggered warning while actual compatibility requires review.
+For parser and model implementation details, see [SPDX license handling](docs/spdx-java-library-parsing-api.md).
 
 The report will also provide a summary of the different licenses found.
 
