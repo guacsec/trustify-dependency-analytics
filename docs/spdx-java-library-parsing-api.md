@@ -29,7 +29,9 @@ Optional: to avoid network and use only the JAR-bundled license list:
 
 ## Parsing
 
-Only **LicenseInfoFactory** is used; there is no use of `LicenseExpressionParser` or `InMemSpdxStore`.
+The service calls **LicenseInfoFactory.parseSPDXLicenseString** with a fresh **InMemSpdxStore**.
+It does not call `LicenseExpressionParser` directly. The `spdx-jackson-store` dependency version is 2.0.4 (see `pom.xml`);
+the returned objects use the SPDX 3.0.1 model packages.
 
 Deprecated compound IDs are normalized **before** parsing so the library returns the canonical “license WITH exception” structure:
 
@@ -40,18 +42,21 @@ private static final Map<String, String> DEPRECATED_TO_CANONICAL =
         "GPL-2.0-with-classpath-exception-2.0", "GPL-2.0-only WITH Classpath-exception-2.0");
 
 String toParse = DEPRECATED_TO_CANONICAL.getOrDefault(trimmed, trimmed);
-AnyLicenseInfo root = LicenseInfoFactory.parseSPDXLicenseString(toParse);
+toParse = toParse.replaceAll("([A-Za-z][A-Za-z0-9.-]*\\d)\\+", "$1-or-later");
+AnyLicenseInfo root =
+    LicenseInfoFactory.parseSPDXLicenseString(toParse, new InMemSpdxStore(), null, null, null);
 ```
 
 Accepted inputs include:
 
 - **Deprecated**: `GPL-2.0-with-classpath-exception` (normalized then parsed).
 - **Modern**: `GPL-2.0-only WITH Classpath-exception-2.0`.
-- **Multi**: `MIT AND GPL-2.0-only`, `MIT OR Apache-2.0`, `(A AND B) OR C`.
+- **Or later**: `LGPL-3.0+` (normalized to `LGPL-3.0-or-later` before parsing).
+- **Multi**: `MIT AND GPL-2.0-only`, `MIT OR Apache-2.0`, `(GPL-3.0 AND MIT) OR Apache-2.0`.
 
 Invalid expressions that do not contain AND/OR/WITH are treated as unknown single IDs and return a `LicenseInfo` with category `UNKNOWN` and a single identifier; otherwise `InvalidSPDXAnalysisException` is turned into `NotFoundException`.
 
-## AST types and accessors (spdx-java-library v3)
+## AST types and accessors (SPDX 3.0.1 model)
 
 The root type is **AnyLicenseInfo** (`org.spdx.library.model.v3_0_1.simplelicensing`). The service branches on these types from `org.spdx.library.model.v3_0_1.expandedlicensing`:
 
@@ -79,36 +84,53 @@ Identifies a license from raw license file text:
 
 Builds a **LicenseInfo** from an SPDX expression:
 
-1. Normalize deprecated IDs with `DEPRECATED_TO_CANONICAL`.
-2. Parse with `LicenseInfoFactory.parseSPDXLicenseString(toParse)`.
+1. Normalize single deprecated compound IDs with `DEPRECATED_TO_CANONICAL`, then normalize `+` suffixes to `-or-later`.
+2. Parse with `LicenseInfoFactory.parseSPDXLicenseString(toParse, new InMemSpdxStore(), null, null, null)`.
 3. Normalized expression: `root.toString()`.
 4. Human-readable name: tree walk (`toHumanReadableName`) over ConjunctiveLicenseSet / DisjunctiveLicenseSet / WithAdditionOperator / ListedLicense; AND/OR joined with `" AND "` / `" OR "`; WITH → subject name + `" with "` + exception name.
-5. Collect identifiers: tree walk `collectIdentifiers` → list of **LicenseIdentifier** (id, name, OSI/FSF/deprecated, category).
-6. Category: `resolveCategoryFromIdentifiers(identifiers, isOr)` using `license-categories.yaml` and “more permissive” ordering (OR: pick most permissive; AND: pick least permissive).
+5. Collect identifiers: `parseExpressionToIdentifiers` parses the normalized expression and walks it with `collectIdentifiers` → list of **LicenseIdentifier** (id, name, OSI/FSF/deprecated, category). Collection order is not a category-selection rule.
+6. Category: recursively evaluate the existing parsed `root` with `resolveCategory`. Each AND node selects the least permissive child category; each OR node selects the most permissive child category. Leaves reuse `collectIdentifiers` and its existing category/exception rules. Unsupported leaves remain `UNKNOWN`.
 7. Return **LicenseInfo** (identifiers, category, name, source, sourceUrl, expression).
 
-## Categories (license-categories.yaml)
+## Category resolution
 
-Categories are resolved by **LicenseConfig** (YAML with optional aliases):
+**LicenseConfig** loads the category lists and optional YAML aliases. See the README's
+[category rules](../README.md#categories) for category-lookup normalization, mapping membership, and exception handling.
 
-- **permissive**, **weak-copyleft**, **strong-copyleft**: lists of base license IDs (e.g. after stripping `-only` / `-or-later`).
-- **weak-copyleft-exceptions**: exception IDs that, when applied to a strong copyleft license, downgrade it to weak copyleft.
+### Recursive expression categories
 
-Expression normalization for category lookup:
+At every AND/OR node, child categories use the existing ordering
+`PERMISSIVE > WEAK_COPYLEFT > STRONG_COPYLEFT > UNKNOWN`. Parentheses and nesting are retained by
+the parsed tree; an OR anywhere in the expression does not turn the whole expression into a choice.
 
-- Split on ` WITH ` or `-with-` to get base license and exception suffix.
-- Strip `-only` and `-or-later` from the base license.
-- Look up base in permissive / weakCopyleft / strongCopyleft; if strong copyleft and exception is in weakCopyleftExceptions, use weak copyleft; otherwise UNKNOWN.
+| Expression | Aggregate category |
+|------------|--------------------|
+| `GPL-3.0 AND (MIT OR Apache-2.0)` | `STRONG_COPYLEFT` |
+| `(GPL-3.0 AND MIT) OR Apache-2.0` | `PERMISSIVE` |
+| `(MIT OR Apache-2.0) AND (GPL-3.0 OR LGPL-2.1)` | `WEAK_COPYLEFT` |
+| `GPL-3.0 AND (Unicode-DFS-2016 OR LGPL-2.1)` | `STRONG_COPYLEFT` |
+| `(GPL-2.0-only WITH Classpath-exception-2.0) AND (MIT OR Apache-2.0)` | `WEAK_COPYLEFT` |
+| `LicenseRef-MIT-License AND (MIT OR Apache-2.0)` | `UNKNOWN` |
+| `GPL-3.0 AND (LicenseRef-MIT-License OR MIT)` | `STRONG_COPYLEFT` |
+
+The `LicenseRef` leaves in these examples remain `UNKNOWN`; this does not infer a license from their names.
+Aggregate evaluation does not overwrite leaf categories, metadata, normalized expression, or source fields.
+It is separate from `getConcluded(List<LicenseInfo>)`, which still selects the most permissive evidence
+object among package/provider results. Neither operation is legal compatibility analysis.
+
+Changing classifier semantics can change cached categories even with identical YAML. Cache compatibility
+must account for algorithm changes as well as mapping changes; see the README's
+[cache and rollout guidance](../README.md#license-cache-and-rollout).
 
 ## Helpers used from the library
 
-- **LicenseInfoFactory.parseSPDXLicenseString(String)** – parse expression to `AnyLicenseInfo`.
+- **LicenseInfoFactory.parseSPDXLicenseString(expression, new InMemSpdxStore(), null, null, null)** – parse an expression to `AnyLicenseInfo` with a fresh store and null optional context arguments.
 - **LicenseInfoFactory.getListedLicenseById(String)** – resolve a single ID to `ListedLicense` (used after header lookup in `identifyLicense`).
 - **LicenseInfoFactory.getSpdxListedLicenseIds()** – list of IDs used to load `spdx-licenses/{id}.json` and build the header hash map.
 
 ## Summary
 
-- **Parsing**: Deprecated compound IDs are normalized to “license WITH exception”, then **LicenseInfoFactory.parseSPDXLicenseString** only; no LicenseExpressionParser / InMemSpdxStore.
+- **Parsing**: Single deprecated compound IDs are normalized to “license WITH exception”, and `+` suffixes to `-or-later`, then **LicenseInfoFactory.parseSPDXLicenseString** parses using an **InMemSpdxStore**; no direct `LicenseExpressionParser` call.
 - **AST**: ConjunctiveLicenseSet / DisjunctiveLicenseSet (`getMembers()`), WithAdditionOperator (`getSubjectExtendableLicense()`, `getSubjectAddition()`), ListedLicense (id, name, OSI, FSF, deprecated); other types → unknown identifier.
 - **Identification**: Header (first 5 lines) → SHA-256 → lookup in map built from bundled `spdx-licenses/*.json`.
-- **Categories**: From `license-categories.yaml` (LicenseConfig); AND/OR resolution uses “more permissive” ordering and weak-copyleft exceptions for strong copyleft + exception.
+- **Categories**: From `license-categories.yaml` (LicenseConfig); recursive AND/OR resolution applies the existing ranking separately at every tree node, preserving leaf metadata and configured weak-copyleft exceptions.

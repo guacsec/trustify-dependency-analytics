@@ -19,10 +19,17 @@ package io.github.guacsec.trustifyda.integration.licenses;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.camel.Body;
 import org.apache.camel.ExchangeProperty;
@@ -68,6 +75,9 @@ public class SpdxLicenseService {
   private static final String SPDX_SOURCE = "SPDX";
   private static final String SPDX_SOURCE_URL = "https://spdx.org";
 
+  // Bump for incompatible classification semantics, even with unchanged YAML.
+  private static final String CLASSIFIER_COMPATIBILITY_REVISION = "spdx-tree-v1";
+
   private static final Map<String, String> COMMON_LICENSE_HEADERS =
       Map.of(
           "Apache-2.0", "Apache License\nVersion 2.0",
@@ -95,6 +105,7 @@ public class SpdxLicenseService {
   private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
 
   private LicenseConfig licenseConfig;
+  private String cacheCompatibilityIdentity;
 
   void onStart(@Observes StartupEvent ev) {
     SpdxModelFactory.init();
@@ -114,6 +125,38 @@ public class SpdxLicenseService {
     }
     if (licenseConfig == null) {
       throw new RuntimeException("Licenses config not found on classpath: " + categoriesFile);
+    }
+    cacheCompatibilityIdentity = createCacheCompatibilityIdentity();
+    LOGGER.infof("License-cache compatibility identity: %s", cacheCompatibilityIdentity);
+  }
+
+  /**
+   * Identifies the effective category rules and classifier semantics for package-cache isolation.
+   */
+  public String getCacheCompatibilityIdentity() {
+    return Objects.requireNonNull(cacheCompatibilityIdentity, "License categories not initialized");
+  }
+
+  private String createCacheCompatibilityIdentity() {
+    // Match getCategory's precedence, ignoring list order, duplicates, and shadowed memberships.
+    Map<String, LicenseCategory> categories = new TreeMap<>();
+    licenseConfig
+        .strongCopyleft()
+        .forEach(id -> categories.put(id, LicenseCategory.STRONG_COPYLEFT));
+    licenseConfig.weakCopyleft().forEach(id -> categories.put(id, LicenseCategory.WEAK_COPYLEFT));
+    licenseConfig.permissive().forEach(id -> categories.put(id, LicenseCategory.PERMISSIVE));
+    var exceptions = new TreeSet<String>();
+    if (licenseConfig.weakCopyleftExceptions() != null) {
+      licenseConfig.weakCopyleftExceptions().stream()
+          .map(id -> id.toLowerCase(Locale.ROOT))
+          .forEach(exceptions::add);
+    }
+    try {
+      byte[] effectiveRules = YAML_MAPPER.writeValueAsBytes(List.of(categories, exceptions));
+      byte[] fingerprint = MessageDigest.getInstance("SHA-256").digest(effectiveRules);
+      return CLASSIFIER_COMPATIBILITY_REVISION + ":" + HexFormat.of().formatHex(fingerprint);
+    } catch (IOException | NoSuchAlgorithmException ex) {
+      throw new IllegalStateException("Unable to identify license-cache compatibility", ex);
     }
   }
 
@@ -230,16 +273,16 @@ public class SpdxLicenseService {
     String normalizedExpression = root.toString();
     String humanReadableName = toHumanReadableName(root);
     List<LicenseIdentifier> identifiers;
+    LicenseCategory category;
     try {
       identifiers = parseExpressionToIdentifiers(normalizedExpression);
+      category = resolveCategory(root);
     } catch (InvalidSPDXAnalysisException e) {
       throw new NotFoundException("Invalid license expression: " + expression, e);
     }
     if (identifiers.isEmpty()) {
       throw new NotFoundException("License category not found for expression: " + expression);
     }
-    boolean isOr = normalizedExpression.contains(" OR ");
-    LicenseCategory category = resolveCategoryFromIdentifiers(identifiers, isOr);
     if (category == null) {
       throw new NotFoundException("License category not found for expression: " + expression);
     }
@@ -400,11 +443,26 @@ public class SpdxLicenseService {
     out.add(toUnknownLicenseIdentifier(node.toString()));
   }
 
-  private LicenseCategory resolveCategoryFromIdentifiers(
-      List<LicenseIdentifier> identifiers, boolean isOrExpression) {
+  /** Resolves each tree node without flattening nested AND/OR groups into one operator. */
+  private LicenseCategory resolveCategory(AnyLicenseInfo node) throws InvalidSPDXAnalysisException {
+    if (node instanceof ConjunctiveLicenseSet set) {
+      return resolveCategoryFromMembers(set.getMembers(), false);
+    }
+    if (node instanceof DisjunctiveLicenseSet set) {
+      return resolveCategoryFromMembers(set.getMembers(), true);
+    }
+    // Reuse leaf enrichment so WITH exceptions and unsupported nodes follow the same rules.
+    List<LicenseIdentifier> identifiers = new ArrayList<>();
+    collectIdentifiers(node, identifiers);
+    return identifiers.getFirst().getCategory();
+  }
+
+  private LicenseCategory resolveCategoryFromMembers(
+      Iterable<AnyLicenseInfo> members, boolean isOrExpression)
+      throws InvalidSPDXAnalysisException {
     LicenseCategory category = null;
-    for (LicenseIdentifier id : identifiers) {
-      LicenseCategory next = id.getCategory();
+    for (AnyLicenseInfo member : members) {
+      LicenseCategory next = resolveCategory(member);
       if (category == null) {
         category = next;
       } else {
